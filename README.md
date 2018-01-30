@@ -15,7 +15,6 @@ Alpha Pose is a very accurate multi-person pose estimation system. It is the fir
 
 
 ## Results
-</center>
 Results on COCO test-dev 2015:
 <center>
 
@@ -31,7 +30,7 @@ Results on MPII full test set:
 <center>
 
 | Method | Head | Shoulder | Elbow | Wrist | Hip | Knee | Ankle | Ave |
-|:-------|:-----:|:-------:|
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|
 | OpenPose (CMU) | 91.2 | 87.6 | 77.7 | 66.8 | 75.4 | 68.9 | 61.7 | 75.6 |
 | Newell & Deng | 92.1 | 89.3 | 78.9 | 69.8 | 76.2 | 71.6 | 64.7 | 77.5 |
 | **Alpha Pose** | 92.1 | 89.3 | 78.9 | 69.8 | 76.2 | 71.6 | 64.7 | 82.1 |
