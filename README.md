@@ -1,5 +1,5 @@
 ## Alpha Pose
-Alpha Pose
+Alpha Pose is a very accurate multi-person pose estimation system. It is the first open-sourced system that can achieve 70+ mAP (73.2 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset
 
 ## Contents
 1. [Alpha Pose](#alpha-pose)
@@ -15,17 +15,57 @@ Alpha Pose
 
 
 ## Results
-### Crowd Scene
+</center>
+Results on COCO test-dev 2015:
+<center>
 
-### Rare Poses
+| Method | AP @0.5:0.95 | AP @0.5 | AP @0.75 | AP medium | AP large |
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
+| **OpenPose (CMU)** | **61.8** | **83.7** | **69.8** | 69.8 | 69.8 |
+| **Detectron (FAIR)** | **61.8** | **83.7** | **69.8** | **69.8** | **69.8** |
+| **AlphaPose** | **61.8** | **83.7** | **69.8** | **69.8** | **69.8** |
 
-### Poor Illumination
+</center>
+
+Results on MPII full test set:
+<center>
+
+| Method | Head | Shoulder | Elbow | Wrist | Hip | Knee | Ankle | Ave |
+|:-------|:-----:|:-------:|
+| OpenPose (CMU) | 91.2 | 87.6 | 77.7 | 66.8 | 75.4 | 68.9 | 61.7 | 75.6 |
+| Newell & Deng | 92.1 | 89.3 | 78.9 | 69.8 | 76.2 | 71.6 | 64.7 | 77.5 |
+| **Alpha Pose** | **76.7** | **1.5** |
+
+</center>
+### Pose Estimation
+
+### Pose Tracking
 
 
 ## Installation
-
+1. Get the code.
+  ```Shell
+  git clone https://github.com/MVIG-SJTU/AlphaPose.git
+  cd AlphaPose
+  ```
+2. Install [Torch](https://github.com/torch/distro) and [TensorFlow](https://www.tensorflow.org/install/). If you are using Ubuntu 16.04, you can run install.sh to install these two framework.
+  ```Shell
+  chmod +x install.sh
+  ./install.sh
+  ```
+3. Run fetch_models.sh to download our pre-trained models.
+  ```Shell
+  chmod +x fetch_models.sh
+  ./fetch_models.sh
+  ```
 
 ## Quick Start
+- **Demo**:  Run AlphaPose for all images in a folder and display the results with:
+```
+./run.sh --indir examples/demo/ --outdir examples/results/ --vis
+```
+
+To easily process images/video and display/save the results, please see [doc/run.md](doc/run.md).
 
 ## Output
 Output (format, keypoint index ordering, etc.) in [doc/output.md](doc/output.md).
