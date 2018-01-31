@@ -13,6 +13,3 @@ For displaying the demo images:
 
 For generating predictions:
 `th main.lua predict-[valid or test]`
-
-For evaluation on a set of validation predictions:
-`th main.lua eval` 

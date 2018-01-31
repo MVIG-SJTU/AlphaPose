@@ -30,7 +30,7 @@ function loadAnnotations(set)
     -- Load up a set of annotations for either: 'train', 'valid', or 'test'
     -- There is no part information in 'test'
 
-    local a = hdf5.open(set .. '/test-bbox.h5')
+    local a = hdf5.open('annot/' .. set .. '.h5')
     annot = {}
 
     -- Read in annotation information from hdf5 file
@@ -43,7 +43,7 @@ function loadAnnotations(set)
     -- (workaround for not being able to read the strings in the hdf5 file)
     annot.images = {}
     local toIdxs = {}
-    local namesFile = io.open(set .. '/test-images.txt')
+    local namesFile = io.open('annot/' .. set .. '_images.txt')
     local idx = 1
     for line in namesFile:lines() do
         annot.images[idx] = line
@@ -57,7 +57,7 @@ function loadAnnotations(set)
     -- (workaround for not being able to read the strings in the hdf5 file)
     annot.index = {}
     annot.index_num = {}
-    local indexFile = io.open(set .. '/index.txt')
+    local indexFile = io.open('annot/' .. set:split('/')[1] .. '/index.txt')
     local idx = 0
     for line in indexFile:lines() do
         idx = idx + 1
@@ -71,7 +71,7 @@ function loadAnnotations(set)
     -- Load in score file names
     -- (workaround for not being able to read the strings in the hdf5 file)
     annot.scores = {}
-    local namesFile = io.open(set .. '/score-proposals.txt')
+    local namesFile = io.open('annot/' .. set:split('/')[1] .. '/score-proposals.txt')
     local idx = 0
     for line in namesFile:lines() do
         idx = idx + 1
@@ -85,7 +85,7 @@ function loadAnnotations(set)
     return annot
 end
 
-function getPreds(hms, pt1, pt2)
+function getPreds(hms, pt1, pt2, inpH, inpW, resH, resW)
 
     if hms:size():size() == 3 then hms = hms:view(1, hms:size(1), hms:size(2), hms:size(3)) end
 
@@ -93,7 +93,7 @@ function getPreds(hms, pt1, pt2)
     local max, idx = torch.max(hms:view(hms:size(1), hms:size(2), hms:size(3) * hms:size(4)), 3)
     local preds = torch.repeatTensor(idx, 1, 1, 2):float()
     preds[{{}, {}, 1}]:apply(function(x) return (x - 1) % hms:size(4) + 1 end)
-    preds[{{}, {}, 2}]:add(-1):div(hms:size(3)):floor():add(1)
+    preds[{{}, {}, 2}]:add(-1):div(hms:size(4)):floor():add(1)
     local predMask = max:gt(0):repeatTensor(1, 1, 2):float()
     preds:add(-1):cmul(predMask):add(1)
     -- Very simple post-processing step to improve performance at tight PCK thresholds
@@ -101,14 +101,14 @@ function getPreds(hms, pt1, pt2)
        for j = 1,preds:size(2) do
             local hm = hms[i][j]
             local pX,pY = preds[i][j][1], preds[i][j][2]
-            scores[i][j] = hm[pY][pX]
-            if pX > 1 and pX < 64 and pY > 1 and pY < 64 then
-               local diff = torch.Tensor({hm[pY][pX+1]-hm[pY][pX-1], hm[pY+1][pX]-hm[pY-1][pX]})
-               preds[i][j]:add(diff:sign():mul(.25):float())
+            --scores[i][j] = hm[pY][pX]
+            if pX > 1 and pX < resW and pY > 1 and pY < resH then
+                local diff = torch.Tensor({hm[pY][pX+1]-hm[pY][pX-1], hm[pY+1][pX]-hm[pY-1][pX]})
+                preds[i][j]:add(diff:sign():mul(.25):float())
             end
         end
     end
-    preds:add(0.5)
+    preds:add(0.5) 
 
     -- Get transformed coordinates
     local preds_tf = torch.zeros(preds:size())
@@ -116,11 +116,41 @@ function getPreds(hms, pt1, pt2)
 
     for i = 1,hms:size(1) do        -- Number of samples
         for j = 1,hms:size(2) do    -- Number of output heatmaps for one sample
-            preds_tf[i][j] = transformBoxInvert(preds[i][j],pt1,pt2,hms:size(3))
+            preds_tf[i][j] = transformBoxInvert(preds[i][j],pt1,pt2,inpH,inpW,resH,resW)
         end
     end
 
-    return preds, preds_tf,max
+    return preds, preds_tf, max
+end
+
+function getPredsOriIm(hms, len, outres)
+
+    if hms:size():size() == 3 then hms = hms:view(1, hms:size(1), hms:size(2), hms:size(3)) end
+    assert(hms:dim() == 4, 'Input must be 4-D tensor')
+    -- Get locations of maximum activations
+    local max, idx = torch.max(hms:view(hms:size(1), hms:size(2), hms:size(3) * hms:size(4)), 3)
+    local preds = torch.repeatTensor(idx, 1, 1, 2):float()
+    preds[{{}, {}, 1}]:apply(function(x) return (x - 1) % hms:size(4) + 1 end)
+    preds[{{}, {}, 2}]:add(-1):div(hms:size(4)):floor():add(1)
+    local predMask = max:gt(0):repeatTensor(1, 1, 2):float()
+    preds:add(-1):cmul(predMask):add(1)
+    
+    -- Very simple post-processing step to improve performance at tight PCK thresholds
+    for i = 1,preds:size(1) do
+        for j = 1,preds:size(2) do
+            local hm = hms[i][j]
+            local pX,pY = preds[i][j][1], preds[i][j][2]
+            --scores[i][j] = hm[pY][pX]
+            if pX > 1 and pX < hms:size(4) and pY > 1 and pY < hms:size(3) then
+               local diff = torch.Tensor({hm[pY][pX+1]-hm[pY][pX-1], hm[pY+1][pX]-hm[pY-1][pX]})
+               preds[i][j]:add(diff:sign():mul(.25 * len/outres):float())
+            end
+        end
+    end
+    preds:add(1 * len/outres)
+
+
+    return preds-1, max
 end
 
 function getImgHM(hms, ul, br, ht, wd)
@@ -131,14 +161,14 @@ function getImgHM(hms, ul, br, ht, wd)
     -- end
     -- -- Get transformed coordinates
     -- hms = hm_new
-    local hm_img = torch.zeros(1,17,ht,wd)
+    local hm_img = torch.zeros(14,ht,wd):double()
 
     local len
     len = math.max(br[2] - ul[2], br[1] - ul[1])
     hms = image.scale(hms,len,len)
     hms = hms:view(1, hms:size(1), hms:size(2), hms:size(3))
-    local newX = torch.Tensor({math.max(1, -ul[1] + 2), math.min(br[1], wd+1) - ul[1]})
-    local newY = torch.Tensor({math.max(1, -ul[2] + 2), math.min(br[2], ht+1) - ul[2]})
+    local newX = torch.Tensor({math.max(1, -ul[1] + 1), math.min(br[1], wd+1) - ul[1]})
+    local newY = torch.Tensor({math.max(1, -ul[2] + 1), math.min(br[2], ht+1) - ul[2]})
     local newCenter = torch.Tensor({(newX[1]+newX[2])/2,(newY[1]+newY[2])/2})
     --Move to center
     newX[1] = newX[1]+math.floor(math.max(0,(len/2 - newCenter[1])))
@@ -148,9 +178,10 @@ function getImgHM(hms, ul, br, ht, wd)
 
     local oldX = torch.Tensor({math.max(1, ul[1]), math.min(br[1], wd+1)-1})
     local oldY = torch.Tensor({math.max(1, ul[2]), math.min(br[2], ht+1)-1})
+    
 
     for j = 1,hms:size(2) do    -- Number of output heatmaps for one sample
-        hm_img[1][j]:sub(oldY[1],oldY[2],oldX[1],oldX[2]):copy(hms[1][j]:sub(newY[1],newY[2],newX[1],newX[2]))
+        hm_img[j]:sub(oldY[1],oldY[2],oldX[1],oldX[2]):copy(hms[1][j]:sub(newY[1],newY[2],newX[1],newX[2]))
     end
 
     return hm_img
@@ -264,6 +295,43 @@ function drawSkeletoncoco(input, hms, coords)
     return im
 end
 
+function drawSkeletonAic(input, hms, coords)
+
+    local im = input:clone()
+
+    local pairRef = {
+        {1,2},  {2,3},
+        {4,5},  {5,6},
+        {13,14},
+        {14,1}, {1,7}, {14,4},  {4,10}, {7,10},
+        {8,7},  {8,9},
+        {10,11},{11,12}
+    }
+
+    local partNames = {'RElb','RWri','LElb','LWri','Head','RSho','RHip','LSho','LHip','Pelv','RLeg','RAnk','LLeg','LAnk'}
+    local partColor = {1,1,0,2,2,0,0,3,0,4,4,0,0,0}
+
+    local actThresh = 0.2
+
+    -- Loop through adjacent joint pairings
+    for i = 1,#pairRef do
+        if hms[pairRef[i][1]]:max() > actThresh and hms[pairRef[i][2]]:max() > actThresh then
+            -- Set appropriate line color
+            local color
+            if partColor[pairRef[i][1]] == 1 then color = {0,.3,1}
+            elseif partColor[pairRef[i][1]] == 2 then color = {1,.3,0}
+            elseif partColor[pairRef[i][1]] == 3 then color = {0,0,1}
+            elseif partColor[pairRef[i][1]] == 4 then color = {1,0,0}
+            else color = {.7,0,.7} end
+
+            -- Draw line
+            im = drawLine(im, coords[pairRef[i][1]], coords[pairRef[i][2]], 4, color, 0)
+        end
+    end
+
+    return im
+end
+
 function drawSkeleton(input, hms, coords)
 
     local im = input:clone()
@@ -347,19 +415,37 @@ function drawOutput(input, hms, coords)
     return im
 end
 
-function drawOutputcoco(input, hms, coords,inpres, outres)
+function drawOutputAic(input, hms, coords,inpres, outres)
     if inpres == nil then inpres = 256 end
     if outres == nil then outres = 64 end
-    local im = drawSkeletoncoco(input, hms, coords)
+    local im = drawSkeletonAic(input, hms, coords)
     if hms:size():size() == 4 then hms = hms:view(hms:size(2), hms:size(3), hms:size(4)) end
+    
     local colorHms = {}
     local inp64 = image.scale(input,outres):mul(.3)
-    for i = 1,16 do
+    for i = 1,14 do
         colorHms[i] = colorHM(hms[i])
         colorHms[i]:mul(.7):add(inp64)
     end
     local totalHm = compileImages(colorHms, 4, 4, outres)
     im = compileImages({im,totalHm}, 1, 2, inpres)
+    im = image.scale(im,756)
+    return im
+end
+
+function drawOutputcoco(input, hms, coords,inpresH, inpresW, outresH, outresW)
+    --if inpres == nil then inpres = 256 end
+    --if outres == nil then outres = 64 end
+    local im = drawSkeletoncoco(input, hms, coords)
+    if hms:size():size() == 4 then hms = hms:view(hms:size(2), hms:size(3), hms:size(4)) end
+    local colorHms = {}
+    local inp64 = image.scale(input,outresW,outresH):mul(.3)
+    for i = 1,16 do
+        colorHms[i] = colorHM(hms[i])
+        colorHms[i]:mul(.7):add(inp64)
+    end
+    local totalHm = compileImages(colorHms, 4, 4, outresH, outresW)
+    im = compileImages({im,totalHm}, 1, 2, inpresH, inpresW)
     im = image.scale(im,756)
     return im
 end

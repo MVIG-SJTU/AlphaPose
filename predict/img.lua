@@ -54,24 +54,103 @@ function transform(pt, center, scale, rot, res, invert)
     return new_point
 end
 
-function transformBoxInvert(pt, ul, br, res)
+function transformBox(pt, ul, br, inpH, inpW, resH, resW)
+    local center = torch.zeros(2)
+    center[1] = (br[1]-ul[1])/2
+    center[2] = (br[2]-ul[2])/2
+    
+    local len,lenH,lenW
+    len = math.max(br[2] - ul[2], (br[1] - ul[1])*inpH/inpW)
+    lenH = len
+    lenW = len*inpW/inpH
+    local _pt = torch.zeros(2)
+    _pt[1] = pt[1]-ul[1]
+    _pt[2] = pt[2]-ul[2]
+
+    --Move to center
+    _pt[1] = _pt[1]+math.max(0,(lenW/2 - center[1]))
+    _pt[2] = _pt[2]+math.max(0,(lenH/2 - center[2]))
+
+    local new_point = (_pt*resH)/lenH+1
+    return new_point:int()
+end
+
+function transformBoxInvert(pt, ul, br, inpH, inpW, resH, resW)
     local center = torch.zeros(2)
     center[1] = (br[1]-ul[1])/2
     center[2] = (br[2]-ul[2])/2
 
-    local len
-    len = math.max(br[2] - ul[2], br[1] - ul[1])
+    local len,lenH,lenW
+    len = math.max(br[2] - ul[2], (br[1] - ul[1])*inpH/inpW)
+    lenH = len
+    lenW = len*inpW/inpH
+    local _pt = (pt*lenH)/resH
 
-    local _pt = (pt*len)/res
-
-    _pt[1] = _pt[1]-math.max(0,(len/2 - center[1]))
-    _pt[2] = _pt[2]-math.max(0,(len/2 - center[2]))
+    _pt[1] = _pt[1]-math.max(0,(lenW/2 - center[1]))
+    _pt[2] = _pt[2]-math.max(0,(lenH/2 - center[2]))
 
     local new_point = torch.zeros(2)
-    new_point[1] = _pt[1]+ul[1]
-    new_point[2] = _pt[2]+ul[2]
-    return new_point:int()
+    new_point[1] = _pt[1]+ul[1]-1
+    new_point[2] = _pt[2]+ul[2]-1
+    return new_point:int():add(1)
 end
+
+function transformBoxAugment(pt1, pt2, outputRes)
+    local len = math.max(pt2[2]-pt1[2], pt2[1]-pt1[1])
+
+    local center = torch.zeros(2)
+    center[1] = (outputRes+1)/2
+    center[2] = (outputRes+1)/2
+
+    local new_pt1 = torch.zeros(2)
+    local new_pt2 = torch.zeros(2)
+
+    new_pt1[1] = math.floor(math.max(1,(center[1]-len/2)))
+    new_pt1[2] = math.floor(math.max(1,(center[2]-len/2)))
+    new_pt2[1] = math.floor(math.max(1,(center[1]+len/2)))
+    new_pt2[2] = math.floor(math.max(1,(center[2]+len/2)))
+
+    return new_pt1:int(), new_pt2:int()
+end
+
+function getHeatmaps(imHeight, imWidth, ul, br, outputRes, hm)
+    local image = require('image')
+    -- Crop function tailored to the needs of our system. Provide a center
+    -- and scale value and the image will be cropped and resized to the output
+    -- resolution determined by res. 'rot' will also rotate the image as needed.
+
+    local newDim,newImg,ht,wd
+
+    newDim = torch.IntTensor({3, br[2] - ul[2], br[1] - ul[1]})
+    ht = imHeight
+    wd = imWidth
+
+    local newX = torch.Tensor({math.max(1, -ul[1]+1), math.min(br[1], wd) - ul[1]})
+    local newY = torch.Tensor({math.max(1, -ul[2]+1), math.min(br[2], ht) - ul[2]})
+    local oldX = torch.Tensor({math.max(1, ul[1]+1), math.min(br[1], wd)})
+    local oldY = torch.Tensor({math.max(1, ul[2]+1), math.min(br[2], ht)})
+
+
+    -- mapping
+    local newHm = torch.zeros(hm:size(1), ht, wd)
+    hm = image.scale(hm:float(), newDim[3], newDim[2])
+
+    newHm:sub(1, hm:size(1), oldY[1],oldY[2],oldX[1],oldX[2]):copy(hm:sub(1,hm:size(1),newY[1],newY[2],newX[1],newX[2]))
+
+    -- Display heatmaps
+    if false then
+      local colorHms = {}
+      for i = 1,16 do 
+          colorHms[i] = colorHM(newHm[i])
+          colorHms[i]:mul(.7):add(inp)
+          w = image.display{image=colorHms[i],win=w}
+          sys.sleep(2)
+      end
+    end
+
+    return newHm
+end
+
 -------------------------------------------------------------------------------
 -- Cropping
 -------------------------------------------------------------------------------
@@ -128,24 +207,26 @@ function crop(img, center, scale, rot, res)
     return newImg
 end
 
-function cropBox(img, ul, br, rot, res)
-
-    local pad = math.floor(torch.norm((ul - br):float())/2 - (br[1]-ul[1])/2)
+function cropBox(img, ul, br, rot, resH, resW)
+    local pad = math.ceil(torch.norm((ul - br):float())/2 - (br[1]-ul[1])/2)
     if rot ~= 0 then
         ul = ul - pad
         br = br + pad
     end
 
-    local newDim,newImg,len,ht,wd
-    len = math.max(br[2] - ul[2], br[1] - ul[1])
+    local newDim,newImg,len,ht,wd,lenH,lenW
+    len = math.max(br[2] - ul[2], (br[1] - ul[1])*resH/resW)
+    lenH = len
+    lenW = len*resW/resH
+
     if img:size():size() > 2 then
         newDim = torch.IntTensor({img:size(1), br[2] - ul[2], br[1] - ul[1]})
-        newImg = torch.zeros(newDim[1],len,len)
+        newImg = torch.zeros(newDim[1],lenH,lenW)
         ht = img:size(2)
         wd = img:size(3)
     else
         newDim = torch.IntTensor({br[2] - ul[2], br[1] - ul[1]})
-        newImg = torch.zeros(len,len)
+        newImg = torch.zeros(lenH,lenW)
         ht = img:size(1)
         wd = img:size(2)
     end
@@ -154,14 +235,13 @@ function cropBox(img, ul, br, rot, res)
     local newY = torch.Tensor({math.max(1, -ul[2] + 2), math.min(br[2], ht+1) - ul[2]})
     local newCenter = torch.Tensor({(newX[1]+newX[2])/2,(newY[1]+newY[2])/2})
     --Move to center
-    newX[1] = newX[1]+math.floor(math.max(0,(len/2 - newCenter[1])))
-    newY[1] = newY[1]+math.floor(math.max(0,(len/2 - newCenter[2])))
-    newX[2] = newX[2]+math.floor(math.max(0,(len/2 - newCenter[1])))
-    newY[2] = newY[2]+math.floor(math.max(0,(len/2 - newCenter[2])))
+    newX[1] = newX[1]+math.floor(math.max(0,(lenW/2 - newCenter[1])))
+    newY[1] = newY[1]+math.floor(math.max(0,(lenH/2 - newCenter[2])))
+    newX[2] = newX[2]+math.floor(math.max(0,(lenW/2 - newCenter[1])))
+    newY[2] = newY[2]+math.floor(math.max(0,(lenH/2 - newCenter[2])))
 
     local oldX = torch.Tensor({math.max(1, ul[1]), math.min(br[1], wd+1) - 1})
     local oldY = torch.Tensor({math.max(1, ul[2]), math.min(br[2], ht+1) - 1})
-    
     if newDim:size(1) > 2 then
         newImg:sub(1,newDim[1],newY[1],newY[2],newX[1],newX[2]):copy(img:sub(1,newDim[1],oldY[1],oldY[2],oldX[1],oldX[2]))
     else
@@ -178,7 +258,7 @@ function cropBox(img, ul, br, rot, res)
         end
     end
 
-    newImg = image.scale(newImg,res,res)
+    newImg = image.scale(newImg,resW,resH)
 
     return newImg
 end
@@ -191,13 +271,13 @@ function twoPointCrop(img, s, pt1, pt2, pad, res)
     return crop(img, center, scale, angle, res)
 end
 
-function compileImages(imgs, nrows, ncols, res)
+function compileImages(imgs, nrows, ncols, resH, resW)
     -- Assumes the input images are all square/the same resolution
-    local totalImg = torch.zeros(3,nrows*res,ncols*res)
+    local totalImg = torch.zeros(3,nrows*resH,ncols*resW)
     for i = 1,#imgs do
         local r = torch.floor((i-1)/ncols) + 1
         local c = ((i - 1) % ncols) + 1
-        totalImg:sub(1,3,(r-1)*res+1,r*res,(c-1)*res+1,c*res):copy(imgs[i])
+        totalImg:sub(1,3,(r-1)*resH+1,r*resH,(c-1)*resW+1,c*resW):copy(imgs[i])
     end
     return totalImg
 end
@@ -279,7 +359,7 @@ function drawLine(img,pt1,pt2,width,color)
     -- I'm sure there's a line drawing function somewhere in Torch,
     -- but since I couldn't find it here's my basic implementation
     local color = color or {1,1,1}
-    local m = torch.dist(pt1,pt2)
+    local m = torch.dist(pt1:double(),pt2:double())
     local dy = (pt2[2] - pt1[2])/m
     local dx = (pt2[1] - pt1[1])/m
     for j = 1,width do
@@ -318,7 +398,7 @@ end
 -- Flipping functions
 -------------------------------------------------------------------------------
 
-function shuffleLR(x)
+function shuffleLRMPII(x)
     local dim
     if x:nDimension() == 4 then
         dim = 2
@@ -366,6 +446,47 @@ function shuffleLRCOCO(x)
     return x
 end
 
+function shuffleLRAIC(x)
+    local dim
+    if x:nDimension() == 4 then
+        dim = 2
+    else
+        assert(x:nDimension() == 3)
+        dim = 1
+    end
+
+    local matched_parts = {{1,6},   {2,5},   {3,4},
+                        {11,16}, {12,15}, {13,14}}
+
+
+    for i = 1,#matched_parts do
+        local idx1, idx2 = unpack(matched_parts[i])
+        local tmp = x:narrow(dim, idx1, 1):clone()
+        x:narrow(dim, idx1, 1):copy(x:narrow(dim, idx2, 1))
+        x:narrow(dim, idx2, 1):copy(tmp)
+    end
+
+    return x
+end
+
+function ConvertMpii2Aic(hmMpii)
+    local dim
+    local hmAic
+    if hmMpii:nDimension() == 4 then
+        dim = 2
+        hmAic = torch.zeros(hmMpii:size(1),14,hmMpii:size(3),hmMpii:size(4))
+    else
+        assert(hmMpii:nDimension() == 3)
+        dim = 1
+        hmAic = torch.zeros(14,hmMpii:size(2),hmMpii:size(3))
+    end
+    local mpii2aic = {13,12,11,14,15,16,3,2,1,4,5,6,10,9}
+    for i = 1,14 do
+        hmAic:narrow(dim,i,1):copy(hmMpii:narrow(dim,mpii2aic[i],1))
+    end
+    return hmAic
+end
+
 function flip(x)
     require 'image'
     local y = torch.FloatTensor(x:size())
@@ -374,3 +495,12 @@ function flip(x)
     end
     return y:typeAs(x)
 end
+
+function grey(x)
+    local y = torch.FloatTensor(x:size())
+    for i = 1,3 do
+        y[1][i] = 0.3*x:float()[1][1] + 0.59*x:float()[1][2] + 0.11*x:float()[1][3]
+    end
+    return y:typeAs(x)
+end
+

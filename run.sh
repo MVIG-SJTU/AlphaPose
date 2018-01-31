@@ -10,7 +10,8 @@ fi
 eval set -- "${TEMP}"
 
 GPU_ID=0
-
+GPU_NUM=1
+BATCH_SIZE=1
 INPUT_PATH=""
 OUTPUT_PATH=""
 VIDEO_FILE=""
@@ -25,6 +26,7 @@ FORMAT="default"
 while true ; do
         case "$1" in
                 -g|--gpu) GPU_ID="$2" ; shift 2;;
+                -b|--batch) BATCH_SIZE="$2" ; shift 2;;
                 -v|--video) VIDEO_FILE=${WORK_PATH}/$2 ; shift 2;;
                 -l|--list) LIST_FILE=${WORK_PATH}/$2 ; shift 2;;
                 -i|--indir) INPUT_PATH=${WORK_PATH}/$2 ; shift 2;;
@@ -37,6 +39,10 @@ while true ; do
                 *) echo "Internal error!" ; exit 1 ;;
         esac
 done
+
+# Get number of gpu numbers
+IFS=',' read -ra ARRAY <<< "$GPU_ID"
+GPU_NUM = ${#array[@]}
 
 echo "convert video to images..."
 
@@ -66,9 +72,9 @@ echo 'pose estimation with RMPE...'
 
 cd ${WORK_PATH}"/predict"
 if $MODE == "accurate" ; then
-    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose-4crop.lua valid ${INPUT_PATH} ${OUTPUT_PATH}
+    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose-4crop.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE}
 else
-    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose.lua valid ${INPUT_PATH} ${OUTPUT_PATH}
+    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE}
 fi
 
 cd ${WORK_PATH}"/predict/json"
