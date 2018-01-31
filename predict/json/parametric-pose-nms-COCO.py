@@ -14,7 +14,7 @@ import math
 import argparse
 
 
-def write_nms_json(outputpath, inputpath, sep, form):
+def write_nms_json(outputpath, sep, form):
     os.chdir(os.path.join(outputpath,'POSE'))
     pred_file=[line.rstrip('\n').rstrip(' ') for line in open("pred.txt")]
     score_file=[line.rstrip('\n').rstrip(' ') for line in open("scores.txt")]
@@ -274,12 +274,11 @@ def get_result_json(args):
     delta1 = 1; mu = 1.7; delta2 = 2.65;
     gamma = 22.48;
     test_parametric_pose_NMS_json(delta1, delta2, mu, gamma,args.outputpath)
-    write_nms_json(args.outputpath, args.inputpath, args.sep, args.format)
+    write_nms_json(args.outputpath, args.sep, args.format)
   
 def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='NMS')
-    parser.add_argument('--inputpath',dest='inputpath',help='image-directory')
     parser.add_argument('--outputpath',dest='outputpath',help='output-directory')
     parser.add_argument('--seperate-json',dest='sep',help='seperate-json')
     parser.add_argument('--jsonformat',dest='format', help='json format, including: RMPE,CMU-Pose, normal', default='default')

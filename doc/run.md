@@ -32,13 +32,13 @@ We provide a script `run.sh` to ease your effort of running our code. Here, we f
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --vis
 ```
-- ** Run AlphaPose for images on a list and save the results **:
+- ** Run AlphaPose for images on a list and save the results in MPII dataset's keypoints order**:
 ```
-./run.sh --list examples/img-list.txt --outdir examples/results/
+./run.sh --list examples/img-list.txt --outdir examples/results/ --dataset MPII
 ```
-- ** Run AlphaPose for a video and display the results **:
+- ** Run AlphaPose for a video, save the results in CMU-Pose's format and display the results **:
 ```
-./run.sh --video examples/input.mp4 --outdir examples/results/ --vis
+./run.sh --video examples/input.mp4 --outdir examples/results/ --vis --format cmu
 ```
 - ** Run AlphaPose for all images in 'fast' mode and save the result for each image seperately **:
 ```

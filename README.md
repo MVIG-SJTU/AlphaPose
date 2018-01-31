@@ -43,12 +43,17 @@ Results on MPII full test set:
 
 
 ## Installation
-1. Get the code.
+1. Get the code and build related modules.
   ```Shell
   git clone https://github.com/MVIG-SJTU/AlphaPose.git
-  cd AlphaPose
+  cd AlphaPose/human-detection/lib/
+  make clean
+  make
+  cd newnms/
+  make
+  cd ../../../
   ```
-2. Install [Torch](https://github.com/torch/distro) and [TensorFlow](https://www.tensorflow.org/install/). If you are using Ubuntu 16.04, you can run install.sh to install these two framework.
+2. Install [Torch](https://github.com/torch/distro) and [TensorFlow](https://www.tensorflow.org/install/).
   ```Shell
   chmod +x install.sh
   ./install.sh

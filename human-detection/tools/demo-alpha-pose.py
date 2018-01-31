@@ -18,7 +18,7 @@ from __future__ import print_function
 import _init_paths
 from model.config import cfg
 from model.test import im_detect, im_detect_fast
-from model.nms_wrapper import nms
+#from model.nms_wrapper import nms
 from newnms.nms import  soft_nms
 from utils.timer import Timer
 import tensorflow as tf
@@ -161,8 +161,7 @@ if __name__ == '__main__':
             for line in f.readlines():
                 im_names.append(line.split('\n')[0])
     else:
-        print('Error: ./run.sh must contain either --indir/--list')
-        return
+        raise IOError('Error: ./run.sh must contain either --indir/--list')
 
     xminarr=[]
     yminarr=[]

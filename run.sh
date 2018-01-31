@@ -10,7 +10,6 @@ fi
 eval set -- "${TEMP}"
 
 GPU_ID=0
-GPU_NUM=1
 BATCH_SIZE=1
 INPUT_PATH=""
 OUTPUT_PATH="examples/results/"
@@ -44,13 +43,13 @@ done
 
 # Get number of gpu numbers
 IFS=',' read -ra ARRAY <<< "$GPU_ID"
-GPU_NUM = ${#array[@]}
+GPU_NUM=${#ARRAY[@]}
 
-echo "convert video to images..."
-
-if [ -n $VIDEO_FILE ]; then
+echo ${#VIDEO_FILE}
+if [ -n "$VIDEO_FILE" ]; then
+    echo "convert video to images..."
     INPUT_PATH=${WORK_PATH}/video-tmp
-    if ! [ -e $INPUT_PATH ]; then
+    if ! [ -e "$INPUT_PATH" ]; then
         mkdir $INPUT_PATH
     fi
     ffmpeg -hide_banner -nostats -loglevel 0 -i ${VIDEO_FILE} -r 10 -f image2 ${INPUT_PATH}"/%05d.jpg"
@@ -73,14 +72,14 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python demo-alpha-pose.py --inputlist=${LIST_FILE
 echo 'pose estimation with RMPE...'
 
 cd ${WORK_PATH}"/predict"
-if ${MODE} == "accurate" ; then
+if ${MODE} = "accurate" ; then
     CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose-4crop.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
 else
     CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
 fi
 
 cd ${WORK_PATH}"/predict/json"
-if ${DATASET} == "COCO" ; then
+if ${DATASET} = "COCO" ; then
     python parametric-pose-nms-COCO.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
 else
     python parametric-pose-nms-MPII.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
