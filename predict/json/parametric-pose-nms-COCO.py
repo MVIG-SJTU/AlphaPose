@@ -136,7 +136,7 @@ def test_parametric_pose_NMS_json(delta1,delta2,mu,gamma,outputpath):
     NMS_preds = open("pred.txt",'w')
     NMS_scores = open("scores.txt",'w')
     proposal_scores = open("scores-proposals.txt",'w')
-    NMS_index = open("test.txt",'w')
+    NMS_index = open("index.txt",'w')
     num_human = 0
     
     #loop through every image

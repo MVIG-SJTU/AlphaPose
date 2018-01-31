@@ -13,7 +13,7 @@ GPU_ID=0
 GPU_NUM=1
 BATCH_SIZE=1
 INPUT_PATH=""
-OUTPUT_PATH=""
+OUTPUT_PATH="examples/results/"
 VIDEO_FILE=""
 LIST_FILE=""
 
@@ -21,6 +21,7 @@ WORK_PATH=$(dirname $(readlink -f $0))
 MODE=""
 VIS=false
 SEP=false 
+DATASET="COCO"
 FORMAT="default"
 
 while true ; do
@@ -31,10 +32,11 @@ while true ; do
                 -l|--list) LIST_FILE=${WORK_PATH}/$2 ; shift 2;;
                 -i|--indir) INPUT_PATH=${WORK_PATH}/$2 ; shift 2;;
                 -o|--outdir) OUTPUT_PATH=${WORK_PATH}/$2 ; shift 2;;
-                -f|--mode) MODE=$2 ; shift ;;
-                -d|--vis) VIS=true ; shift ;;
+                -m|--mode) MODE=$2 ; shift ;;
+                -r|--vis) VIS=true ; shift ;;
                 -s|--seperate-json) SEP=true; shift ;;
-                -m|--format) FORMAT=$2 ; shift 2;;
+                -d|--dataset) DATASET=$2 ; shift 2;;
+                -f|--format) FORMAT=$2 ; shift 2;;
                 --) shift ; break ;;
                 *) echo "Internal error!" ; exit 1 ;;
         esac
@@ -71,15 +73,18 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python demo-alpha-pose.py --inputlist=${LIST_FILE
 echo 'pose estimation with RMPE...'
 
 cd ${WORK_PATH}"/predict"
-if $MODE == "accurate" ; then
-    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose-4crop.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE}
+if ${MODE} == "accurate" ; then
+    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose-4crop.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
 else
-    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE}
+    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
 fi
 
 cd ${WORK_PATH}"/predict/json"
-python parametric-pose-nms.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
-
+if ${DATASET} == "COCO" ; then
+    python parametric-pose-nms-COCO.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
+else
+    python parametric-pose-nms-MPII.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
+fi
 
 if $VIS; then
     echo 'visualization...'
