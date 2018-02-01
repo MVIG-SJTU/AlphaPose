@@ -26,11 +26,12 @@ function string:split( inSplitPattern, outResults )
   return outResults
 end
 
+
 function loadAnnotations(set)
     -- Load up a set of annotations for either: 'train', 'valid', or 'test'
     -- There is no part information in 'test'
 
-    local a = hdf5.open(set .. '.h5')
+    local a = hdf5.open(set .. '/test-bbox.h5')
     annot = {}
 
     -- Read in annotation information from hdf5 file
@@ -43,7 +44,7 @@ function loadAnnotations(set)
     -- (workaround for not being able to read the strings in the hdf5 file)
     annot.images = {}
     local toIdxs = {}
-    local namesFile = io.open('annot/' .. set .. '_images.txt')
+    local namesFile = io.open(set .. '/test-images.txt')
     local idx = 1
     for line in namesFile:lines() do
         annot.images[idx] = line
@@ -57,7 +58,7 @@ function loadAnnotations(set)
     -- (workaround for not being able to read the strings in the hdf5 file)
     annot.index = {}
     annot.index_num = {}
-    local indexFile = io.open('annot/' .. set:split('/')[1] .. '/index.txt')
+    local indexFile = io.open(set .. '/index.txt')
     local idx = 0
     for line in indexFile:lines() do
         idx = idx + 1
@@ -71,7 +72,7 @@ function loadAnnotations(set)
     -- Load in score file names
     -- (workaround for not being able to read the strings in the hdf5 file)
     annot.scores = {}
-    local namesFile = io.open('annot/' .. set:split('/')[1] .. '/score-proposals.txt')
+    local namesFile = io.open(set .. '/score-proposals.txt')
     local idx = 0
     for line in namesFile:lines() do
         idx = idx + 1
@@ -84,6 +85,7 @@ function loadAnnotations(set)
 
     return annot
 end
+
 
 function getPreds(hms, pt1, pt2, inpH, inpW, resH, resW)
 
