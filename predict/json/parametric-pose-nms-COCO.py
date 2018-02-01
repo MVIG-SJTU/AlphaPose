@@ -18,7 +18,6 @@ def write_nms_json(outputpath, sep, form):
     os.chdir(os.path.join(outputpath,'POSE'))
     pred_file=[line.rstrip('\n').rstrip(' ') for line in open("pred.txt")]
     score_file=[line.rstrip('\n').rstrip(' ') for line in open("scores.txt")]
-    imgName_file = [line.rstrip('\n').rstrip(' ') for line in open("test-images.txt")]
     proposal_scores = np.loadtxt("scores-proposals.txt")
      
     results = []
@@ -28,14 +27,14 @@ def write_nms_json(outputpath, sep, form):
         ymin = 2000
         xmax = 0
         ymax = 0
-        result = {}
-        result['image_id'] = imgName_file[i]
-        result['category_id'] = 1;
         keypoints = []
         score = []
         score2 = []
         pred_coordi = pred_file[i].split('\t')
         pred_score = score_file[i].split('\t')
+        result = {}
+        result['image_id'] = pred_coordi[0]
+        result['category_id'] = 1;
         for n in xrange(17):
             keypoints.append(int(pred_coordi[2*n+1])); 
             keypoints.append(int(pred_coordi[2*n+2]));
@@ -70,7 +69,7 @@ def write_nms_json(outputpath, sep, form):
     if form == 'default':    
         with open("alpha-pose-results.json",'w') as json_file:
             json_file.write(json.dumps(results))
-        if sep:
+        if sep == 'true':
             if not os.path.exists('sep-json'):
                 os.mkdir('sep-json')
             result2={}
@@ -79,7 +78,7 @@ def write_nms_json(outputpath, sep, form):
                     result2[item['image_id']]=[]
                 result2[item['image_id']].append(item)
             for name in result2.keys():
-                with open('sep-json/'+"%s"%name.split('.')[0]+'.json','w') as json_file:
+                with open('sep-json/'+("%s"%name.split('.')[0]+'.json').split('/')[-1],'w') as json_file:
                     json_file.write(json.dumps(result2[name]))
     elif form == 'cmu': # the form of CMU-Pose/OpenPose
         result3={}
@@ -100,11 +99,11 @@ def write_nms_json(outputpath, sep, form):
             result3[item['image_id']]['bodies'].append(tmp)
         with open("alpha-pose-results.json",'w') as json_file:
             json_file.write(json.dumps(result3))
-        if sep:   
+        if sep == 'true':   
             if not os.path.exists('sep-json'):
                 os.mkdir('sep-json')
             for name in result3.keys():
-                with open('sep-json/'+"%s"%name.split('.')[0]+'.json','w') as json_file:
+                with open('sep-json/'+("%s"%name.split('.')[0]+'.json').split('/')[-1],'w') as json_file:
                     json_file.write(json.dumps(result3[name]))
     else:
         print("format must be either 'coco' or 'cmu'")
@@ -271,7 +270,7 @@ def PCK_match(pick_preds, all_preds,ref_dist):
     return num_match_keypoints, face_match_keypoints
 
 def get_result_json(args):
-    delta1 = 1; mu = 1.7; delta2 = 2.65;
+    delta1 = 0.01; mu = 1.7; delta2 = 2.65;
     gamma = 22.48;
     test_parametric_pose_NMS_json(delta1, delta2, mu, gamma,args.outputpath)
     write_nms_json(args.outputpath, args.sep, args.format)

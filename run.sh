@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEMP=`getopt -o gvliocm:fcds --long gpu:,video:,list:,indir:,outdir:,format:,mode,vis,seperate-json,cmujsonformat -n 'wrong args...' -- "$@"`
+TEMP=`getopt -o gvliocm:fcds --long gpu:,video:,list:,indir:,outdir:,format:,mode:,dataset:,vis,sep -n 'wrong args...' -- "$@"`
 
 if [ $? != 0 ] ; then 
     echo "Terminating..." 
@@ -11,13 +11,13 @@ eval set -- "${TEMP}"
 
 GPU_ID=0
 BATCH_SIZE=1
-INPUT_PATH=""
+INPUT_PATH="/"
 OUTPUT_PATH="examples/results/"
 VIDEO_FILE=""
 LIST_FILE=""
 
 WORK_PATH=$(dirname $(readlink -f $0))
-MODE=""
+MODE="normal"
 VIS=false
 SEP=false 
 DATASET="COCO"
@@ -33,7 +33,7 @@ while true ; do
                 -o|--outdir) OUTPUT_PATH=${WORK_PATH}/$2 ; shift 2;;
                 -m|--mode) MODE=$2 ; shift ;;
                 -r|--vis) VIS=true ; shift ;;
-                -s|--seperate-json) SEP=true; shift ;;
+                -q|--sep) SEP=true ; shift ;;
                 -d|--dataset) DATASET=$2 ; shift 2;;
                 -f|--format) FORMAT=$2 ; shift 2;;
                 --) shift ; break ;;

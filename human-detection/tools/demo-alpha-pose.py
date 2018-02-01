@@ -96,7 +96,7 @@ def parse_args():
                         choices=DATASETS.keys(), default='coco')
     parser.add_argument('--inputpath', dest='inputpath', help='image-directory', default="")
     parser.add_argument('--inputlist', dest='inputlist', help='image-list', default="")
-    parser.add_argument('--mode', dest='mode',help='detection mode, fast/normal/accurate', default=False)
+    parser.add_argument('--mode', dest='mode',help='detection mode, fast/normal/accurate', default="normal")
     parser.add_argument('--outputpath', dest='outputpath',help='output-directory', default="")
     args = parser.parse_args()
 
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     im_names = []
     print(inputpath)
     print(inputlist)
-    if len(inputpath):
+    if len(inputpath) and inputpath != '/':
         for root,dirs,files in os.walk(inputpath):
             im_names=files
     elif len(inputlist):

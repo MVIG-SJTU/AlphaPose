@@ -23,7 +23,7 @@ def display_pose(intputpath, outputpath, imgname):
     fig = plt.figure(figsize=(width/10,height/10),dpi=10)
     plt.imshow(img)
     for pid in range(len(rmpe_results[imgname])):
-        pose = np.array(rmpe_results[imgname][pid]['keypoints']).reshape(-1,3)[:,:2]
+        pose = np.array(rmpe_results[imgname][pid]['keypoints']).reshape(-1,3)[:,:3]
         if pose.shape[0] == 16:
             mpii_part_names = ['RAnkle','RKnee','RHip','LHip','LKnee','LAnkle','Pelv','Thrx','Neck','Head','RWrist','RElbow','RShoulder','LShoulder','LElbow','LWrist']
             colors = ['g', 'g', 'g', 'g', 'g', 'g', 'm', 'm', 'r', 'r', 'y', 'y', 'y', 'y','y','y']
@@ -32,8 +32,8 @@ def display_pose(intputpath, outputpath, imgname):
             for idx_c, color in enumerate(colors):
                 plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=50)
             for idx in range(len(colors_skeleton)):
-                plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height),
-                        color=colors_skeleton[idx],linewidth=30*pose[pairs[idx],2],  'r-', alpha=0.8*pose[pairs[idx],2])
+                plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height), 'r-',
+                        color=colors_skeleton[idx],linewidth=30*np.mean(pose[pairs[idx],2]),  alpha=0.8*np.mean(pose[pairs[idx],2]))
         elif pose.shape[0] == 17:
             coco_part_names = ['Nose','LEye','REye','LEar','REar','LShoulder','RShoulder','LElbow','RElbow','LWrist','RWrist','LHip','RHip','LKnee','RKnee','LAnkle','RAnkle']
             colors = ['r', 'r', 'r', 'r', 'r', 'y', 'y', 'y', 'y', 'y', 'y', 'g', 'g', 'g','g','g','g']
@@ -42,8 +42,8 @@ def display_pose(intputpath, outputpath, imgname):
             for idx_c, color in enumerate(colors):
                 plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=50)
             for idx in range(len(colors_skeleton)):
-                plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height),
-                         color=colors_skeleton[idx],linewidth=30*pose[pairs[idx],2],  'r-', alpha=0.8*pose[pairs[idx],2])
+                plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height),'r-',
+                         color=colors_skeleton[idx],linewidth=30*np.mean(pose[pairs[idx],2]), alpha=0.8*np.mean(pose[pairs[idx],2]))
 
     plt.axis('off')
     ax = plt.gca()
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     args = parse_args()
     outputpath = args.outputpath
     inputpath = args.inputpath
-    jsonpath = os.path.join(args.outputpath,"/POSE/alpha-pose-results-forvis.json")
+    jsonpath = os.path.join(args.outputpath,"POSE/alpha-pose-results-forvis.json")
     
     with open(jsonpath) as f:
         rmpe_results = json.load(f)

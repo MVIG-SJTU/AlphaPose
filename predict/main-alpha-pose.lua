@@ -89,7 +89,7 @@ local function loop(startIndex,endIndex,k)
     end
 
 
-    local m = torch.load('models/model_6.t7')  -- 6 is 71.9mAP 8:71.8
+    local m = torch.load('models/final_model.t7')  -- 6 is 71.9mAP 8:71.8
 
     for i = startIndex,endIndex do
         -- Set up input image
@@ -121,10 +121,10 @@ local function loop(startIndex,endIndex,k)
         else
           scaleRate = 0.3
         end
-        pt1[1] = math.max(1,(pt1[1] - width*scaleRate/2)[1])
-        pt1[2] = math.max(1,(pt1[2] - ht*scaleRate/2)[1])
-        pt2[1] = math.max(math.min(imgwidth+1,(pt2[1] + width*scaleRate/2)[1]),pt1[1]+5)
-        pt2[2] = math.max(math.min(imght+1,(pt2[2] + ht*scaleRate/2),pt1[2]+5))
+        pt1[1] = math.max(1,(pt1[1] - width*scaleRate/2))
+        pt1[2] = math.max(1,(pt1[2] - ht*scaleRate/2))
+        pt2[1] = math.max(math.min(imgwidth+1,(pt2[1] + width*scaleRate/2)),pt1[1]+5)
+        pt2[2] = math.max(math.min(imght+1,(pt2[2] + ht*scaleRate/2)),pt1[2]+5)
         local inputResH = 320
         local inputResW = 256
         local outResH = 80
@@ -145,9 +145,9 @@ local function loop(startIndex,endIndex,k)
         local flippedOut = m:forward(flip(inp:view(1,3,inputResH,inputResW):cuda()))
         for i=1,8 do
             if out_format == 'COCO' then
-                out[i] = out[i]:narrow(2,1,17):clone()
+                flippedOut[i] = flippedOut[i]:narrow(2,1,17):clone()
             elseif out_format == 'MPII' then
-                out[i] = out[i]:narrow(2,18,16):clone()
+                flippedOut[i] = flippedOut[i]:narrow(2,18,16):clone()
             end
         end
         flippedOut = applyFn(function (x) return flip(shuffleLR(x)) end, flippedOut)
@@ -211,7 +211,7 @@ pools:terminate()
 print("----------Finished----------")
 -- Save predictions
 if arg[1] == 'predict' then
-    local predFile = hdf5.open(arg[4]..'/POSE/test-pose.h5', 'w')
+    local predFile = hdf5.open(arg[3]..'/POSE/test-pose.h5', 'w')
     predFile:write('preds', preds)
     predFile:write('scores',scores)
     predFile:close()
