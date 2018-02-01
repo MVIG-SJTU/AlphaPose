@@ -1,4 +1,5 @@
 human-detection/output
+examples/results
 *.so
 *.pyc
 
