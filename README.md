@@ -65,12 +65,12 @@ Results on MPII full test set:
   ```
 
 ## Quick Start
-- **Demo**:  Run AlphaPose for all images in a folder and display the results with:
+- **Demo**:  Run AlphaPose for all images in a folder and visualize the results with:
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --vis
 ```
 
-To easily process images/video and display/save the results, please see [doc/run.md](doc/run.md).
+The visualized results will be stored in examples/results/RENDER. To easily process images/video and display/save the results, please see [doc/run.md](doc/run.md).
 
 ## Output
 Output (format, keypoint index ordering, etc.) in [doc/output.md](doc/output.md).

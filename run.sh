@@ -80,7 +80,7 @@ fi
 
 cd ${WORK_PATH}"/predict/json"
 if [ "$DATASET" = "COCO" ]; then
-    python parametric-pose-nms-COCO.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
+    python parametric-pose-nms-COCO.py --outputpath ${OUTPUT_PATH} --sep ${SEP} --format ${FORMAT}
 else
     python parametric-pose-nms-MPII.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
 fi
@@ -93,7 +93,7 @@ if $VIS; then
     python json-video.py --outputpath ${OUTPUT_PATH} --inputpath ${INPUT_PATH}
     if [ -n "$VIDEO_FILE" ]; then
         echo 'rendering video...'
-        ffmpeg -f image2 -r 10 -i ${OUTPUT_PATH}"/RENDER/%05d.png" ${OUTPUT_PATH}"/result_MS.mp4"
+        ffmpeg -r 25 -i ${OUTPUT_PATH}"/RENDER/%05d.jpg" -vcodec libx264 -y -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" ${OUTPUT_PATH}"/result_MS.mp4"
     fi
 fi
 

@@ -279,8 +279,8 @@ def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='NMS')
     parser.add_argument('--outputpath',dest='outputpath',help='output-directory')
-    parser.add_argument('--seperate-json',dest='sep',help='seperate-json')
-    parser.add_argument('--jsonformat',dest='format', help='json format, including: RMPE,CMU-Pose, normal', default='default')
+    parser.add_argument('--sep',dest='sep',help='seperate-json')
+    parser.add_argument('--format',dest='format', help='json format, including: default and cmu', default='default')
     args = parser.parse_args()
     return args
                                   
