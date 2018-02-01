@@ -10,18 +10,20 @@ paths.dofile('img.lua')
 
 cutorch.setDevice(1)
 local a,preds,scores,nsamples,idxs,prog
-local out_format = 'COCO' -- 'COCO' or 'MPII'
 
 if #arg ~= 6 then
-    print("Usage: th main-alpha-pose.lua ${MODE} ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE}, current args number is "..tostring(#arg))
+    print("Usage: th main-alpha-pose.lua ${MODE} ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET}, current args number is "..tostring(#arg))
     print("    MODE: demo or predict, demo: display result for each person, predict: generate predicitions")
     print("    INPUT_PATH: the folder of the input images")
     print("    OUTPUT_PATH - the bbox is stored at OUTPUT_PATH/BBOX/ and the pose will be stored to OUTPUT_PATH/POSE/")
     print("    GPU_NUM: the number of the gpus")
     print("    BATCH_SIZE: batch size")
+    print("    DATASET: dataset format to use, 'COCO' or 'MPII'")
     return
 end
 
+local out_format = arg[6] -- 'COCO' or 'MPII'
+print(out_format)
 a = loadAnnotations(arg[3]..'/BBOX')
 idxs = torch.range(1,a.nsamples)
 nsamples = idxs:nElement() 

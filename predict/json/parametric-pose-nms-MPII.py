@@ -9,25 +9,25 @@ import json
 import numpy as np
 import h5py
 import os
+import argparse
 
 def write_nms_json(outputpath, sep, form):
     os.chdir(os.path.join(outputpath,'POSE'))
     pred_file=[line.rstrip('\n').rstrip(' ') for line in open("pred.txt")]
     score_file=[line.rstrip('\n').rstrip(' ') for line in open("scores.txt")]
-    imgName_file = [line.rstrip('\n').rstrip(' ') for line in open("test-images.txt")]
     proposal_scores = np.loadtxt("scores-proposals.txt")
      
     results = []
     bbox_cnt = 0
     for i in xrange(len(pred_file)):
-        result = {}
-        result['image_id'] = imgName_file[i]
-        result['category_id'] = 1;
         keypoints = []
         score = []
         score2 = []
         pred_coordi = pred_file[i].split('\t')
         pred_score = score_file[i].split('\t')
+        result = {}
+        result['image_id'] = pred_coordi[0]
+        result['category_id'] = 1;
         for n in xrange(16):
             keypoints.append(int(pred_coordi[2*n+1])); 
             keypoints.append(int(pred_coordi[2*n+2]));
@@ -56,7 +56,7 @@ def write_nms_json(outputpath, sep, form):
     if form == 'default':    
         with open("alpha-pose-results.json",'w') as json_file:
             json_file.write(json.dumps(results))
-        if sep:
+        if sep == 'true':
             if not os.path.exists('sep-json'):
                 os.mkdir('sep-json')
             result2={}
@@ -65,7 +65,7 @@ def write_nms_json(outputpath, sep, form):
                     result2[item['image_id']]=[]
                 result2[item['image_id']].append(item)
             for name in result2.keys():
-                with open('sep-json/'+"%s"%name.split('.')[0]+'.json','w') as json_file:
+                with open('sep-json/'+("%s"%name.split('.')[0]+'.json').split('/')[-1],'w') as json_file:
                     json_file.write(json.dumps(result2[name]))
     elif form == 'cmu': # the form of CMU-Pose/OpenPose
         result3={}
@@ -83,16 +83,16 @@ def write_nms_json(outputpath, sep, form):
             result3[item['image_id']]['bodies'].append(tmp)
         with open("alpha-pose-results.json",'w') as json_file:
             json_file.write(json.dumps(result3))
-        if sep:   
+        if sep == 'true':   
             if not os.path.exists('sep-json'):
                 os.mkdir('sep-json')
             for name in result3.keys():
-                with open('sep-json/'+"%s"%name.split('.')[0]+'.json','w') as json_file:
+                with open('sep-json/'+("%s"%name.split('.')[0]+'.json').split('/')[-1],'w') as json_file:
                     json_file.write(json.dumps(result3[name]))
     else:
         print("format must be either 'coco' or 'cmu'")
 
-def test_parametric_pose_NMS_json(delta1,delta2,mu,gamma,phase):
+def test_parametric_pose_NMS_json(delta1,delta2,mu,gamma,outputpath):
     scoreThreds = 0.3
 
     #prepare data
@@ -247,8 +247,8 @@ def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='NMS')
     parser.add_argument('--outputpath',dest='outputpath',help='output-directory')
-    parser.add_argument('--seperate-json',dest='sep',help='seperate-json')
-    parser.add_argument('--jsonformat',dest='format', help='json format, options are default or cmu', default='default')
+    parser.add_argument('--sep',dest='sep',help='seperate-json')
+    parser.add_argument('--format',dest='format', help='json format, options are default or cmu', default='default')
     args = parser.parse_args()
     return args
                                   

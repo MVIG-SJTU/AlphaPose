@@ -1,8 +1,8 @@
-## Alpha Pose
-Alpha Pose is a very accurate multi-person pose estimation system. It is the first open-sourced system that can achieve 70+ mAP (73.2 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset
+## AlphaPose
+Alpha Pose is a accurate multi-person pose estimation system. It is the first open-sourced system that can achieve 70+ mAP (73.2 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset
 
 ## Contents
-1. [Alpha Pose](#alpha-pose)
+1. [AlphaPose](#alphapose)
 2. [Results](#results)
 3. [Installation](#installation)
 4. [Quick Start](#quick-start)
@@ -75,17 +75,27 @@ The visualized results will be stored in examples/results/RENDER. To easily proc
 ## Output
 Output (format, keypoint index ordering, etc.) in [doc/output.md](doc/output.md).
 
-
-
-## Speeding Up Alpha Pose
-
+## Speeding Up AlphaPose
+If you have multiple gpus on your machine or have large gpu memories, you can speed up the pose estimation by using multi-gpu testing or large batch tesing with:
+```
+./run.sh --indir examples/demo/ --outdir examples/results/ --gpu 0,1,2,3 --batch 5
+```
+It assumes that you have 4 gpu cards on your machine and *each card* can run a batch of 5 images.
 
 ## Contributors
-
+The main contributors are listed in [doc/contributors.md](doc/contributors.md).
 
 ## Citation
+Please cite these papers in your publications if it helps your research:
+
+    @inproceedings{fang2017rmpe,
+      title={{RMPE}: Regional Multi-person Pose Estimation},
+      author={Fang, Hao-Shu and Xie, Shuqin and Tai, Yu-Wing and Lu, Cewu},
+      booktitle={ICCV},
+      year={2017}
+    }
 
 
 
 ## License
-AlphaPose is freely available for free non-commercial use, and may be redistributed under these conditions. 
+AlphaPose is freely available for free non-commercial use, and may be redistributed under these conditions. For commercial queries, contact [Cewu Lu](http://mvig.sjtu.edu.cn/)

@@ -74,7 +74,7 @@ AlphaPose - Output format
 ```
 
 ### Keypoint Ordering
-If the `--format` flag is not set to 'cmu', the default keypoint order is
+The default keypoint order is
 ```
 // Result for COCO (17 body parts)
     {0,  "Nose"},

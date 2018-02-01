@@ -20,7 +20,7 @@ WORK_PATH=$(dirname $(readlink -f $0))
 MODE="normal"
 VIS=false
 SEP=false 
-DATASET="COCO"
+DATASET="MPII"
 FORMAT="default"
 
 while true ; do
@@ -82,7 +82,7 @@ cd ${WORK_PATH}"/predict/json"
 if [ "$DATASET" = "COCO" ]; then
     python parametric-pose-nms-COCO.py --outputpath ${OUTPUT_PATH} --sep ${SEP} --format ${FORMAT}
 else
-    python parametric-pose-nms-MPII.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
+    python parametric-pose-nms-MPII.py --outputpath ${OUTPUT_PATH} --sep ${SEP} --format ${FORMAT}
 fi
 
 if $VIS; then
