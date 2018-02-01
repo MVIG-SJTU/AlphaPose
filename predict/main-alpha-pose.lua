@@ -11,8 +11,8 @@ paths.dofile('img.lua')
 cutorch.setDevice(1)
 local a,preds,scores,nsamples,idxs,prog
 
-if #arg ~= 6 then
-    print("Usage: th main-alpha-pose.lua ${MODE} ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET}, current args number is "..tostring(#arg))
+if #argv ~= 6 then
+    print("Usage: th main-alpha-pose.lua ${MODE} ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET}, current argvs number is "..tostring(#argv))
     print("    MODE: demo or predict, demo: display result for each person, predict: generate predicitions")
     print("    INPUT_PATH: the folder of the input images")
     print("    OUTPUT_PATH - the bbox is stored at OUTPUT_PATH/BBOX/ and the pose will be stored to OUTPUT_PATH/POSE/")
@@ -22,12 +22,12 @@ if #arg ~= 6 then
     return
 end
 
-local out_format = arg[6] -- 'COCO' or 'MPII'
+local out_format = argv[6] -- 'COCO' or 'MPII'
 print(out_format)
-a = loadAnnotations(arg[3]..'/BBOX')
+a = loadAnnotations(argv[3]..'/BBOX')
 idxs = torch.range(1,a.nsamples)
 nsamples = idxs:nElement() 
-
+local shuffleLR
 if out_format == 'COCO' then
     preds = torch.Tensor(nsamples,17,2)
     scores = torch.Tensor(nsamples,17,1)
@@ -52,8 +52,8 @@ function init(idx)
 end
 
 
-local divNum = tonumber(arg[4])
-local batchSize = tonumber(arg[5])
+local divNum = tonumber(argv[4])
+local batchSize = tonumber(argv[5])
 prog = torch.zeros(divNum)
 --------------------------------------------------------------------------------
 -- Main loop
@@ -96,11 +96,11 @@ local function loop(startIndex,endIndex,k)
     for i = startIndex,endIndex do
         -- Set up input image
         local im
-        if string.sub(arg[2],-1) ~= '/' then
-                arg[2] = arg[2]..'/'
+        if string.sub(argv[2],-1) ~= '/' then
+                argv[2] = argv[2]..'/'
         end
 
-        im = image.load(arg[2] .. a['images'][idxs[i]],3)
+        im = image.load(argv[2] .. a['images'][idxs[i]],3)
         --sub mean
         im[1]:add(-0.406)
         im[2]:add(-0.457)
@@ -212,11 +212,11 @@ pools:synchronize()
 pools:terminate()
 print("----------Finished----------")
 -- Save predictions
-if arg[1] == 'predict' then
-    local predFile = hdf5.open(arg[3]..'/POSE/test-pose.h5', 'w')
+if argv[1] == 'predict' then
+    local predFile = hdf5.open(argv[3]..'/POSE/test-pose.h5', 'w')
     predFile:write('preds', preds)
     predFile:write('scores',scores)
     predFile:close()
-elseif arg[1] == 'demo' then
+elseif argv[1] == 'demo' then
     w.window:close()
 end

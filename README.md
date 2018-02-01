@@ -76,11 +76,13 @@ The visualized results will be stored in examples/results/RENDER. To easily proc
 Output (format, keypoint index ordering, etc.) in [doc/output.md](doc/output.md).
 
 ## Speeding Up AlphaPose
-If you have multiple gpus on your machine or have large gpu memories, you can speed up the pose estimation by using multi-gpu testing or large batch tesing with:
+We provide a `fast` mode for human-detection that disables multi-scale tesing. You can turn it on by adding `--mode fast`.
+
+And if you have multiple gpus on your machine or have large gpu memories, you can speed up the pose estimation step by using multi-gpu testing or large batch tesing with:
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --gpu 0,1,2,3 --batch 5
 ```
-It assumes that you have 4 gpu cards on your machine and *each card* can run a batch of 5 images.
+It assumes that you have 4 gpu cards on your machine and *each card* can run a batch of 5 images. See [doc/run.md](doc/run.md) for more details.
 
 ## Contributors
 The main contributors are listed in [doc/contributors.md](doc/contributors.md).

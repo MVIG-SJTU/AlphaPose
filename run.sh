@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEMP=`getopt -o gvliocm:fcds --long gpu:,video:,list:,indir:,outdir:,format:,mode:,dataset:,vis,sep -n 'wrong args...' -- "$@"`
+TEMP=`getopt -o gvliocm:fcds --long gpu:,batch:,video:,list:,indir:,outdir:,format:,mode:,dataset:,vis,sep -n 'wrong args...' -- "$@"`
 
 if [ $? != 0 ] ; then 
     echo "Terminating..." 
@@ -31,7 +31,7 @@ while true ; do
                 -l|--list) LIST_FILE=${WORK_PATH}/$2 ; shift 2;;
                 -i|--indir) INPUT_PATH=${WORK_PATH}/$2 ; shift 2;;
                 -o|--outdir) OUTPUT_PATH=${WORK_PATH}/$2 ; shift 2;;
-                -m|--mode) MODE=$2 ; shift ;;
+                -m|--mode) MODE=$2 ; shift 2;;
                 -r|--vis) VIS=true ; shift ;;
                 -q|--sep) SEP=true ; shift ;;
                 -d|--dataset) DATASET=$2 ; shift 2;;
