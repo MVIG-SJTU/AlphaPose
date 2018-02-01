@@ -38,6 +38,9 @@ Results on MPII full test set:
 </center>
 
 ### Pose Estimation
+<p align="center">
+    <img src="doc/pose.gif", width="360">
+</p>
 
 ### Pose Tracking
 
