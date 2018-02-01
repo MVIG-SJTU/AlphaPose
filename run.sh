@@ -62,7 +62,7 @@ fi
 echo 'generating bbox from Faster RCNN...'
 
 cd ${WORK_PATH}"/human-detection/tools"
-CUDA_VISIBLE_DEVICES=${GPU_ID} python demo-alpha-pose.py --inputlist=${LIST_FILE} --inputpath=${INPUT_PATH} --outputpath=${OUTPUT_PATH} --mode=${MODE} --video=${VIDEO_FILE}
+CUDA_VISIBLE_DEVICES=${GPU_ID} python demo-alpha-pose.py --inputlist=${LIST_FILE} --inputpath=${INPUT_PATH} --outputpath=${OUTPUT_PATH} --mode=${MODE}
 
 # echo $INPUT_PATH
 # echo $OUTPUT_PATH
@@ -72,14 +72,14 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python demo-alpha-pose.py --inputlist=${LIST_FILE
 echo 'pose estimation with RMPE...'
 
 cd ${WORK_PATH}"/predict"
-if ${MODE} = "accurate" ; then
-    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose-4crop.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
+if [ "$MODE" = "accurate" ]; then
+    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose-4crop.lua predict ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
 else
-    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose.lua valid ${INPUT_PATH} ${OUTPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
+    CUDA_VISIBLE_DEVICES=${GPU_ID} th main-alpha-pose.lua predict ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} 
 fi
 
 cd ${WORK_PATH}"/predict/json"
-if ${DATASET} = "COCO" ; then
+if [ "$DATASET" = "COCO" ]; then
     python parametric-pose-nms-COCO.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
 else
     python parametric-pose-nms-MPII.py --outputpath ${OUTPUT_PATH} --seperate-json ${SEP} --jsonformat ${FORMAT}
@@ -91,7 +91,7 @@ if $VIS; then
         mkdir ${OUTPUT_PATH}"/RENDER"
     fi
     python json-video.py --outputpath ${OUTPUT_PATH} --inputpath ${INPUT_PATH}
-    if [ -n $VIDEO_FILE ]; then
+    if [ -n "$VIDEO_FILE" ]; then
         echo 'rendering video...'
         ffmpeg -f image2 -r 10 -i ${OUTPUT_PATH}"/RENDER/%05d.png" ${OUTPUT_PATH}"/result_MS.mp4"
     fi
@@ -99,7 +99,7 @@ fi
 
 # delete generated video frames
 cd ${WORK_PATH}
-if [ -n $VIDEO_FILE ]; then
+if [ -n "$VIDEO_FILE" ]; then
     INPUT_PATH=${WORK_PATH}/video-tmp
     rm -rf $INPUT_PATH
 fi

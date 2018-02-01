@@ -30,7 +30,7 @@ function loadAnnotations(set)
     -- Load up a set of annotations for either: 'train', 'valid', or 'test'
     -- There is no part information in 'test'
 
-    local a = hdf5.open('annot/' .. set .. '.h5')
+    local a = hdf5.open(set .. '.h5')
     annot = {}
 
     -- Read in annotation information from hdf5 file

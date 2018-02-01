@@ -9,8 +9,8 @@ from __future__ import division
 from __future__ import print_function
 
 from model.config import cfg
-from nms.gpu_nms import gpu_nms
-from nms.cpu_nms import cpu_nms
+from newnms.gpu_nms import gpu_nms
+from newnms.cpu_nms import cpu_nms
 
 def nms(dets, thresh, force_cpu=False):
   """Dispatch to either CPU or GPU NMS implementations."""

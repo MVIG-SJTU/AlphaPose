@@ -10,10 +10,10 @@ paths.dofile('img.lua')
 
 cutorch.setDevice(1)
 local a,preds,scores,nsamples,idxs,prog
-local out_format = 'COCO' `-- 'COCO' or 'MPII'
+local out_format = 'COCO' -- 'COCO' or 'MPII'
 
-if arg.size[0] != 5 then
-    print("Usage: th main-alpha-pose.lua ${MODE} ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE}")
+if #arg ~= 6 then
+    print("Usage: th main-alpha-pose.lua ${MODE} ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE}, current args number is "..tostring(#arg))
     print("    MODE: demo or predict, demo: display result for each person, predict: generate predicitions")
     print("    INPUT_PATH: the folder of the input images")
     print("    OUTPUT_PATH - the bbox is stored at OUTPUT_PATH/BBOX/ and the pose will be stored to OUTPUT_PATH/POSE/")
@@ -22,7 +22,7 @@ if arg.size[0] != 5 then
     return
 end
 
-a = loadAnnotations(arg[4]..'/BBOX')
+a = loadAnnotations(arg[3]..'/BBOX')
 idxs = torch.range(1,a.nsamples)
 nsamples = idxs:nElement() 
 
@@ -50,8 +50,8 @@ function init(idx)
 end
 
 
-local divNum = tonumber(arg[5])
-local batchSize = tonumber(arg[6])
+local divNum = tonumber(arg[4])
+local batchSize = tonumber(arg[5])
 prog = torch.zeros(divNum)
 --------------------------------------------------------------------------------
 -- Main loop
@@ -94,11 +94,11 @@ local function loop(startIndex,endIndex,k)
     for i = startIndex,endIndex do
         -- Set up input image
         local im
-        if string.sub(arg[3],-1) ~= '/' then
-                arg[3] = arg[3]..'/'
+        if string.sub(arg[2],-1) ~= '/' then
+                arg[2] = arg[2]..'/'
         end
 
-        im = image.load(arg[3] .. a['images'][idxs[i]],3)
+        im = image.load(arg[2] .. a['images'][idxs[i]],3)
         --sub mean
         im[1]:add(-0.406)
         im[2]:add(-0.457)
@@ -124,7 +124,7 @@ local function loop(startIndex,endIndex,k)
         pt1[1] = math.max(1,(pt1[1] - width*scaleRate/2)[1])
         pt1[2] = math.max(1,(pt1[2] - ht*scaleRate/2)[1])
         pt2[1] = math.max(math.min(imgwidth+1,(pt2[1] + width*scaleRate/2)[1]),pt1[1]+5)
-        pt2[2] = math.max(math.min(imght+1,(pt2[2] + ht*scaleRate/2),pt1[2]+5)
+        pt2[2] = math.max(math.min(imght+1,(pt2[2] + ht*scaleRate/2),pt1[2]+5))
         local inputResH = 320
         local inputResW = 256
         local outResH = 80
@@ -210,11 +210,11 @@ pools:synchronize()
 pools:terminate()
 print("----------Finished----------")
 -- Save predictions
-if arg[2] == 'predict' then
+if arg[1] == 'predict' then
     local predFile = hdf5.open(arg[4]..'/POSE/test-pose.h5', 'w')
     predFile:write('preds', preds)
     predFile:write('scores',scores)
     predFile:close()
-elseif arg[2] == 'demo' then
+elseif arg[1] == 'demo' then
     w.window:close()
 end
