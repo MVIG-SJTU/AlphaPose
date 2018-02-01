@@ -8,8 +8,8 @@ To run this code, the following must be installed:
 - cudnn
 - qlua (for displaying results)
 
-For displaying the demo images:
-`qlua main.lua demo`
-
 For generating predictions:
-`th main.lua predict-[valid or test]`
+`th main-alpha-pose.lua predict ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} `
+
+For displaying the demo images:
+`qlua main-alpha-pose.lua demo ${INPUT_PATH} ${OUTPUT_PATH} ${GPU_NUM} ${BATCH_SIZE} ${DATASET} `
