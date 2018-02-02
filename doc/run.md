@@ -24,7 +24,7 @@ We provide a script `run.sh` to ease your effort of running our code. Here, we f
 
 - `--vis`: If turned-on, it will visualize the results and save them as images. If the input is video, it will save the output as video (but without audio).
 - `--sep`: If turned on, it will save the json file for each image/frame of the input. Default is false.
-- `--dataset`: Follow the keypoints definition as COCO or MPII dataset. Default is 'COCO', Alternative option is 'MPII'.
+- `--dataset`: Follow the keypoints definition as COCO or MPII dataset. Default is 'MPII', Alternative option is 'COCO'.
 - `--format`: The format of the saved results. By default, it will save the output in COCO-like format. An alternative option is 'cmu', which save the results in the format of CMU-Pose. For more details, see [format.md](format.md)
 
 ## Examples
@@ -32,9 +32,9 @@ We provide a script `run.sh` to ease your effort of running our code. Here, we f
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --vis
 ```
-- ** Run AlphaPose for images on a list and save the results in MPII dataset's keypoints order**:
+- ** Run AlphaPose for images on a list and save the results in COCO dataset's keypoints order**:
 ```
-./run.sh --list examples/img-list.txt --outdir examples/results/ --dataset MPII
+./run.sh --list examples/img-list.txt --outdir examples/results/ --dataset COCO
 ```
 - ** Run AlphaPose for a video, save the results in CMU-Pose's format and display the results **:
 ```
@@ -44,7 +44,7 @@ We provide a script `run.sh` to ease your effort of running our code. Here, we f
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --mode fast --sep
 ```
-- ** Speed AlphaPose by using multi-gpu and larger batch size**:
+- ** Speed up AlphaPose by using multi-gpu and larger batch size**:
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --gpu 0,1,2,3 --batch 5
 ```

@@ -56,7 +56,7 @@ Results on MPII full test set:
   make
   cd ../../../
   ```
-2. Install [Torch](https://github.com/torch/distro) and [TensorFlow](https://www.tensorflow.org/install/)(verson >= 1.2).
+2. Install [Torch](https://github.com/torch/distro) and [TensorFlow](https://www.tensorflow.org/install/)(verson >= 1.2). After that, install related dependencies by:
   ```Shell
   chmod +x install.sh
   ./install.sh
