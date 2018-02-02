@@ -587,3 +587,39 @@ function loadInp(argv, a, idxs, i)
     local inp = cropBox(im, pt1:int(), pt2:int(), 0, inputResH, inputResW)
     return inp, pt1, pt2
 end
+
+function loadInp4crop(argv, a, idxs, i)
+    local im = image.load(argv[2] .. a['images'][idxs[i]],3)
+    --sub mean
+    im[1]:add(-0.406)
+    im[2]:add(-0.457)
+    im[3]:add(-0.480)
+    
+    local imght = im:size()[2]
+    local imgwidth = im:size()[3]
+    local pt1= torch.Tensor(2)
+    local pt2= torch.Tensor(2)
+    pt1[1] = a['xmin'][idxs[i]]
+    pt1[2] = a['ymin'][idxs[i]]
+    pt2[1] = a['xmax'][idxs[i]]
+    pt2[2] = a['ymax'][idxs[i]]
+    local ht = a['ymax'][idxs[i]]-a['ymin'][idxs[i]]
+    local width = a['xmax'][idxs[i]]-a['xmin'][idxs[i]]
+    local scaleRate
+    if width > 100 then
+        scaleRate = 0.2
+    else
+        scaleRate = 0.3
+    end
+    pt1[1] = math.max(1,(pt1[1] - width*scaleRate/2))
+    pt1[2] = math.max(1,(pt1[2] - ht*scaleRate/2))
+    pt2[1] = math.max(math.min(imgwidth+1,(pt2[1] + width*scaleRate/2)),pt1[1]+5)
+    pt2[2] = math.max(math.min(imght+1,(pt2[2] + ht*scaleRate/2)),pt1[2]+5)
+    local inputResH = 320
+    local inputResW = 256
+    local outResH = 80
+    local outResW = 64
+    --local inp = crop(im, center, scale, 0, inputRes)
+    local inp = cropBox(im, pt1:int(), pt2:int(), 0, inputResH, inputResW)
+    return inp, pt1, pt2
+end
