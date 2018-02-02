@@ -93,48 +93,28 @@ local function loop(startIndex,endIndex,k)
 
     local m = torch.load('models/final_model.t7')  -- 6 is 71.9mAP 8:71.8
 
-    for i = startIndex,endIndex do
+    for i = startIndex,endIndex,batchSize do
         -- Set up input image
-        local im
         if string.sub(argv[2],-1) ~= '/' then
                 argv[2] = argv[2]..'/'
         end
-
-        im = image.load(argv[2] .. a['images'][idxs[i]],3)
-        --sub mean
-        im[1]:add(-0.406)
-        im[2]:add(-0.457)
-        im[3]:add(-0.480)
-        
-        local imght = im:size()[2]
-        local imgwidth = im:size()[3]
-        local pt1= torch.Tensor(2)
-        local pt2= torch.Tensor(2)
-        pt1[1] = a['xmin'][idxs[i]]
-        pt1[2] = a['ymin'][idxs[i]]
-        pt2[1] = a['xmax'][idxs[i]]
-        pt2[2] = a['ymax'][idxs[i]]
-
-        local ht = a['ymax'][idxs[i]]-a['ymin'][idxs[i]]
-        local width = a['xmax'][idxs[i]]-a['xmin'][idxs[i]]
-        local scaleRate
-        if width > 100 then
-           scaleRate = 0.2
-        else
-          scaleRate = 0.3
-        end
-        pt1[1] = math.max(1,(pt1[1] - width*scaleRate/2))
-        pt1[2] = math.max(1,(pt1[2] - ht*scaleRate/2))
-        pt2[1] = math.max(math.min(imgwidth+1,(pt2[1] + width*scaleRate/2)),pt1[1]+5)
-        pt2[2] = math.max(math.min(imght+1,(pt2[2] + ht*scaleRate/2)),pt1[2]+5)
+        local minibat = batchSize - math.max(0, i+batchSize-endIndex-1)
         local inputResH = 320
         local inputResW = 256
         local outResH = 80
         local outResW = 64
         
-        local inp = cropBox(im, pt1:int(), pt2:int(), 0, inputResH, inputResW)
+        local inp = torch.zeros(minibat, 3, inputResH, inputResW)
+        local pt1 = torch.zeros(minibat, 2)
+        local pt2 = torch.zeros(minibat, 2)
+        for batId = 1,minibat do
+            local tmpInp, tmpPt1, tmpPt2 = loadInp(argv, a, idxs, i+batId-1)
+            inp[batId]:copy(tmpInp)
+            pt1[batId]:copy(tmpPt1)
+            pt2[batId]:copy(tmpPt2)
+        end
         -- Get network output
-        local out = m:forward(inp:view(1,3,inputResH,inputResW):cuda())
+        local out = m:forward(inp:cuda())
         out = applyFn(function (x) return x:clone() end, out)
         for i =1,8 do
             if out_format == 'COCO' then
@@ -144,7 +124,7 @@ local function loop(startIndex,endIndex,k)
             end
         end
         --flip
-        local flippedOut = m:forward(flip(inp:view(1,3,inputResH,inputResW):cuda()))
+        local flippedOut = m:forward(flip(inp:cuda()))
         for i=1,8 do
             if out_format == 'COCO' then
                 flippedOut[i] = flippedOut[i]:narrow(2,1,17):clone()
@@ -156,15 +136,15 @@ local function loop(startIndex,endIndex,k)
         out = applyFn(function (x,y) return x:add(y):div(2) end, out, flippedOut)
         
         cutorch.synchronize()
-
-        hm = out[8][1]:float()
+        --local preds_hm, preds_img, pred_scores
+        hm = out[8]:float()
         hm[hm:lt(0)] = 0
 
         -- Get predictions (hm and img refer to the coordinate space)
         local preds_hm, preds_img, pred_scores = getPreds(hm, pt1:int(), pt2:int(),inputResH,inputResW,outResH,outResW)
 
-        preds[i]:copy(preds_img)
-        scores[i]:copy(pred_scores)
+        preds[i]:narrow(1,i,minibat):copy(preds_img)
+        scores[i]:narrow(1,i,minibat):copy(pred_scores)
         
         prog[k] = i-startIndex+1
         printProgress(k,i-startIndex+1,endIndex-startIndex+1)
