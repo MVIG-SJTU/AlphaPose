@@ -37,13 +37,38 @@ Results on MPII full test set:
 
 </center>
 
+Results on PoseTrack Challenge validation set:
+
+1. Task2: Multi-Person Pose Estimation (mAP)
+<center>
+
+| Method | Head mAP | Shoulder mAP | Elbow mAP | Wrist mAP | Hip mAP | Knee mAP | Ankle mAP | Total mAP |
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|
+| Detect-and-Track(FAIR) | **67.5** | 70.2 | 62 | 51.7 | 60.7 | 58.7 | 49.8 | 60.6 |
+| **AlphaPose(+Tracking)** | 66.7 | **73.3** | **68.3** | **61.1** | **67.5** | **67.0** | **61.3** | **66.5** |
+
+</center>
+
+2. Task3: Pose Tracking (MOTA)
+<center>
+
+| Method | Head MOTA | Shoulder MOTA | Elbow MOTA | Wrist MOTA | Hip MOTA | Knee MOTA | Ankle MOTA | Total MOTA | Total MOTP| Rcll| Prcn|
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|
+| Detect-and-Track(FAIR) | **61.7** | 65.5 | 57.3 | 45.7 | 54.3 | 53.1 | 45.7 | 55.2 | 61.5 | **88.1** | 66.5 |
+| **AlphaPose(+Tracking)** | 59.8 | **67.0** | **59.8** | **51.6** | **60.0** | **58.4** | **50.5** | **58.3** | **67.8**| 87.0 | **70.3** |
+
+</center>
+
+
 ### Pose Estimation
 <p align="center">
     <img src="doc/pose.gif", width="360">
 </p>
 
 ### Pose Tracking
-
+<p align='center'>
+    <img src="doc/posetrack.gif", width="360">
+</p>
 
 ## Installation
 1. Get the code and build related modules.
