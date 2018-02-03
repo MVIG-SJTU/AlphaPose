@@ -6,7 +6,7 @@ We provide a script `run.sh` to ease your effort of running our code. Here, we f
 ## Flags
 - `--gpu`: Which GPU(s) to use. 
 - `--batch`: Batch size of the pose estimation network for each GPU card. 
-- `--indir`: Directory of the input images. All the images in the directory will be processed.
+- `--indir`: Directory of the input images. All the images in the directory will be processed. Input dir should be **RELATIVE PATH** to AlphaPose directory.
 - `--list`: A text file list for the input images, each line is the **ASOLUTE PATH** to the image. Not co-appear with `--indir`
 - `--video`: Read video and process the video frame by frame.
 - `--outdir`: Output directory to store the human detection and pose estimation results.
