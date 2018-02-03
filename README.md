@@ -3,14 +3,13 @@
     <img src="doc/logo.jpg", width="400">
 </div>
 
------------------
 
 
 ## AlphaPose
 Alpha Pose is an accurate multi-person pose estimation system. It is the **first open-sourced system that can achieve 70+ mAP (73.2 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
 To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker called Pose Flow. It is also the **first open-sourced online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.**
 
-###[Homepage of AlphaPose](http://mvig.sjtu.edu.cn/research/alphapose.html)
+### [Homepage of AlphaPose](http://mvig.sjtu.edu.cn/research/alphapose.html)
 
 ## Authors and Contributors
 AlphaPose is based on RMPE(ICCV'17), authored by [Haoshu Fang](https://fang-haoshu.github.io/), Shuqin Xie, [Yu-Wing Tai](https://scholar.google.com/citations?user=nFhLmFkAAAAJ&hl=en) and [Cewu Lu](http://mvig.sjtu.edu.cn/), [Cewu Lu](http://mvig.sjtu.edu.cn/) is the corresponding author. Currently, it is developed and maintained by [Haoshu Fang](https://fang-haoshu.github.io/), [Jiefeng Li](http://jeff-leaf.site/), [Yuliang Xiu](http://xiuyuliang.cn/about/) and [Ruiheng Chang](https://crh19970307.gith). 
