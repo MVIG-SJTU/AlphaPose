@@ -7,9 +7,9 @@
 
 
 ## AlphaPose
-Alpha Pose is an accurate multi-person pose estimation system. It is the first open-sourced system that can achieve 70+ mAP (73.2 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset. 
-<!-- To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker called Pose Flow. It is also the first online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.
- -->
+Alpha Pose is an accurate multi-person pose estimation system. It is the **first open-sourced system that can achieve 70+ mAP (73.2 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
+To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker called Pose Flow. It is also the **first online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.**
+
 ## Contents
 1. [AlphaPose](#alphapose)
 2. [Results](#results)
@@ -24,6 +24,11 @@ Alpha Pose is an accurate multi-person pose estimation system. It is the first o
 
 
 ## Results
+### Pose Estimation
+<p align="center">
+    <img src="doc/pose.gif", width="360">
+</p>
+
 Results on COCO test-dev 2015:
 <center>
 
@@ -46,9 +51,9 @@ Results on MPII full test set:
 
 </center>
 
-### Pose Estimation
-<p align="center">
-    <img src="doc/pose.gif", width="360">
+### Pose Tracking
+<p align='center'>
+    <img src="doc/posetrack.gif", width="360">
 </p>
 
 Results on PoseTrack Challenge validation set:
@@ -73,11 +78,7 @@ Results on PoseTrack Challenge validation set:
 
 </center>
 
-
-### Pose Tracking
-<p align='center'>
-    <img src="doc/posetrack.gif", width="360">
-</p>
+*Note: Code for pose tracking will be released soon*
 
 ## Installation
 1. Get the code and build related modules.
