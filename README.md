@@ -96,7 +96,7 @@ Results on PoseTrack Challenge validation set:
   chmod +x install.sh
   ./install.sh
   ```
-3. Run fetch_models.sh to download our pre-trained models.
+3. Run fetch_models.sh to download our pre-trained models. Or download the models manually: output.zip([Google drive](https://drive.google.com/open?id=1dMiUPMvt5o-S1BjDkzUJooEoT3GgasxB)|[Baidu pan](https://pan.baidu.com/s/1hund0US)), final_model.t7([Google drive](https://drive.google.com/open?id=1JYlLspGJHJFIggkDll4MdUdqX2ELqHpk)|[Baidu pan](https://pan.baidu.com/s/1qZuEyF6))
   ```Shell
   chmod +x fetch_models.sh
   ./fetch_models.sh
