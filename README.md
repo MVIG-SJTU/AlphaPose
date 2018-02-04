@@ -1,5 +1,14 @@
+
+<div align="center">
+    <img src="doc/logo.jpg", width="400">
+</div>
+
+
+
 ## AlphaPose
-Alpha Pose is an accurate multi-person pose estimation system. It is the first open-sourced system that can achieve 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset. To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker, which called Pose Flow. It is also the first online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.
+[Alpha Pose](http://mvig.sjtu.edu.cn/research/alphapose.html) is an accurate multi-person pose estimation system. It is the **first open-sourced system that can achieve 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
+To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker called Pose Flow. It is also the **first open-sourced online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.**
+
 
 ## Contents
 1. [AlphaPose](#alphapose)
@@ -15,6 +24,11 @@ Alpha Pose is an accurate multi-person pose estimation system. It is the first o
 
 
 ## Results
+### Pose Estimation
+<p align="center">
+    <img src="doc/pose.gif", width="360">
+</p>
+
 Results on COCO test-dev 2015:
 <center>
 
@@ -36,6 +50,11 @@ Results on MPII full test set:
 | **AlphaPose** | 91.3 | **90.5** | **84.0** | **76.4** | **80.3** | **79.9** | **72.4** | **82.1** |
 
 </center>
+
+### Pose Tracking
+<p align='center'>
+    <img src="doc/posetrack.gif", width="360">
+</p>
 
 Results on PoseTrack Challenge validation set:
 
@@ -59,16 +78,7 @@ Results on PoseTrack Challenge validation set:
 
 </center>
 
-
-### Pose Estimation
-<p align="center">
-    <img src="doc/pose.gif", width="360">
-</p>
-
-### Pose Tracking
-<p align='center'>
-    <img src="doc/posetrack.gif", width="360">
-</p>
+*Note: Code for pose tracking will be released soon*
 
 ## Installation
 1. Get the code and build related modules.
@@ -119,6 +129,8 @@ GPU memory: 12GB -- batch size: 9
 See [doc/run.md](doc/run.md) for more details.
 
 ## Contributors
+AlphaPose is based on RMPE(ICCV'17), authored by [Hao-shu Fang](https://fang-haoshu.github.io/), Shuqin Xie, [Yu-Wing Tai](https://scholar.google.com/citations?user=nFhLmFkAAAAJ&hl=en) and [Cewu Lu](http://mvig.sjtu.edu.cn/), [Cewu Lu](http://mvig.sjtu.edu.cn/) is the corresponding author. Currently, it is developed and maintained by [Hao-shu Fang](https://fang-haoshu.github.io/), [Jiefeng Li](http://jeff-leaf.site/), [Yuliang Xiu](http://xiuyuliang.cn/about/) and [Ruiheng Chang](https://crh19970307.github.io/). 
+
 The main contributors are listed in [doc/contributors.md](doc/contributors.md).
 
 ## Citation
