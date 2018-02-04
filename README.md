@@ -6,8 +6,8 @@
 
 
 ## AlphaPose
-[Alpha Pose](http://mvig.sjtu.edu.cn/research/alphapose.html) is an accurate multi-person pose estimation system. It is the **first open-sourced system that can achieve 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
-To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker called Pose Flow. It is also the **first open-sourced online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.**
+[Alpha Pose](http://mvig.sjtu.edu.cn/research/alphapose.html) is an accurate multi-person pose estimator, which is the **first open-source system that achieves 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
+To match poses that correspond to the same person across frames, we also provide an efficient online pose tracker called Pose Flow. It is the **first open-source online pose tracker that achieves both 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.**
 
 
 ## Contents
@@ -115,7 +115,7 @@ The visualized results will be stored in examples/results/RENDER. To easily proc
 Output (format, keypoint index ordering, etc.) in [doc/output.md](doc/output.md).
 
 ## Speeding Up AlphaPose
-We provide a `fast` mode for human-detection that disables multi-scale tesing. You can turn it on by adding `--mode fast`.
+We provide a `fast` mode for human-detection that disables multi-scale testing. You can turn it on by adding `--mode fast`.
 
 And if you have multiple gpus on your machine or have large gpu memories, you can speed up the pose estimation step by using multi-gpu testing or large batch tesing with:
 ```
