@@ -17,7 +17,8 @@ To associate poses that indicates the same person across frames, we also provide
 4. [Quick Start](#quick-start)
 5. [Output](#output)
 6. [Speeding Up Alpha Pose](#speeding-up-alpha-pose)
-7. [Contributors](#contributors)
+7. [Feedbacks](#feedbacks)
+8. [Contributors](#contributors)
 9. [Citation](#citation)
 10. [License](#license)
 
@@ -127,6 +128,11 @@ GPU memory: 8GB -- batch size: 6
 GPU memory: 12GB -- batch size: 9
 ```
 See [doc/run.md](doc/run.md) for more details.
+
+
+## Feedbacks
+If you find any bugs or meet any problems, don't hesitate to comment on GitHub or make a pull request!
+
 
 ## Contributors
 AlphaPose is based on RMPE(ICCV'17), authored by [Hao-shu Fang](https://fang-haoshu.github.io/), Shuqin Xie, [Yu-Wing Tai](https://scholar.google.com/citations?user=nFhLmFkAAAAJ&hl=en) and [Cewu Lu](http://mvig.sjtu.edu.cn/), [Cewu Lu](http://mvig.sjtu.edu.cn/) is the corresponding author. Currently, it is developed and maintained by [Hao-shu Fang](https://fang-haoshu.github.io/), [Jiefeng Li](http://jeff-leaf.site/), [Yuliang Xiu](http://xiuyuliang.cn/about/) and [Ruiheng Chang](https://crh19970307.github.io/). 
