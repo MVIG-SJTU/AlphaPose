@@ -36,18 +36,19 @@ def write_nms_json(outputpath, sep, form):
         result['image_id'] = pred_coordi[0]
         result['category_id'] = 1;
         for n in xrange(17):
-            keypoints.append(int(pred_coordi[2*n+1])); 
-            keypoints.append(int(pred_coordi[2*n+2]));
-            xmin = min(xmin,int(pred_coordi[2*n+1]));
-            ymin = min(ymin,int(pred_coordi[2*n+2]));
-            xmax = max(xmax,int(pred_coordi[2*n+1]));
-            ymax = max(ymax,int(pred_coordi[2*n+2]));
+            keypoints.append(float(pred_coordi[2*n+1])); 
+            keypoints.append(float(pred_coordi[2*n+2]));
+            xmin = min(xmin,float(pred_coordi[2*n+1]));
+            ymin = min(ymin,float(pred_coordi[2*n+2]));
+            xmax = max(xmax,float(pred_coordi[2*n+1]));
+            ymax = max(ymax,float(pred_coordi[2*n+2]));
             keypoints.append(float(pred_score[n+1]));
             score.append(float(pred_score[n+1]))
             if float(pred_score[n+1]) > 0.3:
                 score2.append(float(pred_score[n + 1]))
-        if (1.5*(xmax-xmin)*1.5*(ymax-ymin) < 40.5*40):
-            continue
+        #COCO do not label persons smaller than 32x32, uncomment this for COCO online evaluation
+        # if (1.5*(xmax-xmin)*1.5*(ymax-ymin) < 40*40):
+        #     continue
         if len(score2) == 0:
             score2 = [0.3]
         bbox_cnt += 1
@@ -159,7 +160,7 @@ def test_parametric_pose_NMS_json(delta1,delta2,mu,gamma,outputpath):
             #get numbers of match keypoints by calling PCK_match 
             ref_dist=ref_dists[img_ids[pick_id]]
             simi = get_parametric_distance(pick_id,img_preds, keypoint_scores,ref_dist, delta1, delta2, mu)
-            num_match_keypoints,face_match_keypoints = PCK_match(img_preds[pick_id],img_preds,ref_dist)
+            num_match_keypoints, _ = PCK_match(img_preds[pick_id],img_preds,ref_dist)
 
             #delete humans who have more than matchThreds keypoints overlap with the seletced human.
             delete_ids = np.arange(img_scores.shape[0])[(simi > gamma) | (num_match_keypoints >= matchThreds)]
@@ -204,7 +205,7 @@ def test_parametric_pose_NMS_json(delta1,delta2,mu,gamma,outputpath):
                    print point_id
                 if math.isnan(merge_poses[point_id,1]):
                    merge_poses[point_id,1] = 1
-                NMS_preds.write("\t{}\t{}".format(int(merge_poses[point_id,0]),int(merge_poses[point_id,1])))
+                NMS_preds.write("\t{}\t{}".format(merge_poses[point_id,0]-0.25,merge_poses[point_id,1]-0.25))
                 NMS_scores.write("\t{}".format(merge_score[point_id]))
             NMS_preds.write("\n")
             NMS_scores.write("\n")
@@ -270,7 +271,7 @@ def PCK_match(pick_preds, all_preds,ref_dist):
     return num_match_keypoints, face_match_keypoints
 
 def get_result_json(args):
-    delta1 = 0.01; mu = 1.7; delta2 = 2.65;
+    delta1 = 1; mu = 1.7; delta2 = 2.65;
     gamma = 22.48;
     test_parametric_pose_NMS_json(delta1, delta2, mu, gamma,args.outputpath)
     write_nms_json(args.outputpath, args.sep, args.format)

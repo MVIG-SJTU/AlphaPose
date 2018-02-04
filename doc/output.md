@@ -11,7 +11,7 @@ AlphaPose - Output format
 
 ## Output Format
 1. By default, we save the results for all images in one json file, which is similar to the [results format](http://cocodataset.org/#format) used by COCO.
-    1. `keypoints` contains the body part locations and detection confidence formatted as `x1,y1,c1,x2,y2,c2,...`. `c` is the confidence score in the range [0,1].
+    1. `keypoints` contains the body part locations and detection confidence formatted as `x1,y1,c1,x2,y2,c2,...`. `c` is the confidence score in the range [0,1] for MPII dataset and range [0,6] for COCO dataset.
     2. `score` is the confidence score for the whole person, computed by our parametric pose NMS.
 ```
 [

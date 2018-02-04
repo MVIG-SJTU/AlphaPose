@@ -51,7 +51,6 @@ function init(idx)
     cutorch.setDevice(1)
 end
 
-
 local divNum = tonumber(argv[4])
 prog = torch.zeros(divNum)
 --------------------------------------------------------------------------------
@@ -110,6 +109,8 @@ local function loop(startIndex,endIndex,k)
         local imgwidth = im:size()[3]
         local pt1= torch.Tensor(2)
         local pt2= torch.Tensor(2)
+        local pt1_tmp = torch.Tensor(2)
+        local pt2_tmp = torch.Tensor(2)
         pt1[1] = a['xmin'][idxs[i]]
         pt1[2] = a['ymin'][idxs[i]]
         pt2[1] = a['xmax'][idxs[i]]
@@ -194,15 +195,21 @@ local function loop(startIndex,endIndex,k)
             hm = hm:add(hm_tmp[j]:div(5))
         end
         hm[hm:lt(0)] = 0
+        if argv[6] == 'COCO' then
+            local g = image.gaussian(4*1 + 1)
+            local s = image.convolve(hm,g,'same')
+            hm = s:clone()
+        end
 
         -- Get predictions (hm and img refer to the coordinate space)
-        local preds_hm, preds_img, pred_scores = getPreds(hm, pt1:int(), pt2:int(),inputResH,inputResW,outResH,outResW)
+        local preds_hm, preds_img, pred_scores = getPreds4crop(hm, pt1:int(), pt2:int(),inputResH,inputResW,outResH,outResW)
 
         preds[i]:copy(preds_img)
         scores[i]:copy(pred_scores)
         
         prog[k] = i-startIndex+1
-        printProgress(k,i-startIndex+1,endIndex-startIndex+1)
+        --printProgress(k,i-startIndex+1,endIndex-startIndex+1)
+        xlua.progress(i-startIndex+1,endIndex-startIndex+1)
         -- Display the result
         if argv[1] == 'demo' then
             preds_hm:mul(inputResH/outResH) -- Change to input scale

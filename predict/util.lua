@@ -92,7 +92,7 @@ function getPreds(hms, pt1, pt2, inpH, inpW, resH, resW)
     local max, idx = torch.max(hms:view(hms:size(1), hms:size(2), hms:size(3) * hms:size(4)), 3)
     local preds = torch.zeros(hms:size(1), hms:size(2), 2):float()
     local miniBat = hms:size(1)
-    for k = 1, tmpBatch do
+    for k = 1, miniBat do
         preds[k]:copy(idx[k]:repeatTensor(1,1,2))
     end
     preds[{{}, {}, 1}]:apply(function(x) return (x - 1) % hms:size(4) + 1 end)
@@ -119,12 +119,54 @@ function getPreds(hms, pt1, pt2, inpH, inpW, resH, resW)
 
     for i = 1,hms:size(1) do        -- Number of samples
         for j = 1,hms:size(2) do    -- Number of output heatmaps for one sample
+            preds_tf[i][j] = transformBoxInvert(preds[i][j],pt1[i],pt2[i],inpH,inpW,resH,resW)
+        end
+    end
+
+    return preds, preds_tf, max
+end
+
+function getPreds4crop(hms, pt1, pt2, inpH, inpW, resH, resW)
+    if hms:size():size() == 3 then hms = hms:view(1, hms:size(1), hms:size(2), hms:size(3)) end
+    assert(hms:dim() == 4, 'Input must be 4-D tensor')
+    -- Get locations of maximum activations
+    local max, idx = torch.max(hms:view(hms:size(1), hms:size(2), hms:size(3) * hms:size(4)), 3)
+    local preds = torch.zeros(hms:size(1), hms:size(2), 2):float()
+    local miniBat = hms:size(1)
+    for k = 1, miniBat do
+        preds[k]:copy(idx[k]:repeatTensor(1,1,2))
+    end
+    preds[{{}, {}, 1}]:apply(function(x) return (x - 1) % hms:size(4) + 1 end)
+    preds[{{}, {}, 2}]:add(-1):div(hms:size(4)):floor():add(1)
+    local predMask = max:gt(0):repeatTensor(1, 1, 2):float()
+    preds:add(-1):cmul(predMask):add(1)
+    -- Very simple post-processing step to improve performance at tight PCK thresholds
+    for i = 1,preds:size(1) do
+       for j = 1,preds:size(2) do
+            local hm = hms[i][j]
+            local pX,pY = preds[i][j][1], preds[i][j][2]
+            --scores[i][j] = hm[pY][pX]
+            if pX > 1 and pX < resW and pY > 1 and pY < resH then
+                local diff = torch.Tensor({hm[pY][pX+1]-hm[pY][pX-1], hm[pY+1][pX]-hm[pY-1][pX]})
+                preds[i][j]:add(diff:sign():mul(.25):float())
+            end
+        end
+    end
+    preds:add(-0.5)
+
+    -- Get transformed coordinates
+    local preds_tf = torch.zeros(preds:size())
+
+
+    for i = 1,hms:size(1) do        -- Number of samples
+        for j = 1,hms:size(2) do    -- Number of output heatmaps for one sample
             preds_tf[i][j] = transformBoxInvert(preds[i][j],pt1,pt2,inpH,inpW,resH,resW)
         end
     end
 
     return preds, preds_tf, max
 end
+
 
 function getPredsOriIm(hms, len, outres)
 

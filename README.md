@@ -1,5 +1,5 @@
 ## AlphaPose
-Alpha Pose is an accurate multi-person pose estimation system. It is the first open-sourced system that can achieve 70+ mAP (73.2 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset. To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker, which called Pose Flow. It is also the first online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.
+Alpha Pose is an accurate multi-person pose estimation system. It is the first open-sourced system that can achieve 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset. To associate poses that indicates the same person across frames, we also provide an efficient online pose tracker, which called Pose Flow. It is also the first online pose tracker that can both satisfy 60+ mAP (66.5 mAP) and 50+ MOTA (58.3 MOTA) on PoseTrack Challenge dataset.
 
 ## Contents
 1. [AlphaPose](#alphapose)
@@ -22,7 +22,7 @@ Results on COCO test-dev 2015:
 |:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
 | OpenPose (CMU-Pose) | 61.8 | 84.9 | 67.5 | 57.1 | 68.2 |
 | Detectron (Mask R-CNN) | 67.0 | 88.0 | 73.1 | 62.2 | 75.6 |
-| **AlphaPose** | **61.8** | **83.7** | **69.8** | **69.8** | **69.8** |
+| **AlphaPose** | **72.3** | **89.2** | **79.1** | **69.0** | **78.6** |
 
 </center>
 
@@ -110,7 +110,13 @@ And if you have multiple gpus on your machine or have large gpu memories, you ca
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --gpu 0,1,2,3 --batch 5
 ```
-It assumes that you have 4 gpu cards on your machine and *each card* can run a batch of 5 images. See [doc/run.md](doc/run.md) for more details.
+It assumes that you have 4 gpu cards on your machine and *each card* can run a batch of 5 images. Here is the recommended batch size for gpu with different size of memory:
+```
+GPU memory: 4GB -- batch size: 3
+GPU memory: 8GB -- batch size: 6
+GPU memory: 12GB -- batch size: 9
+```
+See [doc/run.md](doc/run.md) for more details.
 
 ## Contributors
 The main contributors are listed in [doc/contributors.md](doc/contributors.md).

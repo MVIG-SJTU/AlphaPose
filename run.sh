@@ -10,7 +10,7 @@ fi
 eval set -- "${TEMP}"
 
 GPU_ID=0
-BATCH_SIZE=1
+BATCH_SIZE=2
 INPUT_PATH="/"
 OUTPUT_PATH="examples/results/"
 VIDEO_FILE=""

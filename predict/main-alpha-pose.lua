@@ -139,15 +139,22 @@ local function loop(startIndex,endIndex,k)
         --local preds_hm, preds_img, pred_scores
         hm = out[8]:float()
         hm[hm:lt(0)] = 0
-
+        if argv[6] == 'COCO' then
+             local g = image.gaussian(4*1 + 1)
+             for bId = 1,minibat do
+               local s = image.convolve(hm[bId],g,'same')
+               hm[bId] = s:clone()
+             end
+        end
         -- Get predictions (hm and img refer to the coordinate space)
         local preds_hm, preds_img, pred_scores = getPreds(hm, pt1:int(), pt2:int(),inputResH,inputResW,outResH,outResW)
 
-        preds[i]:narrow(1,i,minibat):copy(preds_img)
-        scores[i]:narrow(1,i,minibat):copy(pred_scores)
+        preds:narrow(1,i,minibat):copy(preds_img)
+        scores:narrow(1,i,minibat):copy(pred_scores)
         
         prog[k] = i-startIndex+1
-        printProgress(k,i-startIndex+1,endIndex-startIndex+1)
+        --printProgress(k,i-startIndex+1,endIndex-startIndex+1)
+        xlua.progress(i-startIndex+1,endIndex-startIndex+1)
         -- Display the result
         if argv[1] == 'demo' then
             preds_hm:mul(inputResH/outResH) -- Change to input scale

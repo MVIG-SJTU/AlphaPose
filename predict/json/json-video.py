@@ -26,24 +26,24 @@ def display_pose(intputpath, outputpath, imgname):
         pose = np.array(rmpe_results[imgname][pid]['keypoints']).reshape(-1,3)[:,:3]
         if pose.shape[0] == 16:
             mpii_part_names = ['RAnkle','RKnee','RHip','LHip','LKnee','LAnkle','Pelv','Thrx','Neck','Head','RWrist','RElbow','RShoulder','LShoulder','LElbow','LWrist']
-            colors = ['g', 'g', 'g', 'g', 'g', 'g', 'm', 'm', 'r', 'r', 'y', 'y', 'y', 'y','y','y']
+            colors = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'm', 'r', 'r','b','b']
             pairs = [[8,9],[11,12],[11,10],[2,1],[1,0],[13,14],[14,15],[3,4],[4,5],[8,7],[7,6],[6,2],[6,3],[8,12],[8,13]]
-            colors_skeleton = ['r', 'y', 'y', 'g', 'g', 'y', 'y', 'g', 'g', 'm', 'm', 'g', 'g', 'y','y']
+            colors_skeleton = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'r', 'r', 'b','b']
             for idx_c, color in enumerate(colors):
-                plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=50)
+                plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=40*np.mean(pose[idx_c,2]))
             for idx in range(len(colors_skeleton)):
                 plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height), 'r-',
-                        color=colors_skeleton[idx],linewidth=30*np.mean(pose[pairs[idx],2]),  alpha=0.8*np.mean(pose[pairs[idx],2]))
+                        color=colors_skeleton[idx],linewidth=40*np.mean(pose[pairs[idx],2]),  alpha=np.mean(pose[pairs[idx],2]))
         elif pose.shape[0] == 17:
             coco_part_names = ['Nose','LEye','REye','LEar','REar','LShoulder','RShoulder','LElbow','RElbow','LWrist','RWrist','LHip','RHip','LKnee','RKnee','LAnkle','RAnkle']
             colors = ['r', 'r', 'r', 'r', 'r', 'y', 'y', 'y', 'y', 'y', 'y', 'g', 'g', 'g','g','g','g']
-            pairs = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[11,12],[11,13],[13,15],[12,14],[14,16]]
-            colors_skeleton = ['r', 'r', 'r', 'r', 'y', 'y', 'y', 'y', 'y', 'g', 'g', 'g', 'g', 'g']
+            pairs = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[11,12],[11,13],[13,15],[12,14],[14,16],[6,12],[5,11]]
+            colors_skeleton = ['y', 'y', 'y', 'y', 'b', 'b', 'b', 'b', 'b', 'r', 'r', 'r', 'r', 'r','m','m']
             for idx_c, color in enumerate(colors):
-                plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=50)
+                plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=4*np.mean(pose[idx_c,2]))
             for idx in range(len(colors_skeleton)):
                 plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height),'r-',
-                         color=colors_skeleton[idx],linewidth=30*np.mean(pose[pairs[idx],2]), alpha=0.8*np.mean(pose[pairs[idx],2]))
+                         color=colors_skeleton[idx],linewidth=4*np.mean(pose[pairs[idx],2]), alpha=0.12*np.mean(pose[pairs[idx],2]))
 
     plt.axis('off')
     ax = plt.gca()

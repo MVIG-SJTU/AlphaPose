@@ -16,9 +16,9 @@ We provide a script `run.sh` to ease your effort of running our code. Here, we f
 
 | MODE | multi-scale human detection | 4 crop pose estimation | accuracy | speed |
 |:-------|:-----:|:-------:|:-------:|:-------:|
-| fast | no | no | 77.7 | 77.7 |
-| normal | yes | no | 78.9 | 77.7 |
-| accurate | yes | yes | 78.9 | 77.7 |
+| fast | no | no | 70.6 | 0.9x |
+| normal | yes | no | 71.6 | 1x |
+| accurate | yes | yes | 72.3 | 4.9x |
 
 </center>
 
@@ -44,7 +44,7 @@ We provide a script `run.sh` to ease your effort of running our code. Here, we f
 ```
 ./run.sh --indir examples/demo/ --outdir examples/results/ --mode fast --sep
 ```
-- ** Speed up AlphaPose by using multi-gpu and larger batch size**:
+- ** Speed up AlphaPose by using multi-gpu and larger batch size. Assumes that you have 2 GPU cards, each card has a memory of 8GB.**:
 ```
-./run.sh --indir examples/demo/ --outdir examples/results/ --gpu 0,1,2,3 --batch 5
+./run.sh --indir examples/demo/ --outdir examples/results/ --gpu 0,1 --batch 6
 ```

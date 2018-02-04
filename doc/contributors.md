@@ -1,1 +1,1 @@
-Alpha Pose is contributed and maintained by Hao-Shu Fang, Jiefeng Li, Ruiheng Chang and Yuliang Xiu.
+Alpha Pose is contributed and maintained by Hao-Shu Fang, Jiefeng Li, Yuliang Xiu, Ruiheng Chang and Cewu Lu.
