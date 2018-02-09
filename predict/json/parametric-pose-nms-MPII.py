@@ -15,7 +15,7 @@ def write_nms_json(outputpath, sep, form):
     os.chdir(os.path.join(outputpath,'POSE'))
     pred_file=[line.rstrip('\n').rstrip(' ') for line in open("pred.txt")]
     score_file=[line.rstrip('\n').rstrip(' ') for line in open("scores.txt")]
-    proposal_scores = np.loadtxt("scores-proposals.txt")
+    proposal_scores = np.loadtxt("scores-proposals.txt", ndmin=1)
      
     results = []
     bbox_cnt = 0
