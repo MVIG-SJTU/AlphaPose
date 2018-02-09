@@ -13,7 +13,7 @@ cd $SPPE_ROOT/train/src
 ln -s /data/MPII/images ../data/mpii/images
 ln -s /data/COCO/images ../data/coco/images
 # Then finetune the model using PGPG
-th main.lua -expID finetune -usePGPG -loadModel $MODEL_DIR -LR 0.5e-4 -nEpochs 10
+th main.lua -expID finetune -usePGPG -loadModel $MODEL_DIR -LR 0.5e-4 -nEpochs 50
 # Or start a new training with multi-GPU
 th main.lua -expID coco -nGPU 8 -trainBatch 16 -validBatch 16
 ```
