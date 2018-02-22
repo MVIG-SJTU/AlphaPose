@@ -119,7 +119,7 @@ def test_parametric_pose_NMS_json(delta1,delta2,mu,gamma,outputpath):
     scores = np.array(h5file['scores'])
     scores[scores==0] = 1e-5
     indexs = [line.rstrip(' ').rstrip('\r').rstrip('\n') for line in open(os.path.join(outputpath,"BBOX/index.txt"))]
-    scores_proposals = np.loadtxt(os.path.join(outputpath,"BBOX/score-proposals.txt"))    
+    scores_proposals = np.loadtxt(os.path.join(outputpath,"BBOX/score-proposals.txt"), ndmin=1)    
     
     #get bounding box sizes    
     bbox_file = h5py.File(os.path.join(outputpath,"BBOX/test-bbox.h5"),'r')
