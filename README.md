@@ -131,7 +131,7 @@ See [doc/run.md](doc/run.md) for more details.
 
 
 ## Feedbacks
-If you find any bugs or meet any problems, don't hesitate to comment on GitHub or make a pull request!
+If you get any problems, you can check the [doc/faq.md](doc/faq.md) first. If it can not solve your problems or if you find any bugs, don't hesitate to comment on GitHub or make a pull request!
 
 
 ## Contributors
