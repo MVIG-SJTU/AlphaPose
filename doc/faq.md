@@ -4,8 +4,8 @@ AlphaPose - Frequently Asked Question (FAQ)
 ## FAQ
 1. [test-pose.h5 not found](#test-pose.h5-not-found)
 2. [alpha-pose-results-forvis.json not found](#alpha-pose-results-forvis.json-not-found)
-3. [module 'xx' not found:No LuaRocks module found for 'xx'](#module-'xx'-not-found:No-LuaRocks-module-found-for-'xx')
-4. [th: command not found](#th:-command-not-found)
+3. [module 'xx' not found:No LuaRocks module found for 'xx'](#module-xx-not-foundno-luarocks-module-found-for-xx)
+4. [th: command not found](#th-command-not-found)
 
 
 
