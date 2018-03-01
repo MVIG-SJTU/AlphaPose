@@ -79,7 +79,7 @@ Results on PoseTrack Challenge validation set:
 
 </center>
 
-*Note: Code for pose tracking will be released soon*
+*Note: Please read [poseflow/README.md](poseflow/README.md) for details.*
 
 ## Installation
 1. Get the code and build related modules.
