@@ -1,4 +1,4 @@
-# Pose Tracking
+# Pose Flow
 
 Official implementation of [Pose Flow: Efficient Online Pose Tracking ](https://arxiv.org/abs/1802.00977).
 
@@ -14,14 +14,20 @@ make
 cd ..
 python deepmatching.py
 ```
-3. Run pose tracking (python3)
+
+## Quick Start
+
+Run pose tracking (python3)
 ```shell
 python tracker.py
 ```
-4. Evaluate pose tracking results on validation dataset (python2)
+
+## Evaluation
+
+Evaluate pose tracking results on validation dataset (python2)
 ```shell
 cd poseval/py && export PYTHONPATH=$PWD/../py-motmetrics:$PYTHONPATH
-python evaluate.py --groundTruth=/posetrack_data/annotations/val \
+python evaluate.py --groundTruth=/AlphaPose/poseflow/posetrack_data/annotations/val \
                     --predictions=/AlphaPose/poseflow/${track_dir}/ \
                     --evalPoseTracking --evalPoseEstimation
 ```
@@ -32,10 +38,8 @@ Please cite these papers in your publications if it helps your research:
       author = {{Xiu}, Y. and {Li}, J. and {Wang}, H. and {Fang}, Y. and {Lu}, C.},
       title = "{Pose Flow: Efficient Online Pose Tracking}",
       journal = {ArXiv e-prints},
-      archivePrefix = "arXiv",
       eprint = {1802.00977},
-      year = 2018,
-      month = feb
+      year = 2018
     }
 
 
