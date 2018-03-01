@@ -152,6 +152,19 @@ Please cite these papers in your publications if it helps your research:
       year={2017}
     }
 
+    @ARTICLE{2018arXiv180200977X,
+      author = {{Xiu}, Y. and {Li}, J. and {Wang}, H. and {Fang}, Y. and {Lu}, C.},
+      title = "{Pose Flow: Efficient Online Pose Tracking}",
+      journal = {ArXiv e-prints},
+      archivePrefix = "arXiv",
+      eprint = {1802.00977},
+      primaryClass = "cs.CV",
+      year = 2018,
+      month = feb,
+      adsurl = {http://adsabs.harvard.edu/abs/2018arXiv180200977X},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+    }
+
 
 
 ## License

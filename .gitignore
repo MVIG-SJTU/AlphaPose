@@ -1,6 +1,7 @@
 human-detection/output
 examples/results
 predict/models
+poseflow/__pycache__
 *.so
 *.pyc
 
