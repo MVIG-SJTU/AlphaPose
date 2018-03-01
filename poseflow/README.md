@@ -26,6 +26,7 @@ python tracker.py
 
 Evaluate pose tracking results on validation dataset (python2)
 ```shell
+git clone https://github.com/leonid-pishchulin/poseval.git --recursive
 cd poseval/py && export PYTHONPATH=$PWD/../py-motmetrics:$PYTHONPATH
 python evaluate.py --groundTruth=/AlphaPose/poseflow/posetrack_data/annotations/val \
                     --predictions=/AlphaPose/poseflow/${track_dir}/ \
