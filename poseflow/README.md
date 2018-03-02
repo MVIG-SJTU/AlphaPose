@@ -36,11 +36,11 @@ python evaluate.py --groundTruth=/AlphaPose/poseflow/posetrack_data/annotations/
 Please cite these papers in your publications if it helps your research:
 
     @ARTICLE{2018arXiv180200977X,
-      author = {{Xiu}, Y. and {Li}, J. and {Wang}, H. and {Fang}, Y. and {Lu}, C.},
-      title = "{Pose Flow: Efficient Online Pose Tracking}",
+      author = {Xiu, Yuliang and Li, Jiefeng and Wang, Haoyu and Fang, Yinghong and Lu, Cewu},
+      title = {{Pose Flow}: Efficient Online Pose Tracking},
       journal = {ArXiv e-prints},
       eprint = {1802.00977},
-      year = 2018
+      year = {2018}
     }
 
 
