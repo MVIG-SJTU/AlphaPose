@@ -23,10 +23,13 @@ from PIL import Image
 from tqdm import tqdm
 
 
+# keypoint penalty weight
 delta = 2*np.array([0.01388152, 0.01515228, 0.01057665, 0.01417709, 0.01497891, 0.01402144, \
                     0.03909642, 0.03686941, 0.01981803, 0.03843971, 0.03412318, 0.02415081, \
                     0.01291456, 0.01236173,0.01291456, 0.01236173])
 
+
+# get expand bbox surrounding single person's keypoints
 def get_box(pose, imgpath):
 
     pose = np.array(pose).reshape(-1,3)
@@ -38,11 +41,12 @@ def get_box(pose, imgpath):
 
     return expand_bbox(xmin, xmax, ymin, ymax, img_width, img_height)
 
+# expand bbox for containing more background
 def expand_bbox(left, right, top, bottom, img_width, img_height):
 
     width = right - left
     height = bottom - top
-    ratio = 0.1
+    ratio = 0.1 # expand ratio
     new_left = np.clip(left - ratio * width, 0, img_width)
     new_right = np.clip(right + ratio * width, 0, img_width)
     new_top = np.clip(top - ratio * height, 0, img_height)
@@ -50,27 +54,29 @@ def expand_bbox(left, right, top, bottom, img_width, img_height):
 
     return [int(new_left), int(new_right), int(new_top), int(new_bottom)]
 
-
+# calculate final matching grade
 def cal_grade(l, w):
-    
     return sum(np.array(l)*np.array(w))
 
+# calculate IoU of two boxes(thanks @ZongweiZhou1)
+def cal_bbox_iou(boxA, boxB): 
 
-def cal_bbox_iou(boxA, boxB):
-    
-	xA = max(boxA[0], boxB[0]) #xmin
+    xA = max(boxA[0], boxB[0]) #xmin
 	yA = max(boxA[2], boxB[2]) #ymin
 	xB = min(boxA[1], boxB[1]) #xmax
 	yB = min(boxA[3], boxB[3]) #ymax
- 
-	interArea = (xB - xA + 1) * (yB - yA + 1)
-	boxAArea = (boxA[1] - boxA[0] + 1) * (boxA[3] - boxA[2] + 1)
-	boxBArea = (boxB[1] - boxB[0] + 1) * (boxB[3] - boxB[2] + 1)
-	iou = interArea / float(boxAArea + boxBArea - interArea+0.00001)
 
-	return iou
+    if xA < xB and yA < yB: 
+        interArea = (xB - xA + 1) * (yB - yA + 1) 
+        boxAArea = (boxA[1] - boxA[0] + 1) * (boxA[3] - boxA[2] + 1) 
+        boxBArea = (boxB[1] - boxB[0] + 1) * (boxB[3] - boxB[2] + 1) 
+        iou = interArea / float(boxAArea + boxBArea - interArea+0.00001) 
+    else: 
+        iou=0.0
 
+    return iou
 
+# calculate OKS between two single poses
 def compute_oks(anno, predict, delta):
     
     xmax = np.max(np.vstack((anno[:, 0], predict[:, 0])))
@@ -83,8 +89,9 @@ def compute_oks(anno, predict, delta):
 
     return oks
 
-
+# look back to find matching pid
 def stack_all_pids(track_vid, frame_list, idxs, max_pid_id, link_len):
+    
     #track_vid contains track_vid[<=idx]
     all_pids_info = []
     all_pids_ids = [(item+1) for item in range(max_pid_id)]
@@ -96,8 +103,10 @@ def stack_all_pids(track_vid, frame_list, idxs, max_pid_id, link_len):
             elif track_vid[frame_list[idx]][pid]['new_pid'] in all_pids_ids:
                 all_pids_ids.remove(track_vid[frame_list[idx]][pid]['new_pid'])
                 all_pids_info.append(track_vid[frame_list[idx]][pid])
+
     return all_pids_info
 
+# calculate DeepMatching Pose IoU given two boxes
 def find_two_pose_box_iou(pose1_box,pose2_box, all_cors):
     
     x1, y1, x2, y2 = [all_cors[:, col] for col in range(4)]
@@ -115,6 +124,7 @@ def find_two_pose_box_iou(pose1_box,pose2_box, all_cors):
 
     return pose_box_iou
 
+# calculate general Pose IoU(only consider top NUM matched keypoints)
 def cal_pose_iou(pose1_box,pose2_box, num,mag):
     
     pose_iou = []
@@ -127,6 +137,7 @@ def cal_pose_iou(pose1_box,pose2_box, num,mag):
 
     return np.mean(heapq.nlargest(num, pose_iou))
 
+# calculate DeepMatching based Pose IoU(only consider top NUM matched keypoints)
 def cal_pose_iou_dm(all_cors,pose1,pose2,num,mag):
     
     poses_iou = []
@@ -137,23 +148,7 @@ def cal_pose_iou_dm(all_cors,pose1,pose2,num,mag):
 
     return np.mean(heapq.nlargest(num, poses_iou))
         
-def PCK_match(box1, pose1, pose2):
-
-    alpha = 0.1
-    pose1 = copy.copy(pose1).reshape(16, 2)
-    pose2 = copy.copy(pose2).reshape(16, 2)
-
-    xmax = box1[2]
-    xmin = box1[0]
-    ymax = box1[3]
-    ymin = box1[1]
-    ref_dist = alpha * np.maximum(xmax - xmin, ymax - ymin)
-    dist = np.sqrt(np.sum(np.square(pose1 - pose2), axis=1)).reshape(-1, 1)
-    ref_dist = min(ref_dist, 1)
-    num_match_keypoints = np.sum(dist / ref_dist <= 1)
-
-    return num_match_keypoints
-
+# hungarian matching algorithm
 def best_matching_hungarian(all_cors, all_pids_info, track_vid_next_fid,weights,num,mag):
     
     x1, y1, x2, y2 = [all_cors[:, col] for col in range(4)]
@@ -189,7 +184,7 @@ def best_matching_hungarian(all_cors, all_pids_info, track_vid_next_fid,weights,
 
     return indexes, cost_matrix
 
-
+# calculate number of matching points in one box from last frame
 def find_region_cors_last(box_pos, all_cors):
     
     x1, y1, x2, y2 = [all_cors[:, col] for col in range(4)]
@@ -200,7 +195,7 @@ def find_region_cors_last(box_pos, all_cors):
 
     return region_ids
 
-
+# calculate number of matching points in one box from next frame
 def find_region_cors_next(box_pos, all_cors):
     
     x1, y1, x2, y2 = [all_cors[:, col] for col in range(4)]
@@ -211,6 +206,7 @@ def find_region_cors_next(box_pos, all_cors):
 
     return region_ids
 
+# fill the nose keypoint by averaging head and neck
 def add_nose(array):
     
     if min(array.shape) == 2:
@@ -223,6 +219,7 @@ def add_nose(array):
 
     return np.insert(array,-1,nose,axis=0)
 
+# list remove operation
 def remove_list(l1,vname,l2):
     
     for item in l2:

@@ -53,6 +53,8 @@ track = {}
 cur_vname = ""
 num_persons = 0
 
+# load json file without tracking information
+# Note: time is a little long, so it is better to uncomment the following save operation at first time
 with open(notrack_json,'r') as f:
     notrack = json.load(f)
     for imgpath in tqdm(sorted(notrack.keys())):
@@ -74,6 +76,7 @@ with open(notrack_json,'r') as f:
 # np.save('notrack0.1.npy',track)
 # track = np.load('notrack0.1.npy').item()
 
+# tracking process
 for video_name in tqdm(track.keys()):
 
     max_pid_id = 0
@@ -155,6 +158,7 @@ for a,b,c in os.walk(val_dir):
     val_jsons = [item for item in c if 'json' in item]
     break
 
+# export tracking result into json files
 for video_name in tqdm(track.keys()):
     name = [item for item in val_jsons if video_name.split("/")[-1] in item]
     if len(name) == 0:
