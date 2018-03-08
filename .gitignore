@@ -4,4 +4,5 @@ predict/models
 poseflow/__pycache__
 *.so
 *.pyc
-
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
