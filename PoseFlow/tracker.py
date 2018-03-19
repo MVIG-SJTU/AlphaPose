@@ -72,29 +72,29 @@ if __name__ == '__main__':
 
     # load json file without tracking information
     # Note: time is a little long, so it is better to uncomment the following save operation at first time
-    # with open(notrack_json,'r') as f:
-    #     notrack = json.load(f)
-    #     for imgpath in tqdm(sorted(notrack.keys())):
+    with open(notrack_json,'r') as f:
+        notrack = json.load(f)
+        for imgpath in tqdm(sorted(notrack.keys())):
             
-    #         if 'crop' in imgpath:
-    #             vname,fname = imgpath[:-18],imgpath[-17:]
-    #             print(imgpath,vname,fname)
-    #             continue
+            if 'crop' in imgpath:
+                vname,fname = imgpath[:-18],imgpath[-17:]
+                print(imgpath,vname,fname)
+                continue
 
-    #         vname,fname = imgpath[:-13],imgpath[-12:]
-    #         if vname != cur_vname:
-    #             cur_vname = vname
-    #             track[vname] = {}
+            vname,fname = imgpath[:-13],imgpath[-12:]
+            if vname != cur_vname:
+                cur_vname = vname
+                track[vname] = {}
             
-    #         track[vname][fname] = {'num_boxes':len(notrack[imgpath])}
-    #         for bid in range(len(notrack[imgpath])):
-    #             track[vname][fname][bid+1] = {}
-    #             track[vname][fname][bid+1]['box_score'] = notrack[imgpath][bid]['score']
-    #             track[vname][fname][bid+1]['box_pos'] = get_box(notrack[imgpath][bid]['keypoints'], os.path.join(image_dir,imgpath))
-    #             track[vname][fname][bid+1]['box_pose_pos'] = np.array(notrack[imgpath][bid]['keypoints']).reshape(-1,3)[:,0:2]
-    #             track[vname][fname][bid+1]['box_pose_score'] = np.array(notrack[imgpath][bid]['keypoints']).reshape(-1,3)[:,-1]
+            track[vname][fname] = {'num_boxes':len(notrack[imgpath])}
+            for bid in range(len(notrack[imgpath])):
+                track[vname][fname][bid+1] = {}
+                track[vname][fname][bid+1]['box_score'] = notrack[imgpath][bid]['score']
+                track[vname][fname][bid+1]['box_pos'] = get_box(notrack[imgpath][bid]['keypoints'], os.path.join(image_dir,imgpath))
+                track[vname][fname][bid+1]['box_pose_pos'] = np.array(notrack[imgpath][bid]['keypoints']).reshape(-1,3)[:,0:2]
+                track[vname][fname][bid+1]['box_pose_score'] = np.array(notrack[imgpath][bid]['keypoints']).reshape(-1,3)[:,-1]
    
-    # np.save('notrack-{}.npy'.format(dataset),track)
+    np.save('notrack-{}.npy'.format(dataset),track)
     track = np.load('notrack-{}.npy'.format(dataset)).item()
 
     # tracking process
