@@ -35,7 +35,7 @@ if __name__ == '__main__':
     parser.add_argument('--drop', type=float, default=2.0)
     parser.add_argument('--num', type=int, default=7)
     parser.add_argument('--mag', type=int, default=30)
-    parser.add_argument('--match', type=float, default=0.8)
+    parser.add_argument('--match', type=float, default=0.2)
     parser.add_argument('--dataset', type=str, default='val')
 
     args = parser.parse_args()
@@ -195,6 +195,7 @@ if __name__ == '__main__':
                 name = [item for item in val_jsons if video_name.split("/")[-1][1:] in item]
             name = name[0]
         else:
+            # FUCK the dirty PoseTrack dataset
             name = [item for item in val_jsons if video_name.split("/")[-1].split("_")[0] == item.split("_")[0]]
             if video_name.split("/")[-1].split("_")[0] == "000044":
                 if video_name.split("/")[-2]=='mpii_5sec':
