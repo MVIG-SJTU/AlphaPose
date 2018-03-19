@@ -1,11 +1,7 @@
-setuptools==36.4.0
 numpy==1.13.1
 matplotlib==2.1.1
 scipy==0.19.1
-Image==1.5.19
+Image==1.5.20
 Pillow==5.0.0
 munkres==1.0.12
-pandas==0.22.0
-pytest==3.4.1
-Shapely==1.6.4.post1
-tqdm==4.19.6
+tqdm==4.19.8

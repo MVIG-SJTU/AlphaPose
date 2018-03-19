@@ -6,7 +6,7 @@ Project: AlphaPose
 File Created: Thursday, 1st March 2018 5:32:34 pm
 Author: Yuliang Xiu (yuliangxiu@sjtu.edu.cn)
 -----
-Last Modified: Thursday, 1st March 2018 6:18:17 pm
+Last Modified: Thursday, 20th March 2018 1:18:17 am
 Modified By: Yuliang Xiu (yuliangxiu@sjtu.edu.cn>)
 -----
 Copyright 2018 - 2018 Shanghai Jiao Tong University, Machine Vision and Intelligence Group
@@ -62,9 +62,9 @@ def cal_grade(l, w):
 def cal_bbox_iou(boxA, boxB): 
 
     xA = max(boxA[0], boxB[0]) #xmin
-	yA = max(boxA[2], boxB[2]) #ymin
-	xB = min(boxA[1], boxB[1]) #xmax
-	yB = min(boxA[3], boxB[3]) #ymax
+    yA = max(boxA[2], boxB[2]) #ymin
+    xB = min(boxA[1], boxB[1]) #xmax
+    yB = min(boxA[3], boxB[3]) #ymax
 
     if xA < xB and yA < yB: 
         interArea = (xB - xA + 1) * (yB - yA + 1) 
@@ -89,25 +89,29 @@ def compute_oks(anno, predict, delta):
 
     return oks
 
-# look back to find matching pid
+# stack all already tracked people's info together(thanks @ZongweiZhou1)
 def stack_all_pids(track_vid, frame_list, idxs, max_pid_id, link_len):
     
     #track_vid contains track_vid[<=idx]
     all_pids_info = []
+    all_pids_fff = [] # boolean list, 'fff' means From Former Frame
     all_pids_ids = [(item+1) for item in range(max_pid_id)]
     
     for idx in np.arange(idxs,max(idxs-link_len,-1),-1):
         for pid in range(1, track_vid[frame_list[idx]]['num_boxes']+1):
             if len(all_pids_ids) == 0:
-                return all_pids_info
+                return all_pids_info, all_pids_fff
             elif track_vid[frame_list[idx]][pid]['new_pid'] in all_pids_ids:
                 all_pids_ids.remove(track_vid[frame_list[idx]][pid]['new_pid'])
                 all_pids_info.append(track_vid[frame_list[idx]][pid])
-
-    return all_pids_info
+                if idx == idxs:
+                    all_pids_fff.append(True)
+                else:
+                    all_pids_fff.append(False)
+    return all_pids_info, all_pids_fff
 
 # calculate DeepMatching Pose IoU given two boxes
-def find_two_pose_box_iou(pose1_box,pose2_box, all_cors):
+def find_two_pose_box_iou(pose1_box, pose2_box, all_cors):
     
     x1, y1, x2, y2 = [all_cors[:, col] for col in range(4)]
     x_min, x_max, y_min, y_max = pose1_box
@@ -148,8 +152,8 @@ def cal_pose_iou_dm(all_cors,pose1,pose2,num,mag):
 
     return np.mean(heapq.nlargest(num, poses_iou))
         
-# hungarian matching algorithm
-def best_matching_hungarian(all_cors, all_pids_info, track_vid_next_fid,weights,num,mag):
+# hungarian matching algorithm(thanks @ZongweiZhou1)
+def best_matching_hungarian(all_cors, all_pids_info, all_pids_fff, track_vid_next_fid, weights, weights_fff, num, mag):
     
     x1, y1, x2, y2 = [all_cors[:, col] for col in range(4)]
     all_grades_details = []
@@ -164,6 +168,7 @@ def best_matching_hungarian(all_cors, all_pids_info, track_vid_next_fid,weights,
         box1_region_ids = find_region_cors_last(box1_pos, all_cors)
         box1_score = all_pids_info[pid1]['box_score']
         box1_pose = all_pids_info[pid1]['box_pose_pos']
+        box1_fff = all_pids_fff[pid1]
 
         for pid2 in range(1, track_vid_next_fid['num_boxes'] + 1):
             box2_pos = track_vid_next_fid[pid2]['box_pos']
@@ -177,7 +182,11 @@ def best_matching_hungarian(all_cors, all_pids_info, track_vid_next_fid,weights,
             box_iou = cal_bbox_iou(box1_pos, box2_pos)
             pose_iou_dm = cal_pose_iou_dm(all_cors, box1_pose, box2_pose, num,mag)
             pose_iou = cal_pose_iou(box1_pose, box2_pose,num,mag)
-            grade = cal_grade([dm_iou, box_iou, pose_iou_dm, pose_iou, box1_score, box2_score],weights)
+            if box1_fff:
+                grade = cal_grade([dm_iou, box_iou, pose_iou_dm, pose_iou, box1_score, box2_score], weights)
+            else:
+                grade = cal_grade([dm_iou, box_iou, pose_iou_dm, pose_iou, box1_score, box2_score], weights_fff)
+                
             cost_matrix[pid1, pid2 - 1] = grade
     m = Munkres()
     indexes = m.compute((-np.array(cost_matrix)).tolist())

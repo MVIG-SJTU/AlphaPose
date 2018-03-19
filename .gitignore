@@ -1,7 +1,13 @@
 human-detection/output
 examples/results
 predict/models
-poseflow/__pycache__
+PoseFlow/__pycache__
+PoseFlow/*.npy
+PoseFlow/*.json
+PoseFlow/test-predict
+PoseFlow/val-predict
+*.npy
+*.json
 *.so
 *.pyc
 .ipynb_checkpoints
