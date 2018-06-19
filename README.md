@@ -11,7 +11,7 @@ To match poses that correspond to the same person across frames, we also provide
 
 
 ## News!
-Now [**beta pytorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! Stable version will be ready in two days. Currently AlphaPose runs at about **5 fps**. Realtime version is coming very soon. Stay tuned!
+Now beta [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! Stable version will be ready in two days. Currently AlphaPose runs at about **5 fps**. Realtime version is coming very soon. Stay tuned!
 
 ## Contents
 1. [AlphaPose](#alphapose)
