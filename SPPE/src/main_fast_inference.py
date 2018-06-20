@@ -5,7 +5,6 @@ import torch.utils.data.distributed
 import torch.nn.functional as F
 import numpy as np
 from opt import opt
-import h5py
 from tqdm import tqdm
 from SPPE.src.utils.img import flip_v, shuffleLR
 from SPPE.src.utils.eval import getPrediction
