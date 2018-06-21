@@ -43,9 +43,7 @@ python demo_fast.py \
 
 
 ## Contributors
-AlphaPose is based on RMPE(ICCV'17), authored by [Hao-shu Fang](https://fang-haoshu.github.io/), Shuqin Xie, [Yu-Wing Tai](https://scholar.google.com/citations?user=nFhLmFkAAAAJ&hl=en) and [Cewu Lu](http://www.mvig.org/), [Cewu Lu](http://mvig.sjtu.edu.cn/) is the corresponding author. Currently, it is developed and maintained by [Hao-shu Fang](https://fang-haoshu.github.io/), [Jiefeng Li](http://jeff-leaf.site/), [Yuliang Xiu](http://xiuyuliang.cn/about/) and [Ruiheng Chang](https://crh19970307.github.io/). 
-
-The main contributors are listed in [doc/contributors.md](doc/contributors.md).
+Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 
 
 ## Citation
 Please cite these papers in your publications if it helps your research:
