@@ -62,13 +62,13 @@ parser.add_argument('--valIters', default=0, type=int,
 parser.add_argument('--init', default=None, type=str,
                     help='Initialization')
 "----------------------------- Data options -----------------------------"
-parser.add_argument('--inputResH', default=384, type=int,
+parser.add_argument('--inputResH', default=320, type=int,
                     help='Input image height')
-parser.add_argument('--inputResW', default=320, type=int,
+parser.add_argument('--inputResW', default=256, type=int,
                     help='Input image width')
-parser.add_argument('--outputResH', default=96, type=int,
+parser.add_argument('--outputResH', default=80, type=int,
                     help='Output heatmap height')
-parser.add_argument('--outputResW', default=80, type=int,
+parser.add_argument('--outputResW', default=64, type=int,
                     help='Output heatmap width')
 parser.add_argument('--scale', default=0.25, type=float,
                     help='Degree of scale augmentation')

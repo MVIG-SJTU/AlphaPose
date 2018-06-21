@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
             # n*kp*2 | n*kp*1
             preds_hm, preds_img, preds_scores = getPrediction(
-                hm.cpu().data, pt1, pt2, 384, 320, 96, 80)
+                hm.cpu().data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
 
             result = pose_nms(boxes, scores, preds_img, preds_scores)
             # print(len(result))
@@ -96,8 +96,8 @@ if __name__ == "__main__":
 
         # TQDM
         im_names_desc.set_description(
-            'total time: {total:.3f} | Num Poses: {pose} | Det time: {det:.3f}'.format(
-                total=time.time() - start_time,
+            'Speed: {total:.2f} FPS | Num Poses: {pose} | Det time: {det:.3f}'.format(
+                total=1 / (time.time() - start_time),
                 pose=len(result['result']),
                 det=det_time)
         )

@@ -50,10 +50,10 @@ class Mscoco(data.Dataset):
                  scale_factor=(0.2, 0.3), rot_factor=40, label_type='Gaussian'):
         self.img_folder = '../data/coco/images'    # root image folders
         self.is_train = train           # training set or test set
-        self.inputResH = 384
-        self.inputResW = 320
-        self.outputResH = 96
-        self.outputResW = 80
+        self.inputResH = opt.inputResH
+        self.inputResW = opt.inputResW
+        self.outputResH = opt.outputResH
+        self.outputResW = opt.outputResW
         self.sigma = sigma
         self.scale_factor = scale_factor
         self.rot_factor = rot_factor
@@ -107,7 +107,7 @@ def crop_from_dets(img, boxes, scores):
         bottomRight[1] = max(
             min(imght - 1, bottomRight[1] + ht * scaleRate / 2), upLeft[1] + 5)
 
-        tmp_inp = cropBox(tmp_img, upLeft, bottomRight, 384, 320)
+        tmp_inp = cropBox(tmp_img, upLeft, bottomRight, opt.inputResH, opt.inputResW)
         inp.append(tmp_inp.unsqueeze(0))
         pt1.append(upLeft.unsqueeze(0))
         pt2.append(bottomRight.unsqueeze(0))
