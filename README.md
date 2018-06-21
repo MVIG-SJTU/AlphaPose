@@ -28,7 +28,7 @@ To match poses that correspond to the same person across frames, we also provide
   ./install.sh
   ```
 
-1. Download the models manually: **fpnssd512_20_trained.pth**([Baidu pan](https://pan.baidu.com/s/10ZQfHAqvn8SdFnPnuEg0fg)), **pyra_4.pth** ([Baidu pan](https://pan.baidu.com/s/13jZRPT21zK5L-cqyfe0Qww)). Place them into `./models/ssd` and `./models/sppe` respectively.
+1. Download the models manually: **fpnssd512_20_trained.pth**([Google Drive](https://drive.google.com/open?id=1KUk3WIFjXBDmNJYXZcdAb9S1k0fWmOMB) | [Baidu pan](https://pan.baidu.com/s/10ZQfHAqvn8SdFnPnuEg0fg)), **pyra_4.pth** ([Google Drive](https://drive.google.com/open?id=1oG1Fxj4oBfKwD1W_2QObxltWybuIk7Y6) | [Baidu pan](https://pan.baidu.com/s/14ONL_T_d1twm9Lxac5x-Ew)). Place them into `./models/ssd` and `./models/sppe` respectively.
 
 
 ## Quick Start
