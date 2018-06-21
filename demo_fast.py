@@ -55,7 +55,10 @@ if __name__ == "__main__":
     im_names_desc = tqdm(test_loader)
 
     pose_dataset = Mscoco()
-    pose_model = InferenNet(4 * 1 + 1, pose_dataset)
+    if opt.fast_inference:
+        pose_model = InferenNet_faster(4 * 1 + 1, pose_dataset)
+    else:
+        pose_model = InferenNet(4 * 1 + 1, pose_dataset)
     #pose_model = torch.nn.DataParallel(pose_model).cuda()
     pose_model.cuda()
     pose_model.eval()

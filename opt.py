@@ -34,6 +34,10 @@ parser.add_argument('--nStack', default=4, type=int,
                     help='Number of hourglasses to stack')
 
 "----------------------------- Hyperparameter options -----------------------------"
+parser.add_argument('--fast_inference', default=False, type=bool,
+                    help='Fast inference')
+
+"----------------------------- Hyperparameter options -----------------------------"
 parser.add_argument('--LR', default=2.5e-4, type=float,
                     help='Learning rate')
 parser.add_argument('--momentum', default=0, type=float,

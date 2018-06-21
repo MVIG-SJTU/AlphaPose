@@ -76,3 +76,32 @@ class InferenNet(nn.Module):
         out = self.gaussian(F.relu(out, inplace=True))
 
         return out
+
+
+class InferenNet_faster(nn.Module):
+    def __init__(self, kernel_size, dataset):
+        super(InferenNet_faster, self).__init__()
+
+        model = createModel_Inference().cuda()
+        print('Loading Model from {}'.format('./models/sppe/pyra_4.pth'))
+        model.load_state_dict(torch.load('./models/sppe/pyra_4.pth'))
+        model.eval()
+        self.pyranet = model
+        self.gaussian = nn.Conv2d(17, 17, kernel_size=kernel_size,
+                                  stride=1, padding=2, groups=17, bias=False)
+
+        g = torch.from_numpy(gaussian(kernel_size)).clone()
+        g = torch.unsqueeze(g, 1)
+        g = g.repeat(17, 1, 1, 1)
+        assert g.shape == self.gaussian.weight.data.shape
+        self.gaussian.weight.data = g.float()
+
+        self.dataset = dataset
+
+    def forward(self, x):
+        out = self.pyranet(x)
+        out = out.narrow(1, 0, 17)
+
+        out = self.gaussian(F.relu(out, inplace=True))
+
+        return out
