@@ -4,9 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch.autograd import Variable
-from torchcv.utils import one_hot_embedding
-
 
 class SSDLoss(nn.Module):
     def __init__(self, num_classes):
@@ -28,7 +25,7 @@ class SSDLoss(nn.Module):
         _, idx = cls_loss.sort(1)  # sort by negative losses
         _, rank = idx.sort(1)      # [N,#anchors]
 
-        num_neg = 3*pos.long().sum(1)  # [N,]
+        num_neg = 3*pos.sum(1)  # [N,]
         neg = rank < num_neg[:,None]   # [N,#anchors]
         return neg
 
@@ -46,7 +43,7 @@ class SSDLoss(nn.Module):
         '''
         pos = cls_targets > 0  # [N,#anchors]
         batch_size = pos.size(0)
-        num_pos = pos.data.long().sum()
+        num_pos = pos.sum().item()
 
         #===============================================================
         # loc_loss = SmoothL1Loss(pos_loc_preds, pos_loc_targets)
@@ -64,7 +61,6 @@ class SSDLoss(nn.Module):
         neg = self._hard_negative_mining(cls_loss, pos)  # [N,#anchors]
         cls_loss = cls_loss[pos|neg].sum()
 
-        print('loc_loss: %.3f | cls_loss: %.3f' \
-            % (loc_loss.data[0]/num_pos, cls_loss.data[0]/num_pos), end=' | ')
+        print('loc_loss: %.3f | cls_loss: %.3f' % (loc_loss.item()/num_pos, cls_loss.item()/num_pos), end=' | ')
         loss = (loc_loss+cls_loss)/num_pos
         return loss

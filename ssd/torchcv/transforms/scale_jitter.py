@@ -32,5 +32,5 @@ def scale_jitter(img, boxes, sizes, max_size=1400):
     img = img.resize((ow,oh), Image.BILINEAR)
 
     if boxes is not None:
-        boxes = boxes * torch.Tensor([sw,sh,sw,sh])
+        boxes = boxes * torch.tensor([sw,sh,sw,sh])
     return img, boxes

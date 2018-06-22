@@ -1,9 +1,7 @@
-'''RetinaFPN in PyTorch.'''
+'''FPN in PyTorch.'''
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from torch.autograd import Variable
 
 
 class Bottleneck(nn.Module):
@@ -91,7 +89,7 @@ class FPN(nn.Module):
         So we choose bilinear upsample which supports arbitrary output sizes.
         '''
         _,_,H,W = y.size()
-        return F.upsample(x, size=(H,W), mode='bilinear') + y
+        return F.upsample(x, size=(H,W), mode='bilinear', align_corners=False) + y
 
     def forward(self, x):
         # Bottom-up
@@ -121,7 +119,7 @@ def FPN101():
 
 def test():
     net = FPN50()
-    fms = net(Variable(torch.randn(1,3,600,300)))
+    fms = net(torch.randn(1,3,640,640))
     for fm in fms:
         print(fm.size())
 

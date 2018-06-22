@@ -13,8 +13,8 @@ class FocalLoss(nn.Module):
         super(FocalLoss, self).__init__()
         self.num_classes = num_classes
 
-    def focal_loss_sigmoid(self, x, y):
-        '''Sigmoid version of focal loss.
+    def _focal_loss(self, x, y):
+        '''Focal loss.
 
         This is described in the original paper.
         With BCELoss, the background should not be counted in num_classes.
@@ -29,58 +29,13 @@ class FocalLoss(nn.Module):
         alpha = 0.25
         gamma = 2
 
-        t = one_hot_embedding(y.data.cpu(), 1+self.num_classes)
-        t = t[:,1:]  # exclude background
-        t = Variable(t).cuda()
-
+        t = one_hot_embedding(y-1, self.num_classes)
         p = x.sigmoid()
-        pt = p*t + (1-p)*(1-t)         # pt = p if t > 0 else 1-p
-        w = alpha*t + (1-alpha)*(1-t)  # w = alpha if t > 0 else 1-alpha
-        w = w * (1-pt).pow(gamma)
-        return F.binary_cross_entropy_with_logits(x, t, w, size_average=False)
-
-    def focal_loss_softmax(self, x, y):
-        '''Softmax version of focal loss.
-
-        With CrossEntropyLoss, the background need to be counted in num_classes.
-
-        Args:
-          x: (tensor) predictions, sized [N,D].
-          y: (tensor) targets, sized [N,].
-
-        Return:
-          (tensor) focal loss.
-        '''
-        t = one_hot_embedding(y.data.cpu(), self.num_classes)
-        t = Variable(t).cuda()   # [N,D]
-        p = F.softmax(x, dim=1)  # [N,D]
-        pt = (p*t).sum(1)        # [N,]
-        loss = F.cross_entropy(x, y, reduce=False)  # [N,]
-        loss = (1-pt).pow(2) * loss
-        return loss.sum()
-
-    def focal_loss_sigmoid_alt(self, x, y):
-        '''Focal loss alternative.
-
-        Args:
-          x: (tensor) predictions, sized [N,D].
-          y: (tensor) targets, sized [N,].
-
-        Return:
-          (tensor) focal loss.
-        '''
-        alpha = 0.25
-
-        t = one_hot_embedding(y.data.cpu(), 1+self.num_classes)
-        t = t[:,1:]
-        t = Variable(t).cuda()
-
-        xt = x*(2*t-1)  # xt = x if t > 0 else -x
-        pt = (2*xt+1).sigmoid()
-
-        w = alpha*t + (1-alpha)*(1-t)
-        loss = -w*pt.log() / 2
-        return loss.sum()
+        pt = torch.where(t>0, p, 1-p)    # pt = p if t > 0 else 1-p
+        w = (1-pt).pow(gamma)
+        w = torch.where(t>0, alpha*w, (1-alpha)*w)
+        loss = F.binary_cross_entropy_with_logits(x, t, w, size_average=False)
+        return loss
 
     def forward(self, loc_preds, loc_targets, cls_preds, cls_targets):
         '''Compute loss between (loc_preds, loc_targets) and (cls_preds, cls_targets).
@@ -96,15 +51,13 @@ class FocalLoss(nn.Module):
         '''
         batch_size, num_boxes = cls_targets.size()
         pos = cls_targets > 0  # [N,#anchors]
-        num_pos = pos.data.long().sum()
+        num_pos = pos.sum().item()
 
         #===============================================================
         # loc_loss = SmoothL1Loss(pos_loc_preds, pos_loc_targets)
         #===============================================================
         mask = pos.unsqueeze(2).expand_as(loc_preds)       # [N,#anchors,4]
-        masked_loc_preds = loc_preds[mask].view(-1,4)      # [#pos,4]
-        masked_loc_targets = loc_targets[mask].view(-1,4)  # [#pos,4]
-        loc_loss = F.smooth_l1_loss(masked_loc_preds, masked_loc_targets, size_average=False)
+        loc_loss = F.smooth_l1_loss(loc_preds[mask], loc_targets[mask], size_average=False)
 
         #===============================================================
         # cls_loss = FocalLoss(cls_preds, cls_targets)
@@ -112,8 +65,8 @@ class FocalLoss(nn.Module):
         pos_neg = cls_targets > -1  # exclude ignored anchors
         mask = pos_neg.unsqueeze(2).expand_as(cls_preds)
         masked_cls_preds = cls_preds[mask].view(-1,self.num_classes)
-        cls_loss = self.focal_loss_sigmoid(masked_cls_preds, cls_targets[pos_neg])
+        cls_loss = self._focal_loss(masked_cls_preds, cls_targets[pos_neg])
 
-        print('loc_loss: %.3f | cls_loss: %.3f' % (loc_loss.data[0]/num_pos, cls_loss.data[0]/num_pos), end=' | ')
+        print('loc_loss: %.3f | cls_loss: %.3f' % (loc_loss.item()/num_pos, cls_loss.item()/num_pos), end=' | ')
         loss = (loc_loss+cls_loss)/num_pos
         return loss

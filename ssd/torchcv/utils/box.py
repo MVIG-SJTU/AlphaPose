@@ -53,7 +53,7 @@ def box_select(boxes, xmin, ymin, xmax, ymax):
     '''
     mask = (boxes[:,0]>=xmin) & (boxes[:,1]>=ymin) \
          & (boxes[:,2]<=xmax) & (boxes[:,3]<=ymax)
-    boxes = boxes[mask.nonzero().squeeze(),:]
+    boxes = boxes[mask,:]
     return boxes, mask
 
 def box_iou(box1, box2):
@@ -85,14 +85,13 @@ def box_iou(box1, box2):
     iou = inter / (area1[:,None] + area2 - inter)
     return iou
 
-def box_nms(bboxes, scores, threshold=0.5, mode='union'):
+def box_nms(bboxes, scores, threshold=0.5):
     '''Non maximum suppression.
 
     Args:
       bboxes: (tensor) bounding boxes, sized [N,4].
       scores: (tensor) confidence scores, sized [N,].
       threshold: (float) overlap threshold.
-      mode: (str) 'union' or 'min'.
 
     Returns:
       keep: (tensor) selected indices.
@@ -116,24 +115,18 @@ def box_nms(bboxes, scores, threshold=0.5, mode='union'):
         if order.numel() == 1:
             break
 
-        xx1 = x1[order[1:]].clamp(min=x1[i])
-        yy1 = y1[order[1:]].clamp(min=y1[i])
-        xx2 = x2[order[1:]].clamp(max=x2[i])
-        yy2 = y2[order[1:]].clamp(max=y2[i])
+        xx1 = x1[order[1:]].clamp(min=x1[i].item())
+        yy1 = y1[order[1:]].clamp(min=y1[i].item())
+        xx2 = x2[order[1:]].clamp(max=x2[i].item())
+        yy2 = y2[order[1:]].clamp(max=y2[i].item())
 
         w = (xx2-xx1).clamp(min=0)
         h = (yy2-yy1).clamp(min=0)
-        inter = w*h
+        inter = w * h
 
-        if mode == 'union':
-            ovr = inter / (areas[i] + areas[order[1:]] - inter)
-        elif mode == 'min':
-            ovr = inter / areas[order[1:]].clamp(max=areas[i])
-        else:
-            raise TypeError('Unknown nms mode: %s.' % mode)
-
-        ids = (ovr<=threshold).nonzero().squeeze()
+        overlap = inter / (areas[i] + areas[order[1:]] - inter)
+        ids = (overlap<=threshold).nonzero().squeeze()
         if ids.numel() == 0:
             break
         order = order[ids+1]
-    return torch.LongTensor(keep)
+    return torch.tensor(keep, dtype=torch.long)

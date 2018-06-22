@@ -1,4 +1,2 @@
-try:
-    from torchcv.models.fpnssd.net import FPNSSD512
-except ImportError:
-    from ssd.torchcv.models.fpnssd.net import FPNSSD512
+from .net import FPNSSD512
+from .box_coder import FPNSSDBoxCoder

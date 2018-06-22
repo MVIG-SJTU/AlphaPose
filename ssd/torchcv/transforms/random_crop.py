@@ -43,7 +43,7 @@ def random_crop(
             x = random.randrange(imw - w)
             y = random.randrange(imh - h)
 
-            roi = torch.Tensor([[x,y,x+w,y+h]])
+            roi = torch.tensor([[x,y,x+w,y+h]], dtype=torch.float)
             ious = box_iou(boxes, roi)
             if ious.min() >= min_iou:
                 params.append((x,y,w,h))
@@ -56,10 +56,10 @@ def random_crop(
     mask = (center[:,0]>=x) & (center[:,0]<=x+w) \
          & (center[:,1]>=y) & (center[:,1]<=y+h)
     if mask.any():
-        boxes = boxes[mask.nonzero().squeeze()] - torch.Tensor([x,y,x,y])
-        boxes = box_clamp(boxes, 0,0,w,h)
+        boxes = boxes[mask] - torch.tensor([x,y,x,y], dtype=torch.float)
+        boxes = box_clamp(boxes,0,0,w,h)
         labels = labels[mask]
     else:
-        boxes = torch.Tensor([[0,0,0,0]])
-        labels = torch.LongTensor([0])
+        boxes = torch.tensor([[0,0,0,0]], dtype=torch.float)
+        labels = torch.tensor([0], dtype=torch.long)
     return img, boxes, labels

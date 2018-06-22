@@ -12,14 +12,14 @@ import os
 from tqdm import tqdm
 import time
 
-from ssd.torchcv.models.fpnssd import FPNSSD512
-from ssd.torchcv.models.ssd import SSD512, SSDBoxCoder
+from ssd.torchcv.models.fpnssd import FPNSSD512, FPNSSDBoxCoder
 from pPose_nms import pose_nms, write_json
 
 from opt import opt
 args = opt
 args.dataset = 'coco'
 
+torch.backends.cudnn.benchmark = True
 
 if __name__ == "__main__":
     inputpath = args.inputpath
@@ -30,10 +30,11 @@ if __name__ == "__main__":
 
     # Load SSD model
     print('Loading SSD model..')
-    det_model = FPNSSD512(num_classes=21).cuda()
-    det_model.load_state_dict(torch.load('./models/ssd/fpnssd512_20_trained.pth'))
+    det_model = FPNSSD512(num_classes=81).cuda()
+    det_model.load_state_dict(torch.load(
+        './models/ssd/ssd_coco.pth'))
     det_model.eval()
-    box_coder = SSDBoxCoder(det_model)
+    box_coder = FPNSSDBoxCoder()
 
     print(inputpath)
     print(inputlist)
@@ -71,6 +72,7 @@ if __name__ == "__main__":
             # Human Detection
             img = Variable(img).cuda()
             loc_preds, cls_preds = det_model(img)
+
             boxes, labels, scores = box_coder.decode(ht, wd,
                 loc_preds.data.squeeze().cpu(), F.softmax(cls_preds.squeeze(), dim=1).data.cpu())
 
