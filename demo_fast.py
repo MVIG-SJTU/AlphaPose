@@ -55,13 +55,11 @@ if __name__ == "__main__":
     im_names_desc = tqdm(test_loader)
 
     pose_dataset = Mscoco()
-    if opt.fast_inference:
-        pose_model = InferenNet_faster(4 * 1 + 1, pose_dataset)
-    else:
-        pose_model = InferenNet(4 * 1 + 1, pose_dataset)
+    pose_model = InferenNet(4 * 1 + 1, pose_dataset)
     #pose_model = torch.nn.DataParallel(pose_model).cuda()
     pose_model.cuda()
     pose_model.eval()
+    pose_model.half()
 
     final_result = []
 
@@ -71,7 +69,7 @@ if __name__ == "__main__":
             ht = inp.size(2)
             wd = inp.size(3)
             # Human Detection
-            img = Variable(img, volatile=True).cuda()
+            img = Variable(img).cuda()
             loc_preds, cls_preds = det_model(img)
             boxes, labels, scores = box_coder.decode(ht, wd,
                 loc_preds.data.squeeze().cpu(), F.softmax(cls_preds.squeeze(), dim=1).data.cpu())
@@ -81,13 +79,13 @@ if __name__ == "__main__":
             assert boxes.shape[0] == scores.shape[0]
             # Pose Estimation
             inps, pt1, pt2 = crop_from_dets(inp[0], boxes, scores)
-            inps = Variable(inps.cuda(), volatile=True)
-            det_time = time.time() - start_time
+            inps = Variable(inps.half().cuda())
+
             hm = pose_model(inps)
 
             # n*kp*2 | n*kp*1
             preds_hm, preds_img, preds_scores = getPrediction(
-                hm.cpu().data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
+                hm.float().cpu().data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
 
             result = pose_nms(boxes, scores, preds_img, preds_scores)
             # print(len(result))
@@ -99,10 +97,9 @@ if __name__ == "__main__":
 
         # TQDM
         im_names_desc.set_description(
-            'Speed: {total:.2f} FPS | Num Poses: {pose} | Det time: {det:.3f}'.format(
+            'Speed: {total:.2f} FPS | Num Poses: {pose}'.format(
                 total=1 / (time.time() - start_time),
-                pose=len(result['result']),
-                det=det_time)
+                pose=len(result['result']))
         )
 
     write_json(final_result, args.outputpath)

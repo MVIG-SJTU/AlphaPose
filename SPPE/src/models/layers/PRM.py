@@ -114,9 +114,10 @@ def pyramid(D, C, inputResH, inputResW):
 class skipLayer(nn.Module):
     def __init__(self, numIn, numOut, stride, useConv):
         super(skipLayer, self).__init__()
+        self.identity = False
 
         if numIn == numOut and stride == 1 and not useConv:
-            self.m = Identity()
+            self.identity = True
         else:
             conv1 = nn.Conv2d(numIn, numOut, kernel_size=1, stride=stride)
             if opt.init:
@@ -128,5 +129,7 @@ class skipLayer(nn.Module):
             )
 
     def forward(self, x):
-        out = self.m(x)
-        return out
+        if self.identity:
+            return x
+        else:
+            return self.m(x)

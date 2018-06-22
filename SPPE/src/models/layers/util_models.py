@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
@@ -24,13 +25,7 @@ class CaddTable(nn.Module):
         self.inplace = inplace
 
     def forward(self, x: Variable or list):
-        if self.inplace:
-            out = x[0]
-        else:
-            out = x[0].clone()
-        for i in range(1, len(x)):
-            out.add_(x[i])
-        return out
+        return torch.stack(x, 0).sum(0)
 
 
 class Identity(nn.Module):
