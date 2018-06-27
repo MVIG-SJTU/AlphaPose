@@ -111,6 +111,10 @@ def postprocess(output):
 
 
 def getPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
+    '''
+    Get keypoint location from heatmaps
+    '''
+
     assert hms.dim() == 4, 'Score maps should be 4-dim'
     maxval, idx = torch.max(hms.view(hms.size(0), hms.size(1), -1), 2)
 

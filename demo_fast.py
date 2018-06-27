@@ -11,7 +11,7 @@ from SPPE.src.utils.eval import getPrediction
 import os
 from tqdm import tqdm
 import time
-
+from fn import vis_res
 from ssd.torchcv.models.fpnssd import FPNSSD512, FPNSSDBoxCoder
 from pPose_nms import pose_nms, write_json
 
@@ -19,7 +19,6 @@ from opt import opt
 args = opt
 args.dataset = 'coco'
 
-torch.backends.cudnn.benchmark = True
 
 if __name__ == "__main__":
     inputpath = args.inputpath
@@ -56,11 +55,13 @@ if __name__ == "__main__":
     im_names_desc = tqdm(test_loader)
 
     pose_dataset = Mscoco()
-    pose_model = InferenNet(4 * 1 + 1, pose_dataset)
+    if args.fast_inference:
+        pose_model = InferenNet_fast(4 * 1 + 1, pose_dataset)
+    else:
+        pose_model = InferenNet(4 * 1 + 1, pose_dataset)
     #pose_model = torch.nn.DataParallel(pose_model).cuda()
     pose_model.cuda()
     pose_model.eval()
-    pose_model.half()
 
     final_result = []
 
@@ -72,22 +73,24 @@ if __name__ == "__main__":
             # Human Detection
             img = Variable(img).cuda()
             loc_preds, cls_preds = det_model(img)
+            if loc_preds.shape[0] == 0:
+                continue
 
             boxes, labels, scores = box_coder.decode(ht, wd,
                 loc_preds.data.squeeze().cpu(), F.softmax(cls_preds.squeeze(), dim=1).data.cpu())
-
             if boxes.shape[0] == 0:
                 continue
             assert boxes.shape[0] == scores.shape[0]
+
             # Pose Estimation
-            inps, pt1, pt2 = crop_from_dets(inp[0], boxes, scores)
-            inps = Variable(inps.half().cuda())
+            inps, pt1, pt2 = crop_from_dets(inp[0], boxes)
+            inps = Variable(inps.cuda())
 
             hm = pose_model(inps)
 
-            # n*kp*2 | n*kp*1
+            # location prediction (n, kp, 2) | score prediction (n, kp, 1)
             preds_hm, preds_img, preds_scores = getPrediction(
-                hm.float().cpu().data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
+                hm.cpu().data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
 
             result = pose_nms(boxes, scores, preds_img, preds_scores)
             # print(len(result))
@@ -103,5 +106,7 @@ if __name__ == "__main__":
                 total=1 / (time.time() - start_time),
                 pose=len(result['result']))
         )
-
-    write_json(final_result, args.outputpath)
+    if not args.vis_res:
+        write_json(final_result, args.outputpath)
+    else:
+        vis_res(final_result, args.outputpath)

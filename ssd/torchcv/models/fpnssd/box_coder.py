@@ -116,7 +116,7 @@ class FPNSSDBoxCoder:
         cls_targets[index<0] = 0
         return loc_targets, cls_targets
 
-    def decode(self, ht, wd, loc_preds, cls_preds, score_thresh=0.1, nms_thresh=0.5):
+    def decode(self, ht, wd, loc_preds, cls_preds, score_thresh=0.15, nms_thresh=0.6):
         '''Decode predicted loc/cls back to real box locations and class labels.
 
         Args:
@@ -145,24 +145,52 @@ class FPNSSDBoxCoder:
         scores = []
         num_classes = cls_preds.size(1)
         cls_ind = 0    # class of human
-        for i in range(num_classes-1):
+
+        for i in range(num_classes - 1):
             if i != cls_ind:
                 continue
-            score = cls_preds[:,i+1]  # class i corresponds to (i+1) column
+
+            score = cls_preds[:, i + 1]  # class i corresponds to (i+1) column
+
             mask = score > score_thresh
+
             if not mask.any():
                 continue
             box = box_preds[mask]
             score = score[mask]
 
             keep = box_nms(box, score, nms_thresh)
+
+            cnt = 0
+            while keep.shape[0] > 70:
+                score = cls_preds[:, i + 1]
+
+                if cnt % 2 == 0:
+                    score_thresh += 0.05
+                else:
+                    nms_thresh -= 0.1
+
+                mask = score > score_thresh
+                box = box_preds[mask]
+                score = score[mask]
+
+                if mask.any():
+                    keep = box_nms(box, score, nms_thresh)
+
+                cnt += 1
+            if not mask.any():
+                continue
             boxes.append(box[keep])
+
             labels.append(torch.empty_like(keep).fill_(i))
             scores.append(score[keep])
 
+        if not boxes:
+            return torch.zeros(0), torch.zeros(0), torch.zeros(0)
         boxes = torch.cat(boxes, 0)
         labels = torch.cat(labels, 0)
         scores = torch.cat(scores, 0)
+
         return boxes, labels, scores
 
 

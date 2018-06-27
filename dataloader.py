@@ -76,13 +76,17 @@ class Mscoco(data.Dataset):
         pass
 
 
-def crop_from_dets(img, boxes, scores):
+def crop_from_dets(img, boxes):
+    '''
+    Crop human from origin image according to Dectecion Results
+    '''
+
     imght = img.size(1)
     imgwidth = img.size(2)
     inp = []
     pt1 = []
     pt2 = []
-    for box, score in zip(boxes, scores):
+    for box in boxes:
         tmp_img = img.clone()
         tmp_img[0].add_(-0.406)
         tmp_img[1].add_(-0.457)

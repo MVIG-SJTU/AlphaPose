@@ -34,8 +34,12 @@ parser.add_argument('--nStack', default=4, type=int,
                     help='Number of hourglasses to stack')
 
 "----------------------------- Hyperparameter options -----------------------------"
-parser.add_argument('--fast_inference', default=False, type=bool,
+parser.add_argument('--fast_inference', default=True, type=bool,
                     help='Fast inference')
+parser.add_argument('--vis_res', default=False, type=bool,
+                    help='Visualize result')
+parser.add_argument('--use_parynet', default=True, type=bool,
+                    help='use_parynet')
 
 "----------------------------- Hyperparameter options -----------------------------"
 parser.add_argument('--LR', default=2.5e-4, type=float,

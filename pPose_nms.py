@@ -18,6 +18,13 @@ alpha = 0.1
 
 
 def pose_nms(bboxes, bbox_scores, pose_preds, pose_scores):
+    '''
+    Parametric Pose NMS algorithm
+    bboxes:         bbox locations list (n, 4)
+    bbox_scores:    bbox scores list (n,)
+    pose_preds:     pose locations list (n, 17, 2)
+    pose_scores:    pose scores list    (n, 17, 1)
+    '''
     pose_scores[pose_scores == 0] = 1e-5
 
     final_result = []
@@ -185,13 +192,17 @@ def PCK_match(pick_pred, all_preds, ref_dist):
 
 
 def write_json(all_results, outputpath):
+    '''
+    all_result: result dict of predictions
+    outputpath: output directory
+    '''
     json_results = []
     for im_res in all_results:
         im_name = im_res['imgname']
         for human in im_res['result']:
             keypoints = []
             result = {}
-            result['image_id'] = int(im_name.split('/')[-1].split('.')[0])
+            result['image_id'] = int(im_name.split('/')[-1].split('.')[0].split('_')[-1])
             result['category_id'] = 1
 
             kp_preds = human['keypoints']
@@ -206,8 +217,9 @@ def write_json(all_results, outputpath):
 
             json_results.append(result)
 
-    with open(os.path.join(outputpath, 'keypoint_result.json'), 'w') as json_file:
+    os.chdir(outputpath)
+    with open('keypoint_result.json', 'w') as json_file:
         json_file.write(json.dumps(json_results))
-    result_zip = zipfile.ZipFile(os.path.join(outputpath, 'keypoint_result.zip'), 'w')
-    result_zip.write(os.path.join(outputpath, 'keypoint_result.json'))
+    result_zip = zipfile.ZipFile('keypoint_result.zip', 'w')
+    result_zip.write('keypoint_result.json')
     result_zip.close()
