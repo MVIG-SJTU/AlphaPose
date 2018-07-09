@@ -222,15 +222,15 @@ def transformBoxInvert_batch(pt, ul, br, inpH, inpW, resH, resW):
     center = (br - 1 - ul) / 2
 
     size = br - ul
-    size[:, 1] *= (inpH / inpW)
+    size[:, 0] *= (inpH / inpW)
 
     lenH, _ = torch.max(size, dim=1)   # [n,]
     lenW = lenH * (inpW / inpH)
 
-    _pt = (pt * lenH) / resH
-    _pt[:, :, 0] = _pt[:, :, 0] - ((lenW.unsqueeze(-1).repeat(1, 17) - 1) /
+    _pt = (pt * lenH[:, np.newaxis, np.newaxis]) / resH
+    _pt[:, :, 0] = _pt[:, :, 0] - ((lenW[:, np.newaxis].repeat(1, 17) - 1) /
                                    2 - center[:, 0].unsqueeze(-1).repeat(1, 17)).clamp(min=0)
-    _pt[:, :, 1] = _pt[:, :, 1] - ((lenH.unsqueeze(-1).repeat(1, 17) - 1) /
+    _pt[:, :, 1] = _pt[:, :, 1] - ((lenH[:, np.newaxis].repeat(1, 17) - 1) /
                                    2 - center[:, 1].unsqueeze(-1).repeat(1, 17)).clamp(min=0)
 
     new_point = torch.zeros(pt.size())

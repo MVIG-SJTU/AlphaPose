@@ -12,7 +12,7 @@ from dataloader import Image_loader, crop_from_dets, Mscoco
 from yolo.darknet import Darknet
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
-from SPPE.src.utils.eval import getPrediction
+from SPPE.src.utils.eval import getPrediction_batch
 import os
 from tqdm import tqdm
 import time

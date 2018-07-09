@@ -141,9 +141,8 @@ def getPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
     # preds += 0.5
 
     preds_tf = torch.zeros(preds.size())
-    for i in range(hms.size(0)):        # Number of samples
-        for j in range(hms.size(1)):    # Number of output heatmaps for one sample
-            preds_tf[i][j] = transformBoxInvert(preds[i][j], pt1[i], pt2[i], inpH, inpW, resH, resW)
+    
+    preds_tf = transformBoxInvert_batch(preds, pt1, pt2, inpH, inpW, resH, resW)
 
     return preds, preds_tf, maxval
 
@@ -170,7 +169,7 @@ def getPrediction_batch(hms, pt1, pt2, inpH, inpW, resH, resW):
 
     pred_mask = maxval.gt(0).repeat(1, 1, 2).float()
     preds *= pred_mask
-    '''
+
     # Very simple post-processing step to improve performance at tight PCK thresholds
     idx_up = (idx - hms.size(3)).clamp(0, flat_hms.size(2) - 1)
     idx_down = (idx + hms.size(3)).clamp(0, flat_hms.size(2) - 1)
@@ -191,14 +190,8 @@ def getPrediction_batch(hms, pt1, pt2, inpH, inpW, resH, resW):
 
     preds[:, :, 0] += diff1.squeeze(-1)
     preds[:, :, 1] += diff2.squeeze(-1)
-    # preds += 0.5
-    '''
+
     preds_tf = torch.zeros(preds.size())
     preds_tf = transformBoxInvert_batch(preds, pt1, pt2, inpH, inpW, resH, resW)
-    '''
-    for i in range(hms.size(0)):        # Number of samples
-        for j in range(hms.size(1)):    # Number of output heatmaps for one sample
-            preds_tf[i][j] = transformBoxInvert(
-                preds[i][j], pt1[i], pt2[i], inpH, inpW, resH, resW)
-    '''
+
     return preds, preds_tf, maxval
