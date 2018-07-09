@@ -18,5 +18,6 @@ ssd/examples
 *.json
 *.h5
 *.zip
+*.weights
 
 coco-minival/

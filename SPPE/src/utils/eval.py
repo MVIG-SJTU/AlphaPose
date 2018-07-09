@@ -141,7 +141,7 @@ def getPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
     # preds += 0.5
 
     preds_tf = torch.zeros(preds.size())
-    
+
     preds_tf = transformBoxInvert_batch(preds, pt1, pt2, inpH, inpW, resH, resW)
 
     return preds, preds_tf, maxval

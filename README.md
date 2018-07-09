@@ -28,13 +28,13 @@ To match poses that correspond to the same person across frames, we also provide
   ./install.sh
   ```
 
-1. Download the models manually: **ssd_coco.pth**([Google Drive](https://drive.google.com/open?id=1ifUNnxSDOP7InBtKy5CGnRAMLD4-d4Ct) | [Baidu pan](https://pan.baidu.com/s/1mon7Ht6ObqrS2ZY955swpg)), **pyra_4.pth** ([Google Drive](https://drive.google.com/open?id=1oG1Fxj4oBfKwD1W_2QObxltWybuIk7Y6) | [Baidu pan](https://pan.baidu.com/s/14ONL_T_d1twm9Lxac5x-Ew)). Place them into `./models/ssd` and `./models/sppe` respectively.
+1. Download the models manually: **ssd_coco.pth**([Google Drive](https://drive.google.com/open?id=1ifUNnxSDOP7InBtKy5CGnRAMLD4-d4Ct) | [Baidu pan](https://pan.baidu.com/s/1mon7Ht6ObqrS2ZY955swpg)), **pyra_4.pth** ([Google Drive](https://drive.google.com/open?id=1oG1Fxj4oBfKwD1W_2QObxltWybuIk7Y6) | [Baidu pan](https://pan.baidu.com/s/14ONL_T_d1twm9Lxac5x-Ew)), **yolov3.weights**([Google Drive](https://drive.google.com/open?id=1yjrziA2RzFqWAQG4Qq7XN0vumsMxwSjS) | [Baidu pan](https://pan.baidu.com/s/108SjV-uIJpxnqDMT19v-Aw)). Place them into `./models/ssd`, `./models/sppe` and `./models/yolo` respectively.
 
 
 ## Quick Start
 - **Demo**:  Run AlphaPose for all images in a folder and visualize the results with:
 ```
-python demo_fast.py \
+python demo_yolo.py \
 --inputlist ./list-coco-minival500.txt \
 --imgpath ${img_directory} \
 --outputpath ./coco-minival
