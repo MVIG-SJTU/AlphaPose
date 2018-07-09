@@ -26,7 +26,7 @@ except AttributeError:
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 
-batch_size = 128 * 8
+# batch_size = 128 * 8
 
 
 def gaussian(size):

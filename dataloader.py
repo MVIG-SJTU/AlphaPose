@@ -5,10 +5,43 @@ import torchvision.transforms as transforms
 from PIL import Image, ImageDraw
 from SPPE.src.utils.img import load_image, cropBox
 from opt import opt
+from yolo.preprocess import prep_image, inp_to_image
+
+import json
+
+class Tmp_loader(data.Dataset):
+    def __init__(self, img_list):
+        super(Tmp_loader, self).__init__()
+        self.img_dir = '/mnt/lustre/lijiefeng/git/pytorch-AlphaPose/data/kibr/images'
+        self.annot = json.load(open(img_list, 'r'))
+        self.imglist = list(self.annot.keys())
+        self.format = format
+
+    def __getitem__(self, index):
+        im_name = self.imglist[index]
+
+        im_name = os.path.join(self.img_dir, im_name + '.jpg')
+
+        inp = load_image(im_name)
+        boxes = torch.Tensor(self.annot[self.imglist[index]])
+        scores = boxes[:, -1]
+        boxes = boxes[:, :4]
+        ht, wd = inp.shape[1], inp.shape[2]
+        boxes[:, 2] = boxes[:, 0] + boxes[:, 2]
+        boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
+        assert boxes.dim() == 2
+
+        inps, pt1, pt2 = crop_from_dets(inp, boxes)
+
+        return inps, (pt1, pt2, boxes, scores), im_name
+
+    def __len__(self):
+        return len(self.imglist)
 
 
 class Image_loader(data.Dataset):
-    def __init__(self, img_list):
+    def __init__(self, img_list, format='ssd'):
+        super(Image_loader, self).__init__()
         if opt.imgpath:
             self.img_dir = opt.imgpath
         else:
@@ -18,16 +51,9 @@ class Image_loader(data.Dataset):
             transforms.ToTensor(),
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
         ])
-    '''# For faster rcnn
-    def __getitem__(self, index):
-        im_name = self.imglist[index].rstrip('\n').rstrip('\r')
-        im_name = os.path.join(self.img_dir, im_name)
-        im = cv2.imread(im_name)
-        inp = load_image(im_name)
-        return im, inp, im_name
-    '''
+        self.format = format
 
-    def __getitem__(self, index):
+    def getitem_ssd(self, index):
         im_name = self.imglist[index].rstrip('\n').rstrip('\r')
         im_name = os.path.join(self.img_dir, im_name)
         im = Image.open(im_name)
@@ -40,8 +66,25 @@ class Image_loader(data.Dataset):
         im = self.transform(im)
         return im, inp, im_name
 
+    def getitem_yolo(self, index):
+        inp_dim = int(opt.inp_dim)
+        im_name = self.imglist[index].rstrip('\n').rstrip('\r')
+        im_name = os.path.join(self.img_dir, im_name)
+        im, _, im_dim = prep_image(im_name, inp_dim)
+        im_dim = torch.FloatTensor([im_dim]).repeat(1, 2)
+
+        inp = load_image(im_name)
+        return im, inp, im_name, im_dim
+
+    def __getitem__(self, index):
+        if self.format == 'ssd':
+            return self.getitem_ssd(index)
+        elif self.format == 'yolo':
+            return self.getitem_yolo(index)
+        else:
+            raise NotImplementedError
+
     def __len__(self):
-        # return len(self.imglist[0].rstrip('\n').rstrip('\r').split(','))
         return len(self.imglist)
 
 

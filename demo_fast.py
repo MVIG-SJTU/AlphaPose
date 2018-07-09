@@ -5,6 +5,8 @@ import torchvision.transforms as transforms
 
 import torch.nn as nn
 import torch.utils.data
+from opt import opt
+
 from dataloader import Image_loader, crop_from_dets, Mscoco
 from SPPE.src.main_fast_inference import *
 from SPPE.src.utils.eval import getPrediction
@@ -15,7 +17,6 @@ from fn import vis_res
 from ssd.torchcv.models.fpnssd import FPNSSD512, FPNSSDBoxCoder
 from pPose_nms import pose_nms, write_json
 
-from opt import opt
 args = opt
 args.dataset = 'coco'
 
@@ -78,6 +79,7 @@ if __name__ == "__main__":
 
             boxes, labels, scores = box_coder.decode(ht, wd,
                 loc_preds.data.squeeze().cpu(), F.softmax(cls_preds.squeeze(), dim=1).data.cpu())
+
             if boxes.shape[0] == 0:
                 continue
             assert boxes.shape[0] == scores.shape[0]

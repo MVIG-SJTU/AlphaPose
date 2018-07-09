@@ -19,3 +19,4 @@ ssd/examples
 *.h5
 *.zip
 
+coco-minival/

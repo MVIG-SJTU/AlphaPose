@@ -6,7 +6,7 @@ from torch._six import string_classes, int_classes
 import cv2
 from opt import opt
 from tqdm import tqdm
-
+import time
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -119,3 +119,11 @@ def vis_res(final_result, outputpath, format='coco'):
                     cv2.line(img, start_p, end_p, YELLOW, 2)
 
         cv2.imwrite(os.path.join(outputpath, 'res' + im_name), img)
+
+
+def getTime(time1=0):
+    if not time1:
+        return time.time()
+    else:
+        interval = time.time() - time1
+        return time.time(), interval

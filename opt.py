@@ -38,8 +38,8 @@ parser.add_argument('--fast_inference', default=True, type=bool,
                     help='Fast inference')
 parser.add_argument('--vis_res', default=False, type=bool,
                     help='Visualize result')
-parser.add_argument('--use_parynet', default=True, type=bool,
-                    help='use_parynet')
+parser.add_argument('--use_pyranet', default=True, type=bool,
+                    help='use pyranet')
 
 "----------------------------- Hyperparameter options -----------------------------"
 parser.add_argument('--LR', default=2.5e-4, type=float,
@@ -114,5 +114,11 @@ parser.add_argument('--outputpath', dest='outputpath',
                     help='output-directory', default="")
 parser.add_argument('--imgpath', dest='imgpath',
                     help='image-path', default="")
+parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
+                    help='inpdim')
 
 opt = parser.parse_args()
+
+opt.confidence = 0.2
+opt.num_classes = 80
+opt.nms_thesh = 0.6

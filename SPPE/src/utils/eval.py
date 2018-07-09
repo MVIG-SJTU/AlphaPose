@@ -1,8 +1,8 @@
 from opt import opt
 try:
-    from utils.img import transformBoxInvert
+    from utils.img import transformBoxInvert, transformBoxInvert_batch
 except ImportError:
-    from SPPE.src.utils.img import transformBoxInvert
+    from SPPE.src.utils.img import transformBoxInvert, transformBoxInvert_batch
 import torch
 
 
@@ -149,8 +149,16 @@ def getPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
 
 
 def getPrediction_batch(hms, pt1, pt2, inpH, inpW, resH, resW):
+    '''
+    Get keypoint location from heatmaps
+    pt1, pt2:   [n, 2]
+    OUTPUT:
+        preds:  [n, 17, 2]
+    '''
+
     assert hms.dim() == 4, 'Score maps should be 4-dim'
-    maxval, idx = torch.max(hms.view(hms.size(0), hms.size(1), -1), 2)
+    flat_hms = hms.view(hms.size(0), hms.size(1), -1)
+    maxval, idx = torch.max(flat_hms, 2)
 
     maxval = maxval.view(hms.size(0), hms.size(1), 1)
     idx = idx.view(hms.size(0), hms.size(1), 1) + 1
@@ -162,23 +170,35 @@ def getPrediction_batch(hms, pt1, pt2, inpH, inpW, resH, resW):
 
     pred_mask = maxval.gt(0).repeat(1, 1, 2).float()
     preds *= pred_mask
-
+    '''
     # Very simple post-processing step to improve performance at tight PCK thresholds
-    for i in range(preds.size(0)):          # Number of samples
-        for j in range(preds.size(1)):      # Number of output heatmaps
-            hm = hms[i][j]
-            pX, pY = int(round(float(preds[i][j][0]))), int(round(float(preds[i][j][1])))
-            if 0 < pX < opt.outputResW - 1 and 0 < pY < opt.outputResH - 1:
-                diff = torch.Tensor(
-                    (hm[pY][pX + 1] - hm[pY][pX - 1], hm[pY + 1][pX] - hm[pY - 1][pX]))
-                preds[i][j] += diff.sign() * 0.25
+    idx_up = (idx - hms.size(3)).clamp(0, flat_hms.size(2) - 1)
+    idx_down = (idx + hms.size(3)).clamp(0, flat_hms.size(2) - 1)
+    idx_left = (idx - 1).clamp(0, flat_hms.size(2) - 1)
+    idx_right = (idx + 1).clamp(0, flat_hms.size(2) - 1)
 
-    # pX, pY = 
+    maxval_up = flat_hms.gather(2, idx_up)
+    maxval_down = flat_hms.gather(2, idx_down)
+    maxval_left = flat_hms.gather(2, idx_left)
+    maxval_right = flat_hms.gather(2, idx_right)
+
+    diff1 = (maxval_right - maxval_left).sign() * 0.25
+    diff2 = (maxval_down - maxval_up).sign() * 0.25
+    diff1[idx_up <= hms.size(3)] = 0
+    diff1[idx_down / hms.size(3) >= (hms.size(3) - 1)] = 0
+    diff2[(idx_left % hms.size(3)) == 0] = 0
+    diff2[(idx_left % hms.size(3)) == (hms.size(3) - 1)] = 0
+
+    preds[:, :, 0] += diff1.squeeze(-1)
+    preds[:, :, 1] += diff2.squeeze(-1)
     # preds += 0.5
-
+    '''
     preds_tf = torch.zeros(preds.size())
+    preds_tf = transformBoxInvert_batch(preds, pt1, pt2, inpH, inpW, resH, resW)
+    '''
     for i in range(hms.size(0)):        # Number of samples
-        for j in range(hms.size(1)):    # Number of output heatmaps
-            preds_tf[i][j] = transformBoxInvert(preds[i][j], pt1[i], pt2[i], inpH, inpW, resH, resW)
-
+        for j in range(hms.size(1)):    # Number of output heatmaps for one sample
+            preds_tf[i][j] = transformBoxInvert(
+                preds[i][j], pt1[i], pt2[i], inpH, inpW, resH, resW)
+    '''
     return preds, preds_tf, maxval
