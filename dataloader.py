@@ -9,35 +9,6 @@ from yolo.preprocess import prep_image, inp_to_image
 
 import json
 
-class Tmp_loader(data.Dataset):
-    def __init__(self, img_list):
-        super(Tmp_loader, self).__init__()
-        self.img_dir = '/mnt/lustre/lijiefeng/git/pytorch-AlphaPose/data/kibr/images'
-        self.annot = json.load(open(img_list, 'r'))
-        self.imglist = list(self.annot.keys())
-        self.format = format
-
-    def __getitem__(self, index):
-        im_name = self.imglist[index]
-
-        im_name = os.path.join(self.img_dir, im_name + '.jpg')
-
-        inp = load_image(im_name)
-        boxes = torch.Tensor(self.annot[self.imglist[index]])
-        scores = boxes[:, -1]
-        boxes = boxes[:, :4]
-        ht, wd = inp.shape[1], inp.shape[2]
-        boxes[:, 2] = boxes[:, 0] + boxes[:, 2]
-        boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
-        assert boxes.dim() == 2
-
-        inps, pt1, pt2 = crop_from_dets(inp, boxes)
-
-        return inps, (pt1, pt2, boxes, scores), im_name
-
-    def __len__(self):
-        return len(self.imglist)
-
 
 class Image_loader(data.Dataset):
     def __init__(self, img_list, format='ssd'):
