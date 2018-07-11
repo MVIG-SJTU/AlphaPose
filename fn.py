@@ -110,7 +110,7 @@ def vis_res(final_result, outputpath, format='coco'):
                     continue
                 cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
                 part_line[n] = (cor_x, cor_y)
-                cv2.circle(img, (cor_x, cor_y), 6, p_color[n], -1)
+                cv2.circle(img, (cor_x, cor_y), 4, p_color[n], -1)
             # Draw limbs
             for start_p, end_p in l_pair:
                 if start_p in part_line and end_p in part_line:
@@ -118,7 +118,7 @@ def vis_res(final_result, outputpath, format='coco'):
                     end_p = part_line[end_p]
                     cv2.line(img, start_p, end_p, YELLOW, 2)
 
-        cv2.imwrite(os.path.join(outputpath, 'res' + im_name), img)
+        cv2.imwrite(os.path.join(outputpath, im_name), img)
 
 
 def getTime(time1=0):
