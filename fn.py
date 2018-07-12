@@ -99,7 +99,7 @@ def vis_res(final_result, outputpath, format='coco'):
 
     for im_res in (final_result):
         im_name = im_res['imgname'].split('/')[-1]
-        img = cv2.imread(os.path.join(opt.imgpath, im_name))
+        img = cv2.imread(os.path.join(opt.inputpath, im_name))
         for human in im_res['result']:
             part_line = {}
             kp_preds = human['keypoints']
@@ -110,7 +110,7 @@ def vis_res(final_result, outputpath, format='coco'):
                     continue
                 cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
                 part_line[n] = (cor_x, cor_y)
-                cv2.circle(img, (cor_x, cor_y), 4, p_color[n], -1)
+                cv2.circle(img, (cor_x, cor_y), 5, p_color[n], -1)
             # Draw limbs
             for start_p, end_p in l_pair:
                 if start_p in part_line and end_p in part_line:

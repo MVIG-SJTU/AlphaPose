@@ -30,6 +30,14 @@ if __name__ == "__main__":
     mode = args.mode
     if not os.path.exists(args.outputpath):
         os.mkdir(args.outputpath)
+    
+    if len(inputlist):
+        im_names = open(inputlist, 'r').readlines()
+    elif len(inputpath) and inputpath != '/':
+        for root, dirs, files in os.walk(inputpath):
+            im_names = files
+    else:
+        raise IOError('Error: ./run.sh must contain either --indir/--list')
 
     # Load YOLO model
     print('Loading YOLO model..')
@@ -42,31 +50,12 @@ if __name__ == "__main__":
     det_model.cuda()
     det_model.eval()
 
-    print(inputpath)
-    print(inputlist)
-    if len(inputpath) and inputpath != '/':
-        for root, dirs, files in os.walk(inputpath):
-            im_names = files
-    elif len(inputlist):
-        with open(inputlist, 'r') as f:
-            im_names = []
-            for line in f.readlines():
-                im_names.append(line.split('\n')[0])
-    else:
-        raise IOError('Error: ./run.sh must contain either --indir/--list')
-
-    dataset = Image_loader(inputlist, format='yolo')
-    test_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=1, shuffle=False, num_workers=20, pin_memory=True
-    )
-    im_names_desc = tqdm(test_loader)
-
+    # Load pose model
     pose_dataset = Mscoco()
     if args.fast_inference:
         pose_model = InferenNet_fast(4 * 1 + 1, pose_dataset)
     else:
         pose_model = InferenNet(4 * 1 + 1, pose_dataset)
-    #pose_model = torch.nn.DataParallel(pose_model).cuda()
     pose_model.cuda()
     pose_model.eval()
 
@@ -77,6 +66,13 @@ if __name__ == "__main__":
         'pt': [],
         'pn': []
     }
+
+    # Load input images
+    dataset = Image_loader(im_names, format='yolo')
+    test_loader = torch.utils.data.DataLoader(
+        dataset, batch_size=1, shuffle=False, num_workers=20, pin_memory=True
+    )
+    im_names_desc = tqdm(test_loader)
     for i, (img, inp, im_name, im_dim_list) in enumerate(im_names_desc):
         start_time = getTime()
         with torch.no_grad():
@@ -124,7 +120,7 @@ if __name__ == "__main__":
             result = pose_nms(boxes, scores, preds_img, preds_scores)
             ckpt_time, poseNMS_time = getTime(ckpt_time)
             runtime_profile['pn'].append(poseNMS_time)
-            # print(len(result))
+
             result = {
                 'imgname': im_name[0],
                 'result': result
@@ -143,7 +139,7 @@ if __name__ == "__main__":
             'Speed: {fps:.2f} FPS'.format(
                 fps=1 / (ckpt_time - start_time))
         )
-    if not args.vis_res:
-        write_json(final_result, args.outputpath)
-    else:
+
+    write_json(final_result, args.outputpath, for_eval=False) #set for_eval to True to save the result for COCO server evaluation
+    if args.vis_res:
         vis_res(final_result, args.outputpath)

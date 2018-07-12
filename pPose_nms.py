@@ -278,7 +278,7 @@ def PCK_match(pick_pred, all_preds, ref_dist):
     return num_match_keypoints
 
 
-def write_json(all_results, outputpath):
+def write_json(all_results, outputpath, for_eval=False):
     '''
     all_result: result dict of predictions
     outputpath: output directory
@@ -289,7 +289,10 @@ def write_json(all_results, outputpath):
         for human in im_res['result']:
             keypoints = []
             result = {}
-            result['image_id'] = int(im_name.split('/')[-1].split('.')[0].split('_')[-1])
+            if for_eval:
+                result['image_id'] = int(im_name.split('/')[-1].split('.')[0].split('_')[-1])
+            else:
+                result['image_id'] = im_name.split('/')[-1]
             result['category_id'] = 1
 
             kp_preds = human['keypoints']
@@ -304,9 +307,8 @@ def write_json(all_results, outputpath):
 
             json_results.append(result)
 
-    os.chdir(outputpath)
-    with open('keypoint_result.json', 'w') as json_file:
+    with open(os.path.join(outputpath,'keypoint_result.json'), 'w') as json_file:
         json_file.write(json.dumps(json_results))
-    result_zip = zipfile.ZipFile('keypoint_result.zip', 'w')
-    result_zip.write('keypoint_result.json')
+    result_zip = zipfile.ZipFile(os.path.join(outputpath,'keypoint_result.zip'), 'w')
+    result_zip.write(os.path.join(outputpath,'keypoint_result.json'))
     result_zip.close()

@@ -104,6 +104,8 @@ parser.add_argument('--port', dest='port',
 "----------------------------- Detection options -----------------------------"
 parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16 res101]',
                     default='res152')
+parser.add_argument('--video', dest='video',
+                    help='video-name', default="")
 parser.add_argument('--inputpath', dest='inputpath',
                     help='image-directory', default="")
 parser.add_argument('--inputlist', dest='inputlist',
@@ -112,8 +114,6 @@ parser.add_argument('--mode', dest='mode',
                     help='detection mode, fast/normal/accurate', default="normal")
 parser.add_argument('--outputpath', dest='outputpath',
                     help='output-directory', default="")
-parser.add_argument('--imgpath', dest='imgpath',
-                    help='image-path', default="")
 parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
                     help='inpdim')
 

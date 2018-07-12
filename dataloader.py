@@ -11,13 +11,10 @@ import json
 
 
 class Image_loader(data.Dataset):
-    def __init__(self, img_list, format='ssd'):
+    def __init__(self, im_names, format='yolo'):
         super(Image_loader, self).__init__()
-        if opt.imgpath:
-            self.img_dir = opt.imgpath
-        else:
-            self.img_dir = './data/coco'
-        self.imglist = open(img_list, 'r').readlines()
+        self.img_dir = opt.inputpath
+        self.imglist = im_names
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))

@@ -49,7 +49,7 @@ class InferenNet(nn.Module):
         super(InferenNet, self).__init__()
 
         model = createModel_Inference().cuda()
-        print('Loading Model from {}'.format('./models/sppe/pyra_4.pth'))
+        print('Loading pose model from {}'.format('./models/sppe/pyra_4.pth'))
         model.load_state_dict(torch.load('./models/sppe/pyra_4.pth'))
         model.eval()
         self.pyranet = model
@@ -85,7 +85,7 @@ class InferenNet_fast(nn.Module):
         super(InferenNet_fast, self).__init__()
 
         model = createModel_Inference().cuda()
-        print('Loading Model from {}'.format('./models/sppe/pyra_4.pth'))
+        print('Loading pose model from {}'.format('./models/sppe/pyra_4.pth'))
         model.load_state_dict(torch.load('./models/sppe/pyra_4.pth'))
         model.eval()
         self.pyranet = model
