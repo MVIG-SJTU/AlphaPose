@@ -7,6 +7,9 @@ import cv2
 from opt import opt
 from tqdm import tqdm
 import time
+import matplotlib.pyplot as plt
+from PIL import Image
+import numpy as np
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -78,6 +81,42 @@ def collate_fn_list(batch):
 
     return img, inp, im_name
 
+def display_pose(final_result, outputpath):
+    img = cv2.imread(os.path.join(opt.inputpath, im_name))
+    width, height = img.size
+    fig = plt.figure(figsize=(width/10,height/10),dpi=10)
+    plt.imshow(img)
+    for pid in range(len(final_result[imgname])):
+        pose = final_result[imgname][pid]['keypoints']
+        kp_scores = human['kp_score']
+        if pose.shape[0] == 16:
+            mpii_part_names = ['RAnkle','RKnee','RHip','LHip','LKnee','LAnkle','Pelv','Thrx','Neck','Head','RWrist','RElbow','RShoulder','LShoulder','LElbow','LWrist']
+            colors = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'm', 'r', 'r','b','b']
+            pairs = [[8,9],[11,12],[11,10],[2,1],[1,0],[13,14],[14,15],[3,4],[4,5],[8,7],[7,6],[6,2],[6,3],[8,12],[8,13]]
+            colors_skeleton = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'r', 'r', 'b','b']
+            for idx_c, color in enumerate(colors):
+                plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=40*np.mean(pose[idx_c,2]))
+            for idx in range(len(colors_skeleton)):
+                plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height), 'r-',
+                        color=colors_skeleton[idx],linewidth=40*np.mean(pose[pairs[idx],2]),  alpha=np.mean(pose[pairs[idx],2]))
+        elif pose.shape[0] == 17:
+            coco_part_names = ['Nose','LEye','REye','LEar','REar','LShoulder','RShoulder','LElbow','RElbow','LWrist','RWrist','LHip','RHip','LKnee','RKnee','LAnkle','RAnkle']
+            colors = ['r', 'r', 'r', 'r', 'r', 'y', 'y', 'y', 'y', 'y', 'y', 'g', 'g', 'g','g','g','g']
+            pairs = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[11,12],[11,13],[13,15],[12,14],[14,16],[6,12],[5,11]]
+            colors_skeleton = ['y', 'y', 'y', 'y', 'b', 'b', 'b', 'b', 'b', 'r', 'r', 'r', 'r', 'r','m','m']
+            for idx_c, color in enumerate(colors):
+                plt.plot(np.clip(pose[idx_c,0],0,width), np.clip(pose[idx_c,1],0,height), marker='o', color=color, ms=4*np.mean(pose[idx_c,2]))
+            for idx in range(len(colors_skeleton)):
+                plt.plot(np.clip(pose[pairs[idx],0],0,width),np.clip(pose[pairs[idx],1],0,height),'r-',
+                         color=colors_skeleton[idx],linewidth=4*np.mean(pose[pairs[idx],2]), alpha=0.12*np.mean(pose[pairs[idx],2]))
+
+    plt.axis('off')
+    ax = plt.gca()
+    ax.set_xlim([0,width])
+    ax.set_ylim([height,0])
+    extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    fig.savefig(os.path.join(outputpath,'vis',imgname.split('/')[-1]),pad_inches = 0.0, bbox_inches=extent, dpi=13)
+    plt.close()
 
 def vis_res(final_result, outputpath, format='coco'):
     '''
@@ -120,6 +159,102 @@ def vis_res(final_result, outputpath, format='coco'):
 
         cv2.imwrite(os.path.join(outputpath, im_name), img)
 
+def display_frame(frame, im_res, outputpath, format='coco'):
+    '''
+    frame: frame image
+    im_res: im_res of predictions
+    outputpath: output directory
+    format: coco or mpii
+    '''
+    if format == 'coco':
+        l_pair = [
+            (0, 1), (0, 2), (1, 3), (2, 4),  # Head
+            (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
+            (5, 11), (6, 12),  # Body
+            (11, 13), (12, 14), (13, 15), (14, 16)
+        ]
+        p_color = ['r', 'r', 'r', 'r', 'r', 'y', 'y', 'y', 'y', 'y', 'y', 'g', 'g', 'g','g','g','g']
+        line_color =  ['y', 'y', 'y', 'y', 'b', 'b', 'b', 'b', 'b', 'm', 'm', 'r', 'r', 'r','r']
+    elif format == 'mpii':
+        l_pair = [
+            (8,9),(11,12),(11,10),(2,1),(1,0),
+            (13,14),(14,15),(3,4),(4,5),
+            (8,7),(7,6),(6,2),(6,3),(8,12),(8,13)
+        ]
+        p_color = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'm', 'r', 'r','b','b']
+        line_color = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'r', 'r', 'b','b']
+    else:
+        NotImplementedError
+
+    img = Image.fromarray(frame)
+    width, height = img.size
+    fig = plt.figure(figsize=(width/10,height/10),dpi=10)
+    plt.imshow(img)
+    imgname = im_res['imgname'].split('/')[-1]
+    for human in im_res['result']:
+        part_line = {}
+        kp_preds = human['keypoints']
+        kp_scores = human['kp_score']
+        # Draw keypoints
+        for n in range(kp_scores.shape[0]):
+            cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
+            part_line[n] = (cor_x, cor_y)
+            plt.plot(np.clip(cor_x,0,width), np.clip(cor_y,0,height), marker='o', color=p_color[n], ms=10*kp_scores[n])
+        # Draw limbs
+        for i, (start_p, end_p) in enumerate(l_pair):
+            if start_p in part_line and end_p in part_line:
+                start_xy = part_line[start_p]
+                end_xy = part_line[end_p]
+                plt.plot(np.clip((start_xy[0],end_xy[0]),0,width),np.clip((start_xy[1],end_xy[1]),0,height), 'r-',
+                        color=line_color[i],linewidth=2*(kp_scores[start_p]+kp_scores[end_p]),  alpha=0.06*(kp_scores[start_p]+kp_scores[end_p]))
+    plt.axis('off')
+    ax = plt.gca()
+    ax.set_xlim([0,width])
+    ax.set_ylim([height,0])
+    extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    fig.savefig(os.path.join(outputpath,'vis',imgname.split('/')[-1]),pad_inches = 0.0, bbox_inches=extent, dpi=13)
+    plt.close()
+
+def vis_frame(frame, im_res, outputpath, format='coco'):
+    '''
+    frame: frame image
+    im_res: im_res of predictions
+    outputpath: output directory
+    format: coco or mpii
+    '''
+    if format == 'coco':
+        l_pair = [
+            (0, 1), (0, 2), (1, 3), (2, 4),  # Head
+            (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
+            (5, 11), (6, 12),  # Body
+            (11, 13), (12, 14), (13, 15), (14, 16)
+        ]
+        p_color = [GREEN, BLUE, BLUE, BLUE, BLUE, YELLOW, ORANGE, YELLOW, ORANGE,
+                   YELLOW, ORANGE, PINK, RED, PINK, RED, PINK, RED]
+    else:
+        NotImplementedError
+
+    im_name = im_res['imgname'].split('/')[-1]
+    img = frame
+    for human in im_res['result']:
+        part_line = {}
+        kp_preds = human['keypoints']
+        kp_scores = human['kp_score']
+        # Draw keypoints
+        for n in range(kp_scores.shape[0]):
+            if kp_scores[n] <= 0.3:
+                continue
+            cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
+            part_line[n] = (cor_x, cor_y)
+            cv2.circle(img, (cor_x, cor_y), 5, p_color[n], -1)
+        # Draw limbs
+        for start_p, end_p in l_pair:
+            if start_p in part_line and end_p in part_line:
+                start_p = part_line[start_p]
+                end_p = part_line[end_p]
+                cv2.line(img, start_p, end_p, YELLOW, 2)
+
+    cv2.imwrite(os.path.join(outputpath, im_name), img)
 
 def getTime(time1=0):
     if not time1:

@@ -3,12 +3,22 @@ import torch
 import torch.utils.data as data
 import torchvision.transforms as transforms
 from PIL import Image, ImageDraw
-from SPPE.src.utils.img import load_image, cropBox
+from SPPE.src.utils.img import load_image, cropBox, im_to_torch
 from opt import opt
-from yolo.preprocess import prep_image, inp_to_image
-
+from yolo.preprocess import prep_image, prep_frame, inp_to_image
+import cv2
 import json
-
+import sys
+import time
+from threading import Thread
+ 
+# import the Queue class from Python 3
+if sys.version_info >= (3, 0):
+    from queue import Queue
+ 
+# otherwise, import the Queue class for Python 2.7
+else:
+    from Queue import Queue
 
 class Image_loader(data.Dataset):
     def __init__(self, im_names, format='yolo'):
@@ -55,7 +65,68 @@ class Image_loader(data.Dataset):
     def __len__(self):
         return len(self.imglist)
 
+class FileVideoStream:
+    def __init__(self, path, queueSize=256):
+        # initialize the file video stream along with the boolean
+        # used to indicate if the thread should be stopped or not
+        self.stream = cv2.VideoCapture(path)
+        assert self.stream.isOpened(), 'Cannot capture source'
+        self.stopped = False
+        self.len = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+        # initialize the queue used to store frames read from
+        # the video file
+        self.Q = Queue(maxsize=queueSize)
+    
+    def length(self):
+        return self.len
 
+    def start(self):
+        # start a thread to read frames from the file video stream
+        t = Thread(target=self.update, args=())
+        t.daemon = True
+        t.start()
+        return self
+
+    def update(self):
+        # keep looping infinitely
+        while True:
+            time.sleep(0.02)
+            # if the thread indicator variable is set, stop the
+            # thread
+            if self.stopped:
+                return
+            # otherwise, ensure the queue has room in it
+            if not self.Q.full():
+                # read the next frame from the file
+                (grabbed, frame) = self.stream.read()
+                # if the `grabbed` boolean is `False`, then we have
+                # reached the end of the video file
+                if not grabbed:
+                    self.stop()
+                    return
+                # process and add the frame to the queue
+                inp_dim = int(opt.inp_dim)
+                img, orig_img, dim = prep_frame(frame, inp_dim)
+                inp = im_to_torch(orig_img)
+                im_dim_list = torch.FloatTensor([dim]).repeat(1, 2)
+
+                self.Q.put((img, orig_img, inp, im_dim_list))
+
+    def running(self):
+    # indicate that the thread is still running
+        return(not(self.stopped))
+
+    def read(self):
+        # return next frame in the queue
+        return self.Q.get()
+
+    def more(self):
+        # return True if there are still frames in the queue
+        return self.Q.qsize() > 0
+    
+    def stop(self):
+        # indicate that the thread should be stopped
+        self.stopped = True
 class Mscoco(data.Dataset):
     def __init__(self, train=True, sigma=1,
                  scale_factor=(0.2, 0.3), rot_factor=40, label_type='Gaussian'):

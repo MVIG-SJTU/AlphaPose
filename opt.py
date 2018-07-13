@@ -104,8 +104,6 @@ parser.add_argument('--port', dest='port',
 "----------------------------- Detection options -----------------------------"
 parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16 res101]',
                     default='res152')
-parser.add_argument('--video', dest='video',
-                    help='video-name', default="")
 parser.add_argument('--inputpath', dest='inputpath',
                     help='image-directory', default="")
 parser.add_argument('--inputlist', dest='inputlist',
@@ -116,9 +114,16 @@ parser.add_argument('--outputpath', dest='outputpath',
                     help='output-directory', default="")
 parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
                     help='inpdim')
+parser.add_argument('--conf', dest='confidence', type=float, default=0.2,
+                    help='bounding box confidence threshold')
+parser.add_argument('--nms', dest='nms_thesh', type=float, default=0.6,
+                    help='bounding box nms threshold')
 
+"----------------------------- Video options -----------------------------"
+parser.add_argument('--video', dest='video',
+                    help='video-name', default="")
+# parser.add_argument('--scale', dest='scale',
+#                     help='scale input size for each frame', type=int, default=1)
 opt = parser.parse_args()
 
-opt.confidence = 0.2
 opt.num_classes = 80
-opt.nms_thesh = 0.6
