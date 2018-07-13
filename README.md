@@ -34,11 +34,11 @@ To match poses that correspond to the same person across frames, we also provide
 ## Quick Start
 - **Input dir**:  Run AlphaPose for all images in a folder and save the rendered images with:
 ```
-python3 demo.py --inputpath ${img_directory} --outputpath examples/res --save_img True
+python3 demo.py --inputpath ${img_directory} --outputpath examples/res --save_img
 ```
 - **Video**:  Run AlphaPose for a video and save the rendered video with:
 ```
-python3 video_demo.py --video ${path to video} --outputpath examples/res --save_video True
+python3 video_demo.py --video ${path to video} --outputpath examples/res --save_video
 ```
 - **Input list**:  Run AlphaPose for images in a list with:
 ```
@@ -47,7 +47,7 @@ python3 demo.py --inputlist examples/list-coco-demo.txt --inputpath ${img_direct
 
 
 ## Contributors
-Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 
+Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 
 
 ## Citation
 Please cite these papers in your publications if it helps your research:

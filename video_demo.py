@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
-        print('===========================> If this step takes too long, you can set the --vis_fast flag to True to use fast rendering (real-time).')
+        print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
     while(writer.running()):
         pass
     writer.stop()

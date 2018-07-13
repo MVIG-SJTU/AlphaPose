@@ -116,16 +116,16 @@ parser.add_argument('--conf', dest='confidence', type=float, default=0.2,
                     help='bounding box confidence threshold')
 parser.add_argument('--nms', dest='nms_thesh', type=float, default=0.6,
                     help='bounding box nms threshold')
-parser.add_argument('--save_img', default=False, type=bool,
+parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 
 "----------------------------- Video options -----------------------------"
 parser.add_argument('--video', dest='video',
                     help='video-name', default="")
 parser.add_argument('--save_video', dest='save_video',
-                    help='whether to save rendered video', type=bool, default=False)
+                    help='whether to save rendered video', default=False, action='store_true')
 parser.add_argument('--vis_fast', dest='vis_fast',
-                    help='use fast rendering', type=bool, default=False)
+                    help='use fast rendering', action='store_true', default=False)
 opt = parser.parse_args()
 
 opt.num_classes = 80
