@@ -37,7 +37,7 @@ if __name__ == "__main__":
         for root, dirs, files in os.walk(inputpath):
             im_names = files
     else:
-        raise IOError('Error: ./run.sh must contain either --indir/--list')
+        raise IOError('Error: must contain either --indir/--list')
 
     # Load YOLO model
     print('Loading YOLO model..')
@@ -140,6 +140,9 @@ if __name__ == "__main__":
                 fps=1 / (ckpt_time - start_time))
         )
 
-    write_json(final_result, args.outputpath, for_eval=False) #set for_eval to True to save the result for COCO server evaluation
+    write_json(final_result, args.outputpath)
     if args.vis_res:
-        vis_res(final_result, args.outputpath)
+        print('Visualizing results..')
+        if not os.path.exists(args.outputpath+'/vis'):
+                os.mkdir(args.outputpath+'/vis')
+        vis_res(final_result, args.outputpath+'/vis')

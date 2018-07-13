@@ -8,7 +8,7 @@ import torch.utils.data
 import numpy as np
 from opt import opt
 
-from dataloader import FileVideoStream, crop_from_dets, Mscoco
+from dataloader import VideoLoader, crop_from_dets, Mscoco
 from yolo.darknet import Darknet
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         raise IOError('Error: must contain --video')
 
     # Load input video
-    fvs = FileVideoStream(videofile).start()
+    fvs = VideoLoader(videofile).start()
 
     # Load YOLO model
     print('Loading YOLO model..')
@@ -144,4 +144,4 @@ if __name__ == "__main__":
         #         fps=1 / (ckpt_time - start_time))
         # )
 
-    write_json(final_result, args.outputpath, for_eval=False) #set for_eval to True to save the result for COCO server evaluation
+    write_json(final_result, args.outputpath)

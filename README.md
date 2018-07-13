@@ -32,14 +32,18 @@ To match poses that correspond to the same person across frames, we also provide
 
 
 ## Quick Start
-- **Demo**:  Run AlphaPose for all images in a folder and visualize the results with:
+- **Input dir**:  Run AlphaPose for all images in a folder and visualize the results with:
 ```
-python3 demo.py \
---inputlist examples/list-coco-demo.txt \
---imgpath ${img_directory} \
---outputpath examples/res
+python3 demo.py --inputpath ${img_directory} --outputpath examples/res --vis_res True
 ```
-
+- **Video**:  Run AlphaPose for all images in a folder and visualize the results with:
+```
+python3 video_demo.py --video ${path to video} --outputpath examples/res --vis_res True
+```
+- **Input list**:  Run AlphaPose for images in a list with:
+```
+python3 demo.py --inputlist examples/list-coco-demo.txt --inputpath ${img_directory} --outputpath examples/res
+```
 
 
 ## Contributors
