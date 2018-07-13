@@ -6,20 +6,25 @@ from PIL import Image, ImageDraw
 from SPPE.src.utils.img import load_image, cropBox, im_to_torch
 from opt import opt
 from yolo.preprocess import prep_image, prep_frame, inp_to_image
+from pPose_nms import pose_nms, write_json
+from SPPE.src.utils.eval import getPrediction
+
 import cv2
 import json
 import sys
 import time
 from threading import Thread
- 
 # import the Queue class from Python 3
 if sys.version_info >= (3, 0):
     from queue import Queue
- 
 # otherwise, import the Queue class for Python 2.7
 else:
     from Queue import Queue
 
+if opt.vis_fast:
+    from fn import vis_frame_fast as vis_frame
+else:
+    from fn import vis_frame
 class Image_loader(data.Dataset):
     def __init__(self, im_names, format='yolo'):
         super(Image_loader, self).__init__()
@@ -48,11 +53,11 @@ class Image_loader(data.Dataset):
         inp_dim = int(opt.inp_dim)
         im_name = self.imglist[index].rstrip('\n').rstrip('\r')
         im_name = os.path.join(self.img_dir, im_name)
-        im, _, im_dim = prep_image(im_name, inp_dim)
+        im, orig_img, im_dim = prep_image(im_name, inp_dim)
         im_dim = torch.FloatTensor([im_dim]).repeat(1, 2)
 
         inp = load_image(im_name)
-        return im, inp, im_name, im_dim
+        return im, inp, orig_img, im_name, im_dim
 
     def __getitem__(self, index):
         if self.format == 'ssd':
@@ -112,9 +117,12 @@ class VideoLoader:
 
                 self.Q.put((img, orig_img, inp, im_dim_list))
 
-    def running(self):
-    # indicate that the thread is still running
-        return(not(self.stopped))
+    def videoinfo(self):
+        # indicate the video info
+        fourcc=int(self.stream.get(cv2.CAP_PROP_FOURCC))
+        fps=self.stream.get(cv2.CAP_PROP_FPS)
+        frameSize=(int(self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)),int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        return (fourcc,fps,frameSize)
 
     def read(self):
         # return next frame in the queue
@@ -128,20 +136,24 @@ class VideoLoader:
         # indicate that the thread should be stopped
         self.stopped = True
 
-class VideoWriter:
-    def __init__(self, path, queueSize=256):
-        # initialize the file video stream along with the boolean
-        # used to indicate if the thread should be stopped or not
-        self.stream = cv2.VideoCapture(path)
-        assert self.stream.isOpened(), 'Cannot capture source'
+class DataWriter:
+    def __init__(self, save_video=False, 
+                savepath='examples/res/1.avi', fourcc=cv2.VideoWriter_fourcc(*'XVID'), fps=25, frameSize=(640,480), 
+                queueSize=1024):
+        if save_video:
+            # initialize the file video stream along with the boolean
+            # used to indicate if the thread should be stopped or not
+            self.stream = cv2.VideoWriter(savepath, fourcc, fps, frameSize)
+            assert self.stream.isOpened(), 'Cannot open video for writing'
+        self.save_video = save_video
         self.stopped = False
-        self.len = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.final_result = []
         # initialize the queue used to store frames read from
         # the video file
         self.Q = Queue(maxsize=queueSize)
-    
-    def length(self):
-        return self.len
+        if opt.save_img:
+            if not os.path.exists(opt.outputpath+'/vis'):
+                os.mkdir(opt.outputpath+'/vis')
 
     def start(self):
         # start a thread to read frames from the file video stream
@@ -153,43 +165,61 @@ class VideoWriter:
     def update(self):
         # keep looping infinitely
         while True:
-            time.sleep(0.02)
+            time.sleep(0.01)
             # if the thread indicator variable is set, stop the
             # thread
             if self.stopped:
+                if self.save_video:
+                    self.stream.release()
                 return
-            # otherwise, ensure the queue has room in it
-            if not self.Q.full():
-                # read the next frame from the file
-                (grabbed, frame) = self.stream.read()
-                # if the `grabbed` boolean is `False`, then we have
-                # reached the end of the video file
-                if not grabbed:
-                    self.stop()
-                    return
-                # process and add the frame to the queue
-                inp_dim = int(opt.inp_dim)
-                img, orig_img, dim = prep_frame(frame, inp_dim)
-                inp = im_to_torch(orig_img)
-                im_dim_list = torch.FloatTensor([dim]).repeat(1, 2)
+            # otherwise, ensure the queue is not empty
+            if not self.Q.empty():
+                (boxes, scores, hm_data, pt1, pt2, orig_img, im_name) = self.Q.get()
+                if boxes is None:
+                    if opt.save_img or opt.save_video:
+                        #img = display_frame(orig_img, result, opt.outputpath)
+                        img = orig_img
+                        if opt.save_img:
+                            cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
+                        if opt.save_video:
+                            self.stream.write(img)
+                else:
+                    # location prediction (n, kp, 2) | score prediction (n, kp, 1)
+                    preds_hm, preds_img, preds_scores = getPrediction(
+                    hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
 
-                self.Q.put((img, orig_img, inp, im_dim_list))
+                    result = pose_nms(boxes, scores, preds_img, preds_scores)
+                    result = {
+                        'imgname': im_name,
+                        'result': result
+                    }
+                    self.final_result.append(result)
+
+                    if opt.save_img or opt.save_video:
+                        #img = display_frame(orig_img, result, opt.outputpath)
+                        img = vis_frame(orig_img, result)
+                        if opt.save_img:
+                            cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
+                        if opt.save_video:
+                            self.stream.write(img)
 
     def running(self):
-    # indicate that the thread is still running
-        return(not(self.stopped))
+        # indicate that the thread is still running
+        time.sleep(0.2)
+        return not self.Q.empty()
 
-    def read(self):
-        # return next frame in the queue
-        return self.Q.get()
-
-    def more(self):
-        # return True if there are still frames in the queue
-        return self.Q.qsize() > 0
+    def save(self, boxes, scores, hm_data, pt1, pt2, orig_img, im_name):
+        # save next frame in the queue
+        self.Q.put((boxes, scores, hm_data, pt1, pt2, orig_img, im_name))
     
     def stop(self):
         # indicate that the thread should be stopped
         self.stopped = True
+        time.sleep(0.02)
+
+    def results(self):
+        # return final result
+        return self.final_result
 
 class Mscoco(data.Dataset):
     def __init__(self, train=True, sigma=1,

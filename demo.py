@@ -8,7 +8,7 @@ import torch.utils.data
 import numpy as np
 from opt import opt
 
-from dataloader import Image_loader, crop_from_dets, Mscoco
+from dataloader import Image_loader, DataWriter, crop_from_dets, Mscoco
 from yolo.darknet import Darknet
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
@@ -59,7 +59,6 @@ if __name__ == "__main__":
     pose_model.cuda()
     pose_model.eval()
 
-    final_result = []
     runtime_profile = {
         'dt': [],
         'dn': [],
@@ -72,8 +71,12 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(
         dataset, batch_size=1, shuffle=False, num_workers=20, pin_memory=True
     )
+
+    # Init data writer
+    writer = DataWriter(args.save_video).start()
+
     im_names_desc = tqdm(test_loader)
-    for i, (img, inp, im_name, im_dim_list) in enumerate(im_names_desc):
+    for i, (img, inp, orig_img, im_name, im_dim_list) in enumerate(im_names_desc):
         start_time = getTime()
         with torch.no_grad():
             ht = inp.size(2)
@@ -113,36 +116,22 @@ if __name__ == "__main__":
             ckpt_time, pose_time = getTime(ckpt_time)
             runtime_profile['pt'].append(pose_time)
 
-            # location prediction (n, kp, 2) | score prediction (n, kp, 1)
-            preds_hm, preds_img, preds_scores = getPrediction(
-                hm.cpu().data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
-
-            result = pose_nms(boxes, scores, preds_img, preds_scores)
-            ckpt_time, poseNMS_time = getTime(ckpt_time)
-            runtime_profile['pn'].append(poseNMS_time)
-
-            result = {
-                'imgname': im_name[0],
-                'result': result
-            }
-            final_result.append(result)
-
+            writer.save(boxes, scores, hm.cpu().data, pt1, pt2, np.array(orig_img[0], dtype=np.uint8), im_name[0].split('/')[-1])
+            ckpt_time, post_time = getTime(ckpt_time)
+            runtime_profile['pn'].append(post_time)
         # TQDM
-        '''
         im_names_desc.set_description(
-            'det time: {dt:.4f} | det NMS: {dn:.4f} | pose time: {pt:.4f} | pose NMS: {pn:.4f}'.format(
+            'det time: {dt:.4f} | det NMS: {dn:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
                 dt=np.mean(runtime_profile['dt']), dn=np.mean(runtime_profile['dn']),
                 pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
-        )'''
-
-        im_names_desc.set_description(
-            'Speed: {fps:.2f} FPS'.format(
-                fps=1 / (ckpt_time - start_time))
         )
 
+    if (args.save_img or args.save_video) and not args.vis_fast:
+        print('===========================> Rendering remaining images in the queue...')
+        print('===========================> If this step takes too long, you can set the --vis_fast flag to True to use fast rendering (real-time).')
+    while(writer.running()):
+        pass
+    writer.stop()
+    final_result = writer.results()
     write_json(final_result, args.outputpath)
-    if args.vis_res:
-        print('Visualizing results..')
-        if not os.path.exists(args.outputpath+'/vis'):
-                os.mkdir(args.outputpath+'/vis')
-        vis_res(final_result, args.outputpath+'/vis')
+

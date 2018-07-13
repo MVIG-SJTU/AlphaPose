@@ -36,8 +36,6 @@ parser.add_argument('--nStack', default=4, type=int,
 "----------------------------- Hyperparameter options -----------------------------"
 parser.add_argument('--fast_inference', default=True, type=bool,
                     help='Fast inference')
-parser.add_argument('--vis_res', default=False, type=bool,
-                    help='Visualize result')
 parser.add_argument('--use_pyranet', default=True, type=bool,
                     help='use pyranet')
 
@@ -118,12 +116,16 @@ parser.add_argument('--conf', dest='confidence', type=float, default=0.2,
                     help='bounding box confidence threshold')
 parser.add_argument('--nms', dest='nms_thesh', type=float, default=0.6,
                     help='bounding box nms threshold')
+parser.add_argument('--save_img', default=False, type=bool,
+                    help='save result as image')
 
 "----------------------------- Video options -----------------------------"
 parser.add_argument('--video', dest='video',
                     help='video-name', default="")
-# parser.add_argument('--scale', dest='scale',
-#                     help='scale input size for each frame', type=int, default=1)
+parser.add_argument('--save_video', dest='save_video',
+                    help='whether to save rendered video', type=bool, default=False)
+parser.add_argument('--vis_fast', dest='vis_fast',
+                    help='use fast rendering', type=bool, default=False)
 opt = parser.parse_args()
 
 opt.num_classes = 80

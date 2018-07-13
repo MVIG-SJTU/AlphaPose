@@ -14,9 +14,10 @@ import numpy as np
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
-YELLOW = (255, 255, 0)
-ORANGE = (255, 165, 0)
-PINK = (255, 192, 203)
+CYAN = (255, 255, 0)
+YELLOW = (0, 255, 255)
+ORANGE = (0, 165, 255)
+PURPLE = (255, 0, 255)
 
 numpy_type_map = {
     'float64': torch.DoubleTensor,
@@ -132,7 +133,7 @@ def vis_res(final_result, outputpath, format='coco'):
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
         p_color = [GREEN, BLUE, BLUE, BLUE, BLUE, YELLOW, ORANGE, YELLOW, ORANGE,
-                   YELLOW, ORANGE, PINK, RED, PINK, RED, PINK, RED]
+                   YELLOW, ORANGE, PURPLE, RED, PURPLE, RED, PURPLE, RED]
     else:
         NotImplementedError
 
@@ -159,68 +160,13 @@ def vis_res(final_result, outputpath, format='coco'):
 
         cv2.imwrite(os.path.join(outputpath, im_name), img)
 
-def display_frame(frame, im_res, outputpath, format='coco'):
+def vis_frame_fast(frame, im_res, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
-    outputpath: output directory
     format: coco or mpii
-    '''
-    if format == 'coco':
-        l_pair = [
-            (0, 1), (0, 2), (1, 3), (2, 4),  # Head
-            (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
-            (5, 11), (6, 12),  # Body
-            (11, 13), (12, 14), (13, 15), (14, 16)
-        ]
-        p_color = ['r', 'r', 'r', 'r', 'r', 'y', 'y', 'y', 'y', 'y', 'y', 'g', 'g', 'g','g','g','g']
-        line_color =  ['y', 'y', 'y', 'y', 'b', 'b', 'b', 'b', 'b', 'm', 'm', 'r', 'r', 'r','r']
-    elif format == 'mpii':
-        l_pair = [
-            (8,9),(11,12),(11,10),(2,1),(1,0),
-            (13,14),(14,15),(3,4),(4,5),
-            (8,7),(7,6),(6,2),(6,3),(8,12),(8,13)
-        ]
-        p_color = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'm', 'r', 'r','b','b']
-        line_color = ['m', 'b', 'b', 'r', 'r', 'b', 'b', 'r', 'r', 'm', 'm', 'r', 'r', 'b','b']
-    else:
-        NotImplementedError
 
-    img = Image.fromarray(frame)
-    width, height = img.size
-    fig = plt.figure(figsize=(width/10,height/10),dpi=10)
-    plt.imshow(img)
-    imgname = im_res['imgname'].split('/')[-1]
-    for human in im_res['result']:
-        part_line = {}
-        kp_preds = human['keypoints']
-        kp_scores = human['kp_score']
-        # Draw keypoints
-        for n in range(kp_scores.shape[0]):
-            cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
-            part_line[n] = (cor_x, cor_y)
-            plt.plot(np.clip(cor_x,0,width), np.clip(cor_y,0,height), marker='o', color=p_color[n], ms=10*kp_scores[n])
-        # Draw limbs
-        for i, (start_p, end_p) in enumerate(l_pair):
-            if start_p in part_line and end_p in part_line:
-                start_xy = part_line[start_p]
-                end_xy = part_line[end_p]
-                plt.plot(np.clip((start_xy[0],end_xy[0]),0,width),np.clip((start_xy[1],end_xy[1]),0,height), 'r-',
-                        color=line_color[i],linewidth=2*(kp_scores[start_p]+kp_scores[end_p]),  alpha=0.06*(kp_scores[start_p]+kp_scores[end_p]))
-    plt.axis('off')
-    ax = plt.gca()
-    ax.set_xlim([0,width])
-    ax.set_ylim([height,0])
-    extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    fig.savefig(os.path.join(outputpath,'vis',imgname.split('/')[-1]),pad_inches = 0.0, bbox_inches=extent, dpi=13)
-    plt.close()
-
-def vis_frame(frame, im_res, outputpath, format='coco'):
-    '''
-    frame: frame image
-    im_res: im_res of predictions
-    outputpath: output directory
-    format: coco or mpii
+    return rendered image
     '''
     if format == 'coco':
         l_pair = [
@@ -230,7 +176,14 @@ def vis_frame(frame, im_res, outputpath, format='coco'):
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
         p_color = [GREEN, BLUE, BLUE, BLUE, BLUE, YELLOW, ORANGE, YELLOW, ORANGE,
-                   YELLOW, ORANGE, PINK, RED, PINK, RED, PINK, RED]
+                   YELLOW, ORANGE, PURPLE, RED, PURPLE, RED, PURPLE, RED]
+    elif format == 'mpii':
+        l_pair = [
+            (8,9),(11,12),(11,10),(2,1),(1,0),
+            (13,14),(14,15),(3,4),(4,5),
+            (8,7),(7,6),(6,2),(6,3),(8,12),(8,13)
+        ]
+        p_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, PURPLE, RED, RED,BLUE,BLUE]
     else:
         NotImplementedError
 
@@ -252,9 +205,65 @@ def vis_frame(frame, im_res, outputpath, format='coco'):
             if start_p in part_line and end_p in part_line:
                 start_p = part_line[start_p]
                 end_p = part_line[end_p]
-                cv2.line(img, start_p, end_p, YELLOW, 2)
+                cv2.line(img, start_p, end_p, CYAN, 2)
+    return img
 
-    cv2.imwrite(os.path.join(outputpath, im_name), img)
+def vis_frame(frame, im_res, format='coco'):
+    '''
+    frame: frame image
+    im_res: im_res of predictions
+    format: coco or mpii
+
+    return rendered image
+    '''
+    if format == 'coco':
+        l_pair = [
+            (0, 1), (0, 2), (1, 3), (2, 4),  # Head
+            (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
+            (5, 11), (6, 12),  # Body
+            (11, 13), (12, 14), (13, 15), (14, 16)
+        ]
+        p_color = [RED, RED, RED, RED, RED, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, GREEN, GREEN, GREEN,GREEN,GREEN,GREEN]
+        line_color =  [YELLOW, YELLOW, YELLOW, YELLOW, BLUE, BLUE, BLUE, BLUE, BLUE, PURPLE, PURPLE, RED, RED, RED,RED]
+    elif format == 'mpii':
+        l_pair = [
+            (8,9),(11,12),(11,10),(2,1),(1,0),
+            (13,14),(14,15),(3,4),(4,5),
+            (8,7),(7,6),(6,2),(6,3),(8,12),(8,13)
+        ]
+        p_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, PURPLE, RED, RED,BLUE,BLUE]
+        line_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, RED, RED, BLUE,BLUE]
+    else:
+        NotImplementedError
+
+    im_name = im_res['imgname'].split('/')[-1]
+    img = frame
+    for human in im_res['result']:
+        part_line = {}
+        kp_preds = human['keypoints']
+        kp_scores = human['kp_score']
+        # Draw keypoints
+        for n in range(kp_scores.shape[0]):
+            if kp_scores[n] <= 0.3:
+                continue
+            cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
+            part_line[n] = (cor_x, cor_y)
+            bg = np.zeros(img.shape, dtype=np.uint8)
+            cv2.circle(bg, (cor_x, cor_y), 5, p_color[n], -1)
+            # Now create a mask of logo and create its inverse mask also
+            transparency = max(0,min(1,0.1*kp_scores[n]))
+            img = cv2.addWeighted(bg,transparency,img,1,0)
+
+        # Draw limbs
+        for i, (start_p, end_p) in enumerate(l_pair):
+            if start_p in part_line and end_p in part_line:
+                start_xy = part_line[start_p]
+                end_xy = part_line[end_p]
+                bg = np.zeros(img.shape, dtype=np.uint8)
+                cv2.line(bg, start_xy, end_xy, line_color[i], 0.5*(kp_scores[start_p]+kp_scores[end_p]))
+                transparency = max(0,min(1,0.06*(kp_scores[start_p]+kp_scores[end_p])))
+                img = cv2.addWeighted(bg,transparency,img,1,0)
+    return img
 
 def getTime(time1=0):
     if not time1:
