@@ -4,10 +4,10 @@ AlphaPose Usage & Examples
 We provide a script `run.sh` to ease your effort of running our code. Here, we first list the flags of this script and then give some examples.
 
 ## Flags
-- `--indir`: Directory of the input images. All the images in the directory will be processed. Input dir should be **RELATIVE PATH** to AlphaPose directory.
-- `--list`: A text file list for the input images, each line is the **ASOLUTE PATH** to the image. Not co-appear with `--indir`
+- `--indir`: Directory of the input images. All the images in the directory will be processed.
+- `--list`: A text file list for the input images
 - `--video`: Read video and process the video frame by frame.
-- `--outdir`: Output directory to store the human detection and pose estimation results.
+- `--outdir`: Output directory to store the pose estimation results.
 - `--save_img`: If turned-on, it will visualize the results and save them as images in $outdir/vis. 
 - `--save_video`: If turned-on, it will visualize the results and save them as a video.
 - `--vis_fast`: If turned on, it will use faster rendering method. Default is false.
