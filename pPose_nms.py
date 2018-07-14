@@ -6,7 +6,7 @@ import zipfile
 import time
 from multiprocessing.dummy import Pool as ThreadPool
 import numpy as np
-
+from opt import opt
 
 ''' Constant Configuration '''
 delta1 = 1
@@ -283,7 +283,9 @@ def write_json(all_results, outputpath, for_eval=False):
     all_result: result dict of predictions
     outputpath: output directory
     '''
+    form = opt.format
     json_results = []
+    json_results_cmu = {}
     for im_res in all_results:
         im_name = im_res['imgname']
         for human in im_res['result']:
@@ -305,10 +307,33 @@ def write_json(all_results, outputpath, for_eval=False):
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
 
-            json_results.append(result)
+            if form == 'cmu': # the form of CMU-Pose/OpenPose
+                if result['image_id'] not in json_results_cmu.keys():
+                    json_results_cmu[result['image_id']]={}
+                    json_results_cmu[result['image_id']]['version']=0.1
+                    json_results_cmu[result['image_id']]['bodies']=[]
+                tmp={'joints':[]}
+                result['keypoints'].append((result['keypoints'][15]+result['keypoints'][18])/2)
+                result['keypoints'].append((result['keypoints'][16]+result['keypoints'][19])/2)
+                result['keypoints'].append((result['keypoints'][17]+result['keypoints'][20])/2)
+                indexarr=[0,51,18,24,30,15,21,27,36,42,48,33,39,45,6,3,12,9]
+                for i in indexarr:
+                    tmp['joints'].append(result['keypoints'][i])
+                    tmp['joints'].append(result['keypoints'][i+1])
+                    tmp['joints'].append(result['keypoints'][i+2])
+                json_results_cmu[result['image_id']]['bodies'].append(tmp)
+            else:
+                json_results.append(result)
 
-    with open(os.path.join(outputpath,'keypoint_result.json'), 'w') as json_file:
-        json_file.write(json.dumps(json_results))
-    result_zip = zipfile.ZipFile(os.path.join(outputpath,'keypoint_result.zip'), 'w')
-    result_zip.write(os.path.join(outputpath,'keypoint_result.json'))
-    result_zip.close()
+    if form == 'cmu': # the form of CMU-Pose/OpenPose
+        with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
+            json_file.write(json.dumps(json_results_cmu))
+            if not os.path.exists(os.path.join(outputpath,'sep-json')):
+                os.mkdir(os.path.join(outputpath,'sep-json'))
+            for name in json_results_cmu.keys():
+                with open(os.path.join(outputpath,'sep-json',name.split('.')[0]+'.json'),'w') as json_file:
+                    json_file.write(json.dumps(json_results_cmu[name]))
+    else:
+        with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
+            json_file.write(json.dumps(json_results))
+

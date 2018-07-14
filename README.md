@@ -32,19 +32,23 @@ To match poses that correspond to the same person across frames, we also provide
 
 
 ## Quick Start
-- **Input dir**:  Run AlphaPose for all images in a folder and save the rendered images with:
+- **Input dir**:  Run AlphaPose for all images in a folder with:
 ```
-python3 demo.py --inputpath ${img_directory} --outputpath examples/res --save_img
+python3 demo.py --indir ${img_directory} --outdir examples/res 
 ```
 - **Video**:  Run AlphaPose for a video and save the rendered video with:
 ```
-python3 video_demo.py --video ${path to video} --outputpath examples/res --save_video
+python3 video_demo.py --video ${path to video} --outdir examples/res --save_video
 ```
-- **Input list**:  Run AlphaPose for images in a list with:
+- **Input list**:  Run AlphaPose for images in a list and save the rendered images with:
 ```
-python3 demo.py --inputlist examples/list-coco-demo.txt --inputpath ${img_directory} --outputpath examples/res
+python3 demo.py --list examples/list-coco-demo.txt --indir ${img_directory} --outdir examples/res --save_img
 ```
-
+- **Speeding up**:  Run AlphaPose for a video, speeding up by increasing the confidence and lowering the NMS threshold:
+```
+python3 video_demo.py --video ${path to video} --outdir examples/results/  --conf 0.5 --nms 0.45
+```
+- **For more**:  Checkout the [run.md](doc/run.md) for more options
 
 ## Contributors
 Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 
