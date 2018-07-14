@@ -20,6 +20,7 @@ from fn import getTime
 
 from pPose_nms import pose_nms, write_json
 
+
 args = opt
 args.dataset = 'coco'
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     mode = args.mode
     if not os.path.exists(args.outputpath):
         os.mkdir(args.outputpath)
-    
+
     if len(inputlist):
         im_names = open(inputlist, 'r').readlines()
     elif len(inputpath) and inputpath != '/':
@@ -90,7 +91,7 @@ if __name__ == "__main__":
             runtime_profile['dt'].append(det_time)
             # NMS process
             dets = dynamic_write_results(prediction, opt.confidence,
-                                 opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+                                opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
             if isinstance(dets, int) or dets.shape[0] == 0:
                 continue
             im_dim_list = torch.index_select(im_dim_list, 0, dets[:, 0].long())
@@ -117,15 +118,23 @@ if __name__ == "__main__":
             runtime_profile['pt'].append(pose_time)
 
             writer.save(boxes, scores, hm.cpu().data, pt1, pt2, np.array(orig_img[0], dtype=np.uint8), im_name[0].split('/')[-1])
+            #writer.save(boxes, scores, hm.cpu().data, pt1, pt2, orig_img[0], im_name[0].split('/')[-1])
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
         # TQDM
         im_names_desc.set_description(
-            'det time: {dt:.4f} | det NMS: {dn:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
+            'det time: {dt:.3f} | det NMS: {dn:.4f} | pose time: {pt:.2f} | post processing: {pn:.4f}'.format(
                 dt=np.mean(runtime_profile['dt']), dn=np.mean(runtime_profile['dn']),
                 pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
         )
-
+        '''
+        # TQDM
+        im_names_desc.set_description(
+            'Speed: {speed:.2f}'.format(
+                speed=1 / (time.time() - start_time)
+            )
+        )'''
+    print('===========================> Finish Model Running.')
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
@@ -134,4 +143,3 @@ if __name__ == "__main__":
     writer.stop()
     final_result = writer.results()
     write_json(final_result, args.outputpath)
-

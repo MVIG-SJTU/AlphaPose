@@ -82,6 +82,7 @@ def collate_fn_list(batch):
 
     return img, inp, im_name
 
+
 def vis_frame_fast(frame, im_res, format='coco'):
     '''
     frame: frame image
@@ -101,9 +102,9 @@ def vis_frame_fast(frame, im_res, format='coco'):
                    YELLOW, ORANGE, PURPLE, RED, PURPLE, RED, PURPLE, RED]
     elif format == 'mpii':
         l_pair = [
-            (8,9),(11,12),(11,10),(2,1),(1,0),
-            (13,14),(14,15),(3,4),(4,5),
-            (8,7),(7,6),(6,2),(6,3),(8,12),(8,13)
+            (8, 9), (11, 12), (11, 10), (2, 1), (1, 0),
+            (13, 14), (14, 15), (3, 4), (4, 5),
+            (8, 7), (7, 6), (6, 2), (6, 3), (8, 12), (8, 13)
         ]
         p_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, PURPLE, RED, RED,BLUE,BLUE]
     else:
@@ -130,6 +131,7 @@ def vis_frame_fast(frame, im_res, format='coco'):
                 cv2.line(img, start_p, end_p, CYAN, 2)
     return img
 
+
 def vis_frame(frame, im_res, format='coco'):
     '''
     frame: frame image
@@ -145,18 +147,18 @@ def vis_frame(frame, im_res, format='coco'):
             (5, 11), (6, 12),  # Body
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
-        p_color = [RED, RED, RED, RED, RED, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, GREEN, GREEN, GREEN,GREEN,GREEN,GREEN]
-        line_color =  [YELLOW, YELLOW, YELLOW, YELLOW, BLUE, BLUE, BLUE, BLUE, BLUE, PURPLE, PURPLE, RED, RED, RED,RED]
+        p_color = [RED, RED, RED, RED, RED, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN]
+        line_color = [YELLOW, YELLOW, YELLOW, YELLOW, BLUE, BLUE, BLUE, BLUE, BLUE, PURPLE, PURPLE, RED, RED, RED, RED]
     elif format == 'mpii':
         l_pair = [
-            (8,9),(11,12),(11,10),(2,1),(1,0),
-            (13,14),(14,15),(3,4),(4,5),
-            (8,7),(7,6),(6,2),(6,3),(8,12),(8,13)
+            (8, 9), (11, 12), (11, 10), (2, 1), (1, 0),
+            (13, 14), (14, 15), (3, 4), (4, 5),
+            (8, 7), (7, 6), (6, 2), (6, 3), (8, 12), (8, 13)
         ]
-        p_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, PURPLE, RED, RED,BLUE,BLUE]
-        line_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, RED, RED, BLUE,BLUE]
+        p_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, PURPLE, RED, RED, BLUE, BLUE]
+        line_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, RED, RED, BLUE, BLUE]
     else:
-        NotImplementedError
+        raise NotImplementedError
 
     im_name = im_res['imgname'].split('/')[-1]
     img = frame
@@ -173,19 +175,19 @@ def vis_frame(frame, im_res, format='coco'):
             bg = np.zeros(img.shape, dtype=np.uint8)
             cv2.circle(bg, (cor_x, cor_y), 4, p_color[n], -1)
             # Now create a mask of logo and create its inverse mask also
-            transparency = max(0,min(1,0.1*kp_scores[n]))
-            img = cv2.addWeighted(bg,transparency,img,1,0)
-
+            transparency = max(0, min(1, 0.1 * kp_scores[n]))
+            img = cv2.addWeighted(bg, transparency, img, 1, 0)
         # Draw limbs
         for i, (start_p, end_p) in enumerate(l_pair):
             if start_p in part_line and end_p in part_line:
                 start_xy = part_line[start_p]
                 end_xy = part_line[end_p]
                 bg = np.zeros(img.shape, dtype=np.uint8)
-                cv2.line(bg, start_xy, end_xy, line_color[i], 0.5*(kp_scores[start_p]+kp_scores[end_p]))
-                transparency = max(0,min(1,0.1*(kp_scores[start_p]+kp_scores[end_p])))
-                img = cv2.addWeighted(bg,transparency,img,1,0)
+                cv2.line(bg, start_xy, end_xy, line_color[i], (0.5 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
+                transparency = max(0, min(1, 0.1 * (kp_scores[start_p] + kp_scores[end_p])))
+                img = cv2.addWeighted(bg, transparency, img, 1, 0)
     return img
+
 
 def getTime(time1=0):
     if not time1:

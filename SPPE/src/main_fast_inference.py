@@ -4,8 +4,6 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torch.nn.functional as F
 import numpy as np
-from opt import opt
-from tqdm import tqdm
 from SPPE.src.utils.img import flip_v, shuffleLR
 from SPPE.src.utils.eval import getPrediction
 from SPPE.src.models.hgPRM import createModel_Inference

@@ -25,6 +25,8 @@ if opt.vis_fast:
     from fn import vis_frame_fast as vis_frame
 else:
     from fn import vis_frame
+
+
 class Image_loader(data.Dataset):
     def __init__(self, im_names, format='yolo'):
         super(Image_loader, self).__init__()
@@ -70,6 +72,7 @@ class Image_loader(data.Dataset):
     def __len__(self):
         return len(self.imglist)
 
+
 class VideoLoader:
     def __init__(self, path, queueSize=256):
         # initialize the file video stream along with the boolean
@@ -81,7 +84,7 @@ class VideoLoader:
         # initialize the queue used to store frames read from
         # the video file
         self.Q = Queue(maxsize=queueSize)
-    
+
     def length(self):
         return self.len
 
@@ -131,14 +134,15 @@ class VideoLoader:
     def more(self):
         # return True if there are still frames in the queue
         return self.Q.qsize() > 0
-    
+
     def stop(self):
         # indicate that the thread should be stopped
         self.stopped = True
 
+
 class DataWriter:
-    def __init__(self, save_video=False, 
-                savepath='examples/res/1.avi', fourcc=cv2.VideoWriter_fourcc(*'XVID'), fps=25, frameSize=(640,480), 
+    def __init__(self, save_video=False,
+                savepath='examples/res/1.avi', fourcc=cv2.VideoWriter_fourcc(*'XVID'), fps=25, frameSize=(640,480),
                 queueSize=1024):
         if save_video:
             # initialize the file video stream along with the boolean
@@ -152,8 +156,8 @@ class DataWriter:
         # the video file
         self.Q = Queue(maxsize=queueSize)
         if opt.save_img:
-            if not os.path.exists(opt.outputpath+'/vis'):
-                os.mkdir(opt.outputpath+'/vis')
+            if not os.path.exists(opt.outputpath + '/vis'):
+                os.mkdir(opt.outputpath + '/vis')
 
     def start(self):
         # start a thread to read frames from the file video stream
@@ -165,7 +169,6 @@ class DataWriter:
     def update(self):
         # keep looping infinitely
         while True:
-            time.sleep(0.01)
             # if the thread indicator variable is set, stop the
             # thread
             if self.stopped:
@@ -186,7 +189,7 @@ class DataWriter:
                 else:
                     # location prediction (n, kp, 2) | score prediction (n, kp, 1)
                     preds_hm, preds_img, preds_scores = getPrediction(
-                    hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
+                        hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
 
                     result = pose_nms(boxes, scores, preds_img, preds_scores)
                     result = {
@@ -194,7 +197,6 @@ class DataWriter:
                         'result': result
                     }
                     self.final_result.append(result)
-
                     if opt.save_img or opt.save_video:
                         #img = display_frame(orig_img, result, opt.outputpath)
                         img = vis_frame(orig_img, result)
@@ -202,16 +204,19 @@ class DataWriter:
                             cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
                         if opt.save_video:
                             self.stream.write(img)
+            else:
+                time.sleep(0.01)
 
     def running(self):
         # indicate that the thread is still running
         time.sleep(0.2)
+        print(self.Q.qsize())
         return not self.Q.empty()
 
     def save(self, boxes, scores, hm_data, pt1, pt2, orig_img, im_name):
         # save next frame in the queue
         self.Q.put((boxes, scores, hm_data, pt1, pt2, orig_img, im_name))
-    
+
     def stop(self):
         # indicate that the thread should be stopped
         self.stopped = True
@@ -220,6 +225,7 @@ class DataWriter:
     def results(self):
         # return final result
         return self.final_result
+
 
 class Mscoco(data.Dataset):
     def __init__(self, train=True, sigma=1,
