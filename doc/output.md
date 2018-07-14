@@ -41,28 +41,7 @@ AlphaPose - Output format
 ]
 ```
 
-2. If the `--seperate-json` flag is turned on, we will save the results for each image seperately.
-```
-[
- // for person_1 in image_1
- {
-    "image_id" : string, image_1_name, 
-    "category_id" : int, 1 for person
-    "keypoints" : [x1,y1,c1,...,xk,yk,ck], 
-    "score" : float,
- },
- ...
- // for person_n in image_1
- {
-    "image_id" : string, image_1_name, 
-    "category_id" : int, 1 for person
-    "keypoints" : [x1,y1,c1,...,xk,yk,ck], 
-    "score" : float,
- }
-]
-```
-
-3. If the `--format` flag is set as 'cmu', we will save the results for each image in the format used by CMU-Pose.
+2. If the `--format` flag is set as 'cmu', we will save the results for each image in the format used by CMU-Pose.
 ```
 {
     "version":0.1,
@@ -151,5 +130,3 @@ If the `--format` flag is set to 'cmu', the keypoint order is
     {14, "Thrx"},
 ```
 
-### Heatmap Ordering
-The pose network produces 33 channels' output. The first 17 channels are ordered in COCO's default keypoints order and the latter 16 channels are ordered in MPII's default keypoints order.

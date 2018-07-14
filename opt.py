@@ -67,6 +67,7 @@ parser.add_argument('--valIters', default=0, type=int,
                     help='Total valid iters')
 parser.add_argument('--init', default=None, type=str,
                     help='Initialization')
+
 "----------------------------- Data options -----------------------------"
 parser.add_argument('--inputResH', default=320, type=int,
                     help='Input image height')
@@ -102,13 +103,13 @@ parser.add_argument('--port', dest='port',
 "----------------------------- Detection options -----------------------------"
 parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16 res101]',
                     default='res152')
-parser.add_argument('--inputpath', dest='inputpath',
+parser.add_argument('--indir', dest='inputpath',
                     help='image-directory', default="")
-parser.add_argument('--inputlist', dest='inputlist',
+parser.add_argument('--list', dest='inputlist',
                     help='image-list', default="")
 parser.add_argument('--mode', dest='mode',
                     help='detection mode, fast/normal/accurate', default="normal")
-parser.add_argument('--outputpath', dest='outputpath',
+parser.add_argument('--outdir', dest='outputpath',
                     help='output-directory', default="")
 parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
                     help='inpdim')
@@ -118,6 +119,8 @@ parser.add_argument('--nms', dest='nms_thesh', type=float, default=0.6,
                     help='bounding box nms threshold')
 parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
+parser.add_argument('--format', default='coco', type=str,
+                    help='save in the format of cmu or coco')
 
 "----------------------------- Video options -----------------------------"
 parser.add_argument('--video', dest='video',
