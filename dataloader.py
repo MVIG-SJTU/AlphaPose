@@ -210,7 +210,6 @@ class DataWriter:
     def running(self):
         # indicate that the thread is still running
         time.sleep(0.2)
-        print(self.Q.qsize())
         return not self.Q.empty()
 
     def save(self, boxes, scores, hm_data, pt1, pt2, orig_img, im_name):
