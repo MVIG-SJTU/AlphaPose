@@ -1,5 +1,6 @@
 import os
 import torch
+from torch.autograd import Variable
 import torch.utils.data as data
 import torchvision.transforms as transforms
 from PIL import Image, ImageDraw
@@ -8,6 +9,8 @@ from opt import opt
 from yolo.preprocess import prep_image, prep_frame, inp_to_image
 from pPose_nms import pose_nms, write_json
 from SPPE.src.utils.eval import getPrediction
+from yolo.util import write_results, dynamic_write_results
+from yolo.darknet import Darknet
 
 import cv2
 import json
@@ -71,6 +74,83 @@ class Image_loader(data.Dataset):
 
     def __len__(self):
         return len(self.imglist)
+
+
+class DetectionLoader:
+    def __init__(self, dataset, queueSize=256):
+        # initialize the file video stream along with the boolean
+        # used to indicate if the thread should be stopped or not
+        self.det_model = Darknet("yolo/cfg/yolov3.cfg")
+        self.det_model.load_weights('models/yolo/yolov3.weights')
+        self.det_model.net_info['height'] = opt.inp_dim
+        self.det_inp_dim = int(self.det_model.net_info['height'])
+        assert self.det_inp_dim % 32 == 0
+        assert self.det_inp_dim > 32
+        self.det_model.cuda()
+        self.det_model.eval()
+
+        self.stopped = False
+        self.dataset = dataset
+        # initialize the queue used to store frames read from
+        # the video file
+        self.Q = Queue(maxsize=queueSize)
+
+    def start(self):
+        # start a thread to read frames from the file video stream
+        t = Thread(target=self.update, args=())
+        t.daemon = True
+        t.start()
+        return self
+
+    def update(self):
+        # keep looping the whole dataset
+        for i in range(self.dataset.__len__()):
+            img, inp, orig_img, im_name, im_dim_list = self.dataset.__getitem__(i)
+
+            with torch.no_grad():
+                ht = inp.size(1)
+                wd = inp.size(2)
+                # Human Detection
+                img = Variable(img).cuda()
+                im_dim_list = im_dim_list.cuda()
+
+                prediction = self.det_model(img, CUDA=True)
+                # NMS process
+                dets = dynamic_write_results(prediction, opt.confidence,
+                                    opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+                if isinstance(dets, int) or dets.shape[0] == 0:
+                    while self.Q.full():
+                        time.sleep(0.2)
+                    self.Q.put((inp, orig_img, im_name, None, None))
+                    continue
+                im_dim_list = torch.index_select(im_dim_list, 0, dets[:, 0].long())
+                scaling_factor = torch.min(self.det_inp_dim / im_dim_list, 1)[0].view(-1, 1)
+
+                # coordinate transfer
+                dets[:, [1, 3]] -= (self.det_inp_dim - scaling_factor * im_dim_list[:, 0].view(-1, 1)) / 2
+                dets[:, [2, 4]] -= (self.det_inp_dim - scaling_factor * im_dim_list[:, 1].view(-1, 1)) / 2
+
+                dets[:, 1:5] /= scaling_factor
+                for j in range(dets.shape[0]):
+                    dets[j, [1, 3]] = torch.clamp(dets[j, [1, 3]], 0.0, im_dim_list[j, 0])
+                    dets[j, [2, 4]] = torch.clamp(dets[j, [2, 4]], 0.0, im_dim_list[j, 1])
+                boxes = dets[:, 1:5].cpu()
+                scores = dets[:, 5:6].cpu()
+
+            while self.Q.full():
+                time.sleep(0.2)
+            
+            self.Q.put((inp, orig_img, im_name, boxes, scores))
+
+    def read(self):
+        # return next frame in the queue
+        return self.Q.get()
+
+    def len(self):
+        # return queue len
+        return self.Q.qsize()
+
+
 
 
 class VideoLoader:
@@ -178,6 +258,7 @@ class DataWriter:
             # otherwise, ensure the queue is not empty
             if not self.Q.empty():
                 (boxes, scores, hm_data, pt1, pt2, orig_img, im_name) = self.Q.get()
+                time.sleep(0.1)
                 if boxes is None:
                     if opt.save_img or opt.save_video:
                         #img = display_frame(orig_img, result, opt.outputpath)
@@ -205,7 +286,7 @@ class DataWriter:
                         if opt.save_video:
                             self.stream.write(img)
             else:
-                time.sleep(0.01)
+                time.sleep(10)
 
     def running(self):
         # indicate that the thread is still running
@@ -219,12 +300,15 @@ class DataWriter:
     def stop(self):
         # indicate that the thread should be stopped
         self.stopped = True
-        time.sleep(0.02)
+        time.sleep(0.2)
 
     def results(self):
         # return final result
         return self.final_result
 
+    def len(self):
+        # return queue len
+        return self.Q.qsize()
 
 class Mscoco(data.Dataset):
     def __init__(self, train=True, sigma=1,
