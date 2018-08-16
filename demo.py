@@ -63,17 +63,17 @@ if __name__ == "__main__":
 
     # Init data writer
     writer = DataWriter(args.save_video).start()
-
+    time.sleep(10)
     data_len = dataset.__len__()
     im_names_desc = tqdm(range(data_len))
-    for i  in im_names_desc:
+    for i in im_names_desc:
         start_time = getTime()
         with torch.no_grad():
             (inp, orig_img, im_name, boxes, scores) = test_loader.read()
             if boxes is None:
                 writer.save(None, None, None, None, None, np.array(orig_img, dtype=np.uint8), im_name.split('/')[-1])
                 continue
-            print("test loader:" , test_loader.len())
+            print("test loader:", test_loader.len())
             ckpt_time, det_time = getTime(start_time)
             runtime_profile['dt'].append(det_time)
             # Pose Estimation
