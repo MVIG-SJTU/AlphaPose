@@ -70,7 +70,7 @@ if __name__ == "__main__":
         start_time = getTime()
         with torch.no_grad():
             (inp, orig_img, im_name, boxes, scores) = test_loader.read()
-            if boxes is None:
+            if boxes is None or boxes.nelement() == 0:
                 writer.save(None, None, None, None, None, np.array(orig_img, dtype=np.uint8), im_name.split('/')[-1])
                 continue
             print("test loader:", test_loader.len())
@@ -84,9 +84,8 @@ if __name__ == "__main__":
             ckpt_time, pose_time = getTime(ckpt_time)
             runtime_profile['pt'].append(pose_time)
 
-            writer.save(boxes, scores, hm.cpu().data, pt1, pt2, np.array(orig_img, dtype=np.uint8), im_name.split('/')[-1])
+            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split('/')[-1])
             print("writer:" , writer.len())
-            #writer.save(boxes, scores, hm.cpu().data, pt1, pt2, orig_img[0], im_name[0].split('/')[-1])
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
         # TQDM

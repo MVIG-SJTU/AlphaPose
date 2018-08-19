@@ -14,6 +14,7 @@ from yolo.darknet import Darknet
 
 import cv2
 import json
+import numpy as np
 import sys
 import time
 from threading import Thread
@@ -59,7 +60,7 @@ class Image_loader(data.Dataset):
         im_name = self.imglist[index].rstrip('\n').rstrip('\r')
         im_name = os.path.join(self.img_dir, im_name)
         im, orig_img, im_dim = prep_image(im_name, inp_dim)
-        im_dim = torch.FloatTensor([im_dim]).repeat(1, 2)
+        #im_dim = torch.FloatTensor([im_dim]).repeat(1, 2)
 
         inp = load_image(im_name)
         return im, inp, orig_img, im_name, im_dim
@@ -77,7 +78,7 @@ class Image_loader(data.Dataset):
 
 
 class DetectionLoader:
-    def __init__(self, dataset, queueSize=256):
+    def __init__(self, dataset, batchSize=2, queueSize=256):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.det_model = Darknet("yolo/cfg/yolov3.cfg")
@@ -91,6 +92,12 @@ class DetectionLoader:
 
         self.stopped = False
         self.dataset = dataset
+        self.batchSize = batchSize
+        self.datalen = self.dataset.__len__()
+        leftover = 0
+        if (self.datalen) % batchSize:
+            leftover = 1
+        self.num_batches = self.datalen // batchSize + leftover
         # initialize the queue used to store frames read from
         # the video file
         self.Q = Queue(maxsize=queueSize)
@@ -104,14 +111,26 @@ class DetectionLoader:
 
     def update(self):
         # keep looping the whole dataset
-        for i in range(self.dataset.__len__()):
-            img, inp, orig_img, im_name, im_dim_list = self.dataset.__getitem__(i)
+        for i in range(self.num_batches):
+            img = []
+            inp = []
+            orig_img = []
+            im_name = []
+            im_dim_list = []
+            for k in range(i*self.batchSize, min((i +  1)*self.batchSize, self.datalen)):
+                img_k, inp_k, orig_img_k, im_name_k, im_dim_list_k = self.dataset.__getitem__(k)
+                img.append(img_k)
+                inp.append(inp_k)
+                orig_img.append(orig_img_k)
+                im_name.append(im_name_k)
+                im_dim_list.append(im_dim_list_k)
 
             with torch.no_grad():
-                ht = inp.size(1)
-                wd = inp.size(2)
+                ht = inp[0].size(1)
+                wd = inp[0].size(2)
                 # Human Detection
-                img = Variable(img).cuda()
+                img = Variable(torch.cat(img)).cuda()
+                im_dim_list = torch.FloatTensor(im_dim_list).repeat(1,2)
                 im_dim_list = im_dim_list.cuda()
 
                 prediction = self.det_model(img, CUDA=True)
@@ -119,11 +138,13 @@ class DetectionLoader:
                 dets = dynamic_write_results(prediction, opt.confidence,
                                     opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
                 if isinstance(dets, int) or dets.shape[0] == 0:
-                    while self.Q.full():
-                        time.sleep(0.2)
-                    self.Q.put((inp, orig_img, im_name, None, None))
+                    for k in range(len(inp)):
+                        while self.Q.full():
+                            time.sleep(0.2)
+                        self.Q.put((inp[k], orig_img[k], im_name[k], None, None))
                     continue
-                im_dim_list = torch.index_select(im_dim_list, 0, dets[:, 0].long())
+
+                im_dim_list = torch.index_select(im_dim_list,0, dets[:, 0].long())
                 scaling_factor = torch.min(self.det_inp_dim / im_dim_list, 1)[0].view(-1, 1)
 
                 # coordinate transfer
@@ -137,10 +158,10 @@ class DetectionLoader:
                 boxes = dets[:, 1:5].cpu()
                 scores = dets[:, 5:6].cpu()
 
-            while self.Q.full():
-                time.sleep(0.2)
-            
-            self.Q.put((inp, orig_img, im_name, boxes, scores))
+            for k in range(len(inp)):
+                while self.Q.full():
+                    time.sleep(0.2)
+                self.Q.put((inp[k], orig_img[k], im_name[k], boxes[dets[:,0]==k], scores[dets[:,0]==k]))
 
     def read(self):
         # return next frame in the queue
@@ -258,10 +279,9 @@ class DataWriter:
             # otherwise, ensure the queue is not empty
             if not self.Q.empty():
                 (boxes, scores, hm_data, pt1, pt2, orig_img, im_name) = self.Q.get()
-                time.sleep(0.1)
+                orig_img = np.array(orig_img, dtype=np.uint8)
                 if boxes is None:
                     if opt.save_img or opt.save_video:
-                        #img = display_frame(orig_img, result, opt.outputpath)
                         img = orig_img
                         if opt.save_img:
                             cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
@@ -269,6 +289,7 @@ class DataWriter:
                             self.stream.write(img)
                 else:
                     # location prediction (n, kp, 2) | score prediction (n, kp, 1)
+                    hm_data = hm_data.cpu().data
                     preds_hm, preds_img, preds_scores = getPrediction(
                         hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
 
@@ -279,14 +300,13 @@ class DataWriter:
                     }
                     self.final_result.append(result)
                     if opt.save_img or opt.save_video:
-                        #img = display_frame(orig_img, result, opt.outputpath)
                         img = vis_frame(orig_img, result)
                         if opt.save_img:
                             cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
                         if opt.save_video:
                             self.stream.write(img)
             else:
-                time.sleep(10)
+                time.sleep(0.1)
 
     def running(self):
         # indicate that the thread is still running

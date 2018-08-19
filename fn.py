@@ -10,6 +10,7 @@ import time
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
+import math
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -98,8 +99,13 @@ def vis_frame_fast(frame, im_res, format='coco'):
             (5, 11), (6, 12),  # Body
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
-        p_color = [GREEN, BLUE, BLUE, BLUE, BLUE, YELLOW, ORANGE, YELLOW, ORANGE,
-                   YELLOW, ORANGE, PURPLE, RED, PURPLE, RED, PURPLE, RED]
+        p_color = [(0, 255, 255), (0, 191, 255),(0, 255, 102),(0, 77, 255), (0, 255, 0), #Nose, LEye, REye, LEar, REar
+                    (77,255,255), (77, 255, 204), (77,204,255), (191, 255, 77), (77,191,255), (191, 255, 77), #LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
+                    (204,77,255), (77,255,204), (191,77,255), (77,255,191), (127,77,255), (77,255,127)] #LHip, RHip, LKnee, Rknee, LAnkle, RAnkle
+        line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50), 
+                    (77,255,222), (77,196,255), (77,135,255), (191,255,77), (77,255,77), 
+                    (77,222,255), (255,156,127), 
+                    (0,127,255), (255,127,77), (0,77,255), (255,77,36)]
     elif format == 'mpii':
         l_pair = [
             (8, 9), (11, 12), (11, 10), (2, 1), (1, 0),
@@ -118,17 +124,17 @@ def vis_frame_fast(frame, im_res, format='coco'):
         kp_scores = human['kp_score']
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= 0.3:
+            if kp_scores[n] <= 0.05:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
             part_line[n] = (cor_x, cor_y)
-            cv2.circle(img, (cor_x, cor_y), 5, p_color[n], -1)
+            cv2.circle(img, (cor_x, cor_y), 4, p_color[n], -1)
         # Draw limbs
-        for start_p, end_p in l_pair:
+        for i, (start_p, end_p) in enumerate(l_pair):
             if start_p in part_line and end_p in part_line:
-                start_p = part_line[start_p]
-                end_p = part_line[end_p]
-                cv2.line(img, start_p, end_p, CYAN, 2)
+                start_xy = part_line[start_p]
+                end_xy = part_line[end_p]
+                cv2.line(img, start_xy, end_xy, line_color[i], 2*(kp_scores[start_p] + kp_scores[end_p]) + 1)
     return img
 
 
@@ -147,8 +153,14 @@ def vis_frame(frame, im_res, format='coco'):
             (5, 11), (6, 12),  # Body
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
-        p_color = [RED, RED, RED, RED, RED, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN]
-        line_color = [YELLOW, YELLOW, YELLOW, YELLOW, BLUE, BLUE, BLUE, BLUE, BLUE, PURPLE, PURPLE, RED, RED, RED, RED]
+
+        p_color = [(0, 255, 255), (0, 191, 255),(0, 255, 102),(0, 77, 255), (0, 255, 0), #Nose, LEye, REye, LEar, REar
+                    (77,255,255), (77, 255, 204), (77,204,255), (191, 255, 77), (77,191,255), (191, 255, 77), #LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
+                    (204,77,255), (77,255,204), (191,77,255), (77,255,191), (127,77,255), (77,255,127)] #LHip, RHip, LKnee, Rknee, LAnkle, RAnkle
+        line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50), 
+                    (77,255,222), (77,196,255), (77,135,255), (191,255,77), (77,255,77), 
+                    (77,222,255), (255,156,127), 
+                    (0,127,255), (255,127,77), (0,77,255), (255,77,36)]
     elif format == 'mpii':
         l_pair = [
             (8, 9), (11, 12), (11, 10), (2, 1), (1, 0),
@@ -162,30 +174,43 @@ def vis_frame(frame, im_res, format='coco'):
 
     im_name = im_res['imgname'].split('/')[-1]
     img = frame
+    height,width = img.shape[:2]
+    img = cv2.resize(img,(int(width/2), int(height/2)))
     for human in im_res['result']:
         part_line = {}
         kp_preds = human['keypoints']
         kp_scores = human['kp_score']
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= 0.3:
+            if kp_scores[n] <= 0.05:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
-            part_line[n] = (cor_x, cor_y)
-            bg = np.zeros(img.shape, dtype=np.uint8)
-            cv2.circle(bg, (cor_x, cor_y), 4, p_color[n], -1)
+            part_line[n] = (int(cor_x/2), int(cor_y/2))
+            bg = img.copy()
+            cv2.circle(bg, (int(cor_x/2), int(cor_y/2)), 2, p_color[n], -1)
             # Now create a mask of logo and create its inverse mask also
-            transparency = max(0, min(1, 0.1 * kp_scores[n]))
-            img = cv2.addWeighted(bg, transparency, img, 1, 0)
+            transparency = max(0, min(1, kp_scores[n]))
+            img = cv2.addWeighted(bg, transparency, img, 1-transparency, 0)
         # Draw limbs
         for i, (start_p, end_p) in enumerate(l_pair):
             if start_p in part_line and end_p in part_line:
                 start_xy = part_line[start_p]
                 end_xy = part_line[end_p]
-                bg = np.zeros(img.shape, dtype=np.uint8)
-                cv2.line(bg, start_xy, end_xy, line_color[i], (0.5 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
-                transparency = max(0, min(1, 0.1 * (kp_scores[start_p] + kp_scores[end_p])))
-                img = cv2.addWeighted(bg, transparency, img, 1, 0)
+                bg = img.copy()
+
+                X = (start_xy[0], end_xy[0])
+                Y = (start_xy[1], end_xy[1])
+                mX = np.mean(X)
+                mY = np.mean(Y)
+                length = ((Y[0] - Y[1]) ** 2 + (X[0] - X[1]) ** 2) ** 0.5
+                angle = math.degrees(math.atan2(Y[0] - Y[1], X[0] - X[1]))
+                stickwidth = (kp_scores[start_p] + kp_scores[end_p]) + 1
+                polygon = cv2.ellipse2Poly((int(mX),int(mY)), (int(length/2), stickwidth), int(angle), 0, 360, 1)
+                cv2.fillConvexPoly(bg, polygon, line_color[i])
+                #cv2.line(bg, start_xy, end_xy, line_color[i], (2 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
+                transparency = max(0, min(1, 0.5*(kp_scores[start_p] + kp_scores[end_p])))
+                img = cv2.addWeighted(bg, transparency, img, 1-transparency, 0)
+    img = cv2.resize(img,(width,height),interpolation=cv2.INTER_CUBIC)
     return img
 
 
