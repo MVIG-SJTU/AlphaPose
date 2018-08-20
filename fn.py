@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import math
+import copy
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -96,12 +97,12 @@ def vis_frame_fast(frame, im_res, format='coco'):
         l_pair = [
             (0, 1), (0, 2), (1, 3), (2, 4),  # Head
             (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
-            (5, 11), (6, 12),  # Body
+            (17, 11), (17, 12),  # Body
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
         p_color = [(0, 255, 255), (0, 191, 255),(0, 255, 102),(0, 77, 255), (0, 255, 0), #Nose, LEye, REye, LEar, REar
                     (77,255,255), (77, 255, 204), (77,204,255), (191, 255, 77), (77,191,255), (191, 255, 77), #LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
-                    (204,77,255), (77,255,204), (191,77,255), (77,255,191), (127,77,255), (77,255,127)] #LHip, RHip, LKnee, Rknee, LAnkle, RAnkle
+                    (204,77,255), (77,255,204), (191,77,255), (77,255,191), (127,77,255), (77,255,127), (0, 255, 255)] #LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
         line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50), 
                     (77,255,222), (77,196,255), (77,135,255), (191,255,77), (77,255,77), 
                     (77,222,255), (255,156,127), 
@@ -122,6 +123,8 @@ def vis_frame_fast(frame, im_res, format='coco'):
         part_line = {}
         kp_preds = human['keypoints']
         kp_scores = human['kp_score']
+        kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5,:]+kp_preds[6,:])/2,0)))
+        kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5,:]+kp_scores[6,:])/2,0)))
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.05:
@@ -150,13 +153,13 @@ def vis_frame(frame, im_res, format='coco'):
         l_pair = [
             (0, 1), (0, 2), (1, 3), (2, 4),  # Head
             (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
-            (5, 11), (6, 12),  # Body
+            (17, 11), (17, 12),  # Body
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
 
         p_color = [(0, 255, 255), (0, 191, 255),(0, 255, 102),(0, 77, 255), (0, 255, 0), #Nose, LEye, REye, LEar, REar
                     (77,255,255), (77, 255, 204), (77,204,255), (191, 255, 77), (77,191,255), (191, 255, 77), #LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
-                    (204,77,255), (77,255,204), (191,77,255), (77,255,191), (127,77,255), (77,255,127)] #LHip, RHip, LKnee, Rknee, LAnkle, RAnkle
+                    (204,77,255), (77,255,204), (191,77,255), (77,255,191), (127,77,255), (77,255,127), (0, 255, 255)] #LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
         line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50), 
                     (77,255,222), (77,196,255), (77,135,255), (191,255,77), (77,255,77), 
                     (77,222,255), (255,156,127), 
@@ -180,6 +183,8 @@ def vis_frame(frame, im_res, format='coco'):
         part_line = {}
         kp_preds = human['keypoints']
         kp_scores = human['kp_score']
+        kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5,:]+kp_preds[6,:])/2,0)))
+        kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5,:]+kp_scores[6,:])/2,0)))
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.05:
