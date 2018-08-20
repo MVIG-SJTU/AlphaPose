@@ -8,7 +8,7 @@ import torch.utils.data
 import numpy as np
 from opt import opt
 
-from dataloader import VideoLoader, DataWriter, crop_from_dets, Mscoco
+from dataloader import VideoDetectionLoader, DataWriter, crop_from_dets, Mscoco
 from yolo.darknet import Darknet
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
@@ -34,23 +34,14 @@ if __name__ == "__main__":
     if not len(videofile):
         raise IOError('Error: must contain --video')
 
-    # Load input video
-    fvs = VideoLoader(videofile).start()
-    (fourcc,fps,frameSize) = fvs.videoinfo()
+    # Load detection loader
+    print('Loading YOLO model..')
+    test_loader = VideoDetectionLoader(videofile).start()
+    (fourcc,fps,frameSize) = test_loader.videoinfo()
+
     # Data writer
     save_path = os.path.join(args.outputpath, 'AlphaPose_'+videofile.split('/')[-1].split('.')[0]+'.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
-
-    # Load YOLO model
-    print('Loading YOLO model..')
-    det_model = Darknet("yolo/cfg/yolov3.cfg")
-    det_model.load_weights('models/yolo/yolov3.weights')
-    det_model.net_info['height'] = args.inp_dim
-    det_inp_dim = int(det_model.net_info['height'])
-    assert det_inp_dim % 32 == 0
-    assert det_inp_dim > 32
-    det_model.cuda()
-    det_model.eval()
 
     # Load pose model
     pose_dataset = Mscoco()
@@ -69,43 +60,19 @@ if __name__ == "__main__":
         'pn': []
     }
 
-    im_names_desc =  tqdm(range(fvs.length()))
+    im_names_desc =  tqdm(range(test_loader.length()))
     for i in im_names_desc:
         start_time = getTime()
-
-        (img, orig_img, inp, im_dim_list) = fvs.read()
-
-        ckpt_time, load_time = getTime(start_time)
-        runtime_profile['ld'].append(load_time)
         with torch.no_grad():
             # Human Detection
-            img = Variable(img).cuda()
-            im_dim_list = im_dim_list.cuda()
-
-            prediction = det_model(img, CUDA=True)
-            ckpt_time, det_time = getTime(ckpt_time)
-            runtime_profile['dt'].append(det_time)
-            # NMS process
-            dets = dynamic_write_results(prediction, opt.confidence,
-                                 opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
-            if isinstance(dets, int) or dets.shape[0] == 0:
+            (inp, orig_img, boxes, scores) = test_loader.read()            
+            if boxes is None or boxes.nelement() == 0:
                 writer.save(None, None, None, None, None, orig_img, im_name=str(i)+'.jpg')
                 continue
-            im_dim_list = torch.index_select(im_dim_list, 0, dets[:, 0].long())
-            scaling_factor = torch.min(det_inp_dim / im_dim_list, 1)[0].view(-1, 1)
+            print("test loader:", test_loader.len())
+            ckpt_time, det_time = getTime(start_time)
+            runtime_profile['dt'].append(det_time)
 
-            # coordinate transfer
-            dets[:, [1, 3]] -= (det_inp_dim - scaling_factor * im_dim_list[:, 0].view(-1, 1)) / 2
-            dets[:, [2, 4]] -= (det_inp_dim - scaling_factor * im_dim_list[:, 1].view(-1, 1)) / 2
-
-            dets[:, 1:5] /= scaling_factor
-            for j in range(dets.shape[0]):
-                dets[j, [1, 3]] = torch.clamp(dets[j, [1, 3]], 0.0, im_dim_list[j, 0])
-                dets[j, [2, 4]] = torch.clamp(dets[j, [2, 4]], 0.0, im_dim_list[j, 1])
-            boxes = dets[:, 1:5].cpu()
-            scores = dets[:, 5:6].cpu()
-            ckpt_time, detNMS_time = getTime(ckpt_time)
-            runtime_profile['dn'].append(detNMS_time)
             # Pose Estimation
             inps, pt1, pt2 = crop_from_dets(inp, boxes)
             inps = Variable(inps.cuda())
@@ -114,16 +81,15 @@ if __name__ == "__main__":
             ckpt_time, pose_time = getTime(ckpt_time)
             runtime_profile['pt'].append(pose_time)
 
-            writer.save(boxes, scores, hm.cpu().data, pt1, pt2, orig_img, im_name=str(i)+'.jpg')
-            
+            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name=str(i)+'.jpg')
+            print("writer:" , writer.len())
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
 
         # TQDM
         im_names_desc.set_description(
-            'load time: {ld:.4f} | det time: {dt:.4f} | det NMS: {dn:.4f} | pose time: {pt:.4f} | post process: {pn:.4f}'.format(
-                ld=np.mean(runtime_profile['ld']), dt=np.mean(runtime_profile['dt']), dn=np.mean(runtime_profile['dn']),
-                pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
+            'det time: {dt:.4f} | pose time: {pt:.4f} | post process: {pn:.4f}'.format(
+                dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
         )
 
     if (args.save_img or args.save_video) and not args.vis_fast:

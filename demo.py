@@ -71,7 +71,7 @@ if __name__ == "__main__":
         with torch.no_grad():
             (inp, orig_img, im_name, boxes, scores) = test_loader.read()
             if boxes is None or boxes.nelement() == 0:
-                writer.save(None, None, None, None, None, np.array(orig_img, dtype=np.uint8), im_name.split('/')[-1])
+                writer.save(None, None, None, None, None, orig_img, im_name.split('/')[-1])
                 continue
             print("test loader:", test_loader.len())
             ckpt_time, det_time = getTime(start_time)
