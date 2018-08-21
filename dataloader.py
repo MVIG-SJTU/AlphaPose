@@ -504,7 +504,8 @@ class VideoLoader:
                 # if the `grabbed` boolean is `False`, then we have
                 # reached the end of the video file
                 if not grabbed:
-                    continue
+                    self.stop()
+                    return
                 # process and add the frame to the queue
                 inp_dim = int(opt.inp_dim)
                 img, orig_img, dim = prep_frame(frame, inp_dim)
