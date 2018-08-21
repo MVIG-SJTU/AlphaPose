@@ -119,12 +119,16 @@ parser.add_argument('--nms', dest='nms_thesh', type=float, default=0.6,
                     help='bounding box nms threshold')
 parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
+parser.add_argument('--vis', default=False, action='store_true',
+                    help='visualize image')
 parser.add_argument('--format', default='coco', type=str,
                     help='save in the format of cmu or coco')
 
 "----------------------------- Video options -----------------------------"
 parser.add_argument('--video', dest='video',
                     help='video-name', default="")
+parser.add_argument('--webcam', dest='webcam',
+                    help='webcam number', default=0)
 parser.add_argument('--save_video', dest='save_video',
                     help='whether to save rendered video', default=False, action='store_true')
 parser.add_argument('--vis_fast', dest='vis_fast',

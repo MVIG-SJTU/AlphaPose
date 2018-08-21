@@ -4,3 +4,4 @@ pip3 install --user -e git+https://github.com/ncullen93/torchsample.git#egg=torc
 pip3 install --user visdom
 pip3 install --user nibabel
 pip3 install --user pandas
+pip3 install --user tqdm

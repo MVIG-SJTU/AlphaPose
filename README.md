@@ -6,7 +6,7 @@
 
 ## News!
 
-This is the **beta pytorch** version of AlphaPose. Stable version will be ready in two days. Currently AlphaPose runs at about **5 fps**. Realtime version is coming very soon. Stay tuned!
+This is the **beta pytorch** version of AlphaPose. Stable version will be ready in two days. Currently AlphaPose runs at about **15 fps**. Realtime version is coming very soon. Stay tuned!
 
 ## AlphaPose
 [Alpha Pose](http://www.mvig.org/research/alphapose.html) is an accurate multi-person pose estimator, which is the **first open-source system that achieves 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
@@ -40,6 +40,10 @@ python3 demo.py --indir ${img_directory} --outdir examples/res
 ```
 python3 video_demo.py --video ${path to video} --outdir examples/res --save_video
 ```
+- **Webcam**:  Run AlphaPose using webcam and visualize the results with:
+```
+python3 webcam_demo.py --webcam 0 --outdir examples/res --vis
+```
 - **Input list**:  Run AlphaPose for images in a list and save the rendered images with:
 ```
 python3 demo.py --list examples/list-coco-demo.txt --indir ${img_directory} --outdir examples/res --save_img
@@ -49,6 +53,9 @@ python3 demo.py --list examples/list-coco-demo.txt --indir ${img_directory} --ou
 python3 video_demo.py --video ${path to video} --outdir examples/results/  --conf 0.5 --nms 0.45
 ```
 - **For more**:  Checkout the [run.md](doc/run.md) for more options
+
+## FAQ
+Check out [faq.md](doc/faq.md) for faq.
 
 ## Contributors
 Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 

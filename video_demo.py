@@ -69,7 +69,7 @@ if __name__ == "__main__":
             if boxes is None or boxes.nelement() == 0:
                 writer.save(None, None, None, None, None, orig_img, im_name=str(i)+'.jpg')
                 continue
-            print("test loader:", test_loader.len())
+            #print("test loader:", test_loader.len())
             ckpt_time, det_time = getTime(start_time)
             runtime_profile['dt'].append(det_time)
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
             runtime_profile['pt'].append(pose_time)
 
             writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name=str(i)+'.jpg')
-            print("writer:" , writer.len())
+            #print("writer:" , writer.len())
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
 
@@ -92,6 +92,7 @@ if __name__ == "__main__":
                 dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
         )
 
+    print('===========================> Finish Model Running.')
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
         print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')

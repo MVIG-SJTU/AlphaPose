@@ -20,10 +20,10 @@ import time
 from threading import Thread
 # import the Queue class from Python 3
 if sys.version_info >= (3, 0):
-    from queue import Queue
+    from queue import Queue, LifoQueue
 # otherwise, import the Queue class for Python 2.7
 else:
-    from Queue import Queue
+    from Queue import Queue, LifoQueue
 
 if opt.vis_fast:
     from fn import vis_frame_fast as vis_frame
@@ -272,29 +272,6 @@ class VideoDetectionLoader:
                 while self.Q.full():
                     time.sleep(0.2)
                 self.Q.put((inp[k], orig_img[k], boxes[dets[:,0]==k], scores[dets[:,0]==k]))
-        # # keep looping infinitely
-        # while True:
-        #     time.sleep(0.02)
-        #     # if the thread indicator variable is set, stop the
-        #     # thread
-        #     if self.stopped:
-        #         return
-        #     # otherwise, ensure the queue has room in it
-        #     if not self.Q.full():
-        #         # read the next frame from the file
-        #         (grabbed, frame) = self.stream.read()
-        #         # if the `grabbed` boolean is `False`, then we have
-        #         # reached the end of the video file
-        #         if not grabbed:
-        #             self.stop()
-        #             return
-        #         # process and add the frame to the queue
-        #         inp_dim = int(opt.inp_dim)
-        #         img, orig_img, dim = prep_frame(frame, inp_dim)
-        #         inp = im_to_torch(orig_img)
-        #         im_dim_list = torch.FloatTensor([dim]).repeat(1, 2)
-
-        #         self.Q.put((img, orig_img, inp, im_dim_list))
 
     def videoinfo(self):
         # indicate the video info
@@ -315,6 +292,179 @@ class VideoDetectionLoader:
         # indicate that the thread should be stopped
         self.stopped = True
 
+
+class WebcamDetectionLoader:
+    def __init__(self, webcam = 0, batchSize=1, queueSize=256):
+        # initialize the file video stream along with the boolean
+        # used to indicate if the thread should be stopped or not
+        self.det_model = Darknet("yolo/cfg/yolov3.cfg")
+        self.det_model.load_weights('models/yolo/yolov3.weights')
+        self.det_model.net_info['height'] = opt.inp_dim
+        self.det_inp_dim = int(self.det_model.net_info['height'])
+        assert self.det_inp_dim % 32 == 0
+        assert self.det_inp_dim > 32
+        self.det_model.cuda()
+        self.det_model.eval()
+
+        self.stream = cv2.VideoCapture(int(webcam))
+        assert self.stream.isOpened(), 'Cannot open webcam'
+        self.stopped = False
+        self.batchSize = batchSize
+
+        # initialize the queue used to store frames read from
+        # the video file
+        self.Q = LifoQueue(maxsize=queueSize)
+
+
+    def len(self):
+        return self.Q.qsize()
+
+    def start(self):
+        # start a thread to read frames from the file video stream
+        t = Thread(target=self.update, args=())
+        t.daemon = True
+        t.start()
+        return self
+
+    def update(self):
+        # keep looping
+        while True:
+            img = []
+            inp = []
+            orig_img = []
+            im_name = []
+            im_dim_list = []
+            for k in range(self.batchSize):
+                (grabbed, frame) = self.stream.read()
+                if not grabbed:
+                    continue
+                # process and add the frame to the queue
+                inp_dim = int(opt.inp_dim)
+                img_k, orig_img_k, im_dim_list_k = prep_frame(frame, inp_dim)
+                inp_k = im_to_torch(orig_img_k)
+
+                img.append(img_k)
+                inp.append(inp_k)
+                orig_img.append(orig_img_k)
+                im_dim_list.append(im_dim_list_k)
+
+            with torch.no_grad():
+                ht = inp[0].size(1)
+                wd = inp[0].size(2)
+                # Human Detection
+                img = Variable(torch.cat(img)).cuda()
+                im_dim_list = torch.FloatTensor(im_dim_list).repeat(1,2)
+                im_dim_list = im_dim_list.cuda()
+
+                prediction = self.det_model(img, CUDA=True)
+                # NMS process
+                dets = dynamic_write_results(prediction, opt.confidence,
+                                    opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+                if isinstance(dets, int) or dets.shape[0] == 0:
+                    for k in range(len(inp)):
+                        if self.Q.full():
+                            with self.Q.mutex:
+                                self.Q.queue.clear()
+                        self.Q.put((inp[k], orig_img[k], None, None))
+                    continue
+
+                im_dim_list = torch.index_select(im_dim_list,0, dets[:, 0].long())
+                scaling_factor = torch.min(self.det_inp_dim / im_dim_list, 1)[0].view(-1, 1)
+
+                # coordinate transfer
+                dets[:, [1, 3]] -= (self.det_inp_dim - scaling_factor * im_dim_list[:, 0].view(-1, 1)) / 2
+                dets[:, [2, 4]] -= (self.det_inp_dim - scaling_factor * im_dim_list[:, 1].view(-1, 1)) / 2
+
+                dets[:, 1:5] /= scaling_factor
+                for j in range(dets.shape[0]):
+                    dets[j, [1, 3]] = torch.clamp(dets[j, [1, 3]], 0.0, im_dim_list[j, 0])
+                    dets[j, [2, 4]] = torch.clamp(dets[j, [2, 4]], 0.0, im_dim_list[j, 1])
+                boxes = dets[:, 1:5].cpu()
+                scores = dets[:, 5:6].cpu()
+
+            for k in range(len(inp)):
+                if self.Q.full():
+                    with self.Q.mutex:
+                        self.Q.queue.clear()
+                self.Q.put((inp[k], orig_img[k], boxes[dets[:,0]==k], scores[dets[:,0]==k]))
+
+    def videoinfo(self):
+        # indicate the video info
+        fourcc=int(self.stream.get(cv2.CAP_PROP_FOURCC))
+        fps=self.stream.get(cv2.CAP_PROP_FPS)
+        frameSize=(int(self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)),int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        return (fourcc,fps,frameSize)
+
+    def read(self):
+        # return next frame in the queue
+        return self.Q.get()
+
+    def more(self):
+        # return True if there are still frames in the queue
+        return self.Q.qsize() > 0
+
+    def stop(self):
+        # indicate that the thread should be stopped
+        self.stopped = True
+
+class WebcamLoader:
+    def __init__(self, webcam, queueSize=256):
+        # initialize the file video stream along with the boolean
+        # used to indicate if the thread should be stopped or not
+        self.stream = cv2.VideoCapture(int(webcam))
+        assert self.stream.isOpened(), 'Cannot capture source'
+        self.stopped = False
+        # initialize the queue used to store frames read from
+        # the video file
+        self.Q = LifoQueue(maxsize=queueSize)
+
+    def start(self):
+        # start a thread to read frames from the file video stream
+        t = Thread(target=self.update, args=())
+        t.daemon = True
+        t.start()
+        return self
+
+    def update(self):
+        # keep looping infinitely
+        while True:
+            # otherwise, ensure the queue has room in it
+            if not self.Q.full():
+                # read the next frame from the file
+                (grabbed, frame) = self.stream.read()
+                # if the `grabbed` boolean is `False`, then we have
+                # reached the end of the video file
+                if not grabbed:
+                    self.stop()
+                    return
+                # process and add the frame to the queue
+                inp_dim = int(opt.inp_dim)
+                img, orig_img, dim = prep_frame(frame, inp_dim)
+                inp = im_to_torch(orig_img)
+                im_dim_list = torch.FloatTensor([dim]).repeat(1, 2)
+
+                self.Q.put((img, orig_img, inp, im_dim_list))
+            else:
+                with self.Q.mutex:
+                    self.Q.queue.clear()
+    def videoinfo(self):
+        # indicate the video info
+        fourcc=int(self.stream.get(cv2.CAP_PROP_FOURCC))
+        fps=self.stream.get(cv2.CAP_PROP_FPS)
+        frameSize=(int(self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)),int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        return (fourcc,fps,frameSize)
+
+    def read(self):
+        # return next frame in the queue
+        return self.Q.get()
+
+    def len(self):
+        # return queue size
+        return self.Q.qsize()
+
+    def stop(self):
+        # indicate that the thread should be stopped
+        self.stopped = True
 
 
 class VideoLoader:
@@ -354,8 +504,7 @@ class VideoLoader:
                 # if the `grabbed` boolean is `False`, then we have
                 # reached the end of the video file
                 if not grabbed:
-                    self.stop()
-                    return
+                    continue
                 # process and add the frame to the queue
                 inp_dim = int(opt.inp_dim)
                 img, orig_img, dim = prep_frame(frame, inp_dim)
@@ -424,8 +573,11 @@ class DataWriter:
                 (boxes, scores, hm_data, pt1, pt2, orig_img, im_name) = self.Q.get()
                 orig_img = np.array(orig_img, dtype=np.uint8)
                 if boxes is None:
-                    if opt.save_img or opt.save_video:
+                    if opt.save_img or opt.save_video or opt.vis:
                         img = orig_img
+                        if opt.vis:
+                            cv2.imshow("AlphaPose Demo", img)
+                            cv2.waitKey(30)
                         if opt.save_img:
                             cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
                         if opt.save_video:
@@ -442,8 +594,11 @@ class DataWriter:
                         'result': result
                     }
                     self.final_result.append(result)
-                    if opt.save_img or opt.save_video:
+                    if opt.save_img or opt.save_video or opt.vis:
                         img = vis_frame(orig_img, result)
+                        if opt.vis:
+                            cv2.imshow("AlphaPose Demo", img)
+                            cv2.waitKey(30)
                         if opt.save_img:
                             cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
                         if opt.save_video:
