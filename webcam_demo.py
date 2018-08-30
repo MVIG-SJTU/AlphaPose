@@ -42,7 +42,7 @@ if __name__ == "__main__":
     fvs = WebcamLoader(webcam).start()
     (fourcc,fps,frameSize) = fvs.videoinfo()
     # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_'+webcam.split('/')[-1].split('.')[0]+'.avi')
+    save_path = os.path.join(args.outputpath, 'AlphaPose_webcam'+webcam+'.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
 
     # Load YOLO model
@@ -112,14 +112,17 @@ if __name__ == "__main__":
                 ckpt_time, detNMS_time = getTime(ckpt_time)
                 runtime_profile['dn'].append(detNMS_time)
                 # Pose Estimation
-                inps, pt1, pt2 = crop_from_dets(inp, boxes)
+                inps = torch.zeros(boxes.size(0), 3, opt.inputResH, opt.inputResW)
+                pt1 = torch.zeros(boxes.size(0), 2)
+                pt2 = torch.zeros(boxes.size(0), 2)
+                inps, pt1, pt2 = crop_from_dets(inp, boxes, inps, pt1, pt2)
                 inps = Variable(inps.cuda())
 
                 hm = pose_model(inps)
                 ckpt_time, pose_time = getTime(ckpt_time)
                 runtime_profile['pt'].append(pose_time)
 
-                writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name=str(i)+'.jpg')
+                writer.save(boxes, scores, hm.cpu(), pt1, pt2, orig_img, im_name=str(i)+'.jpg')
                 
                 ckpt_time, post_time = getTime(ckpt_time)
                 runtime_profile['pn'].append(post_time)

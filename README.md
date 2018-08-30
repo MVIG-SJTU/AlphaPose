@@ -21,13 +21,13 @@ To match poses that correspond to the same person across frames, we also provide
   git clone -b pytorch https://github.com/MVIG-SJTU/AlphaPose.git
   ```
 
-2. Install [pytorch](https://github.com/pytorch/pytorch)
+2. Install [pytorch 0.4.0](https://github.com/pytorch/pytorch)
   ```Shell
   chmod +x install.sh
   ./install.sh
   ```
 
-3. Download the models manually: **duc_se.pth** ([Google Drive]( https://drive.google.com/open?id=1OPORTWB2cwd5YTVBX-NE8fsauZJWsrtW) | [Baidu pan]())(2018/08/30), **yolov3.weights**([Google Drive](https://drive.google.com/open?id=1yjrziA2RzFqWAQG4Qq7XN0vumsMxwSjS) | [Baidu pan](https://pan.baidu.com/s/108SjV-uIJpxnqDMT19v-Aw)). Place them into `./models/sppe` and `./models/yolo` respectively.
+3. Download the models manually: **duc_se.pth** (2018/08/30) ([Google Drive]( https://drive.google.com/open?id=1OPORTWB2cwd5YTVBX-NE8fsauZJWsrtW) | [Baidu pan]()), **yolov3.weights**([Google Drive](https://drive.google.com/open?id=1yjrziA2RzFqWAQG4Qq7XN0vumsMxwSjS) | [Baidu pan](https://pan.baidu.com/s/108SjV-uIJpxnqDMT19v-Aw)). Place them into `./models/sppe` and `./models/yolo` respectively.
 
 
 ## Quick Start
@@ -50,6 +50,14 @@ python3 demo.py --list examples/list-coco-demo.txt --indir ${img_directory} --ou
 - **Speeding up**:  Run AlphaPose for a video, speeding up by increasing the confidence and lowering the NMS threshold:
 ```
 python3 video_demo.py --video ${path to video} --outdir examples/results/  --conf 0.5 --nms 0.45
+```
+If you have a gpu with GPU memory larger than 8GB, consider increasing the detection batch:
+```
+python3 demo.py --indir ${img_directory} --outdir examples/res --detbatch 8
+```
+- **Note**:  If you meet OOM(out of memory) problem, decreasing the pose estimation batch until the program can run on your computer:
+```
+python3 demo.py --indir ${img_directory} --outdir examples/res --posebatch 30
 ```
 - **For more**:  Checkout the [run.md](doc/run.md) for more options
 

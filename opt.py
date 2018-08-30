@@ -110,7 +110,7 @@ parser.add_argument('--list', dest='inputlist',
 parser.add_argument('--mode', dest='mode',
                     help='detection mode, fast/normal/accurate', default="normal")
 parser.add_argument('--outdir', dest='outputpath',
-                    help='output-directory', default="")
+                    help='output-directory', default="examples/res/")
 parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
                     help='inpdim')
 parser.add_argument('--conf', dest='confidence', type=float, default=0.2,
@@ -123,7 +123,7 @@ parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
 parser.add_argument('--format', type=str,
                     help='save in the format of cmu or coco or openpose, option: coco/cmu/open')
-parser.add_argument('--detbatch', type=int, default=6,
+parser.add_argument('--detbatch', type=int, default=1,
                     help='detection batch size')
 parser.add_argument('--posebatch', type=int, default=80,
                     help='pose estimation maximum batch size')
@@ -131,8 +131,8 @@ parser.add_argument('--posebatch', type=int, default=80,
 "----------------------------- Video options -----------------------------"
 parser.add_argument('--video', dest='video',
                     help='video-name', default="")
-parser.add_argument('--webcam', dest='webcam',
-                    help='webcam number', default=0)
+parser.add_argument('--webcam', dest='webcam', type=str,
+                    help='webcam number', default='0')
 parser.add_argument('--save_video', dest='save_video',
                     help='whether to save rendered video', default=False, action='store_true')
 parser.add_argument('--vis_fast', dest='vis_fast',

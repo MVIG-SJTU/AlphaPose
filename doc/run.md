@@ -15,6 +15,8 @@ Here, we first list the flags of this script and then give some examples.
 - `--format`: The format of the saved results. By default, it will save the output in COCO-like format. An alternative option is 'cmu', which saves the results in the format of CMU-Pose. For more details, see [output.md](output.md)
 - `--conf`: Confidence threshold for human detection. Lower the value can improve the final accuracy but decrease the speed. Default is 0.2.
 - `--nms`: Confidence threshold for human detection. Increase the value can improve the final accuracy but decrease the speed. Default is 0.6.
+- `--detbatch`: Batch size for the detection network. 
+- `--posebatch`: Maximum batch size for the pose estimation network. If you met OOM problem, decrease this value until it fit in the memory.
 
 ## Examples
 - **Run AlphaPose for all images in a folder ,save the results in the format of CMU-Pose and save the images**:
