@@ -6,7 +6,7 @@
 
 ## News!
 
-This is the **beta pytorch** version of AlphaPose. Stable version will be ready in two days. Currently AlphaPose runs at about **15 fps**. Realtime version is coming very soon. Stay tuned!
+This is the **beta pytorch** version of AlphaPose. Stable version will be ready in two days. Currently AlphaPose runs at about **15-20 fps**. Realtime version is coming very soon. Stay tuned!
 
 ## AlphaPose
 [Alpha Pose](http://www.mvig.org/research/alphapose.html) is an accurate multi-person pose estimator, which is the **first open-source system that achieves 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
@@ -19,7 +19,6 @@ To match poses that correspond to the same person across frames, we also provide
 1. Get the code.
   ```Shell
   git clone -b pytorch https://github.com/MVIG-SJTU/AlphaPose.git
-
   ```
 
 2. Install [pytorch](https://github.com/pytorch/pytorch)
@@ -28,7 +27,7 @@ To match poses that correspond to the same person across frames, we also provide
   ./install.sh
   ```
 
-3. Download the models manually: **duc_se.pth** ([Google Drive](https://drive.google.com/open?id=1OPORTWB2cwd5YTVBX-NE8fsauZJWsrtW) | [Baidu pan]()), **yolov3.weights**([Google Drive](https://drive.google.com/open?id=1yjrziA2RzFqWAQG4Qq7XN0vumsMxwSjS) | [Baidu pan](https://pan.baidu.com/s/108SjV-uIJpxnqDMT19v-Aw)). Place them into `./models/sppe` and `./models/yolo` respectively.
+3. Download the models manually: **duc_se.pth** ([Google Drive]( https://drive.google.com/open?id=1OPORTWB2cwd5YTVBX-NE8fsauZJWsrtW) | [Baidu pan]()), **yolov3.weights**([Google Drive](https://drive.google.com/open?id=1yjrziA2RzFqWAQG4Qq7XN0vumsMxwSjS) | [Baidu pan](https://pan.baidu.com/s/108SjV-uIJpxnqDMT19v-Aw)). Place them into `./models/sppe` and `./models/yolo` respectively.
 
 
 ## Quick Start

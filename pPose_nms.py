@@ -13,8 +13,9 @@ delta1 = 1
 mu = 1.7
 delta2 = 2.65
 gamma = 22.48
-scoreThreds = 0.3
+scoreThreds = 0.1
 matchThreds = 5
+areaThres = 0#40 * 40.5
 alpha = 0.1
 #pool = ThreadPool(4)
 
@@ -107,7 +108,7 @@ def pose_nms(bboxes, bbox_scores, pose_preds, pose_scores):
         ymax = max(merge_pose[:, 1])
         ymin = min(merge_pose[:, 1])
 
-        if (1.5 ** 2 * (xmax - xmin) * (ymax - ymin) < 40 * 40.5):
+        if (1.5 ** 2 * (xmax - xmin) * (ymax - ymin) < areaThres):
             continue
 
         final_result.append({
@@ -307,10 +308,10 @@ def write_json(all_results, outputpath, for_eval=False):
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
 
-            if form == 'cmu': # the form of CMU-Pose/OpenPose
+            if form == 'cmu': # the form of CMU-Pose
                 if result['image_id'] not in json_results_cmu.keys():
                     json_results_cmu[result['image_id']]={}
-                    json_results_cmu[result['image_id']]['version']=0.1
+                    json_results_cmu[result['image_id']]['version']="AlphaPose v0.2"
                     json_results_cmu[result['image_id']]['bodies']=[]
                 tmp={'joints':[]}
                 result['keypoints'].append((result['keypoints'][15]+result['keypoints'][18])/2)
@@ -322,10 +323,33 @@ def write_json(all_results, outputpath, for_eval=False):
                     tmp['joints'].append(result['keypoints'][i+1])
                     tmp['joints'].append(result['keypoints'][i+2])
                 json_results_cmu[result['image_id']]['bodies'].append(tmp)
+            elif form == 'open': # the form of OpenPose
+                if result['image_id'] not in json_results_cmu.keys():
+                    json_results_cmu[result['image_id']]={}
+                    json_results_cmu[result['image_id']]['version']="AlphaPose v0.2"
+                    json_results_cmu[result['image_id']]['people']=[]
+                tmp={'pose_keypoints_2d':[]}
+                result['keypoints'].append((result['keypoints'][15]+result['keypoints'][18])/2)
+                result['keypoints'].append((result['keypoints'][16]+result['keypoints'][19])/2)
+                result['keypoints'].append((result['keypoints'][17]+result['keypoints'][20])/2)
+                indexarr=[0,51,18,24,30,15,21,27,36,42,48,33,39,45,6,3,12,9]
+                for i in indexarr:
+                    tmp['pose_keypoints_2d'].append(result['keypoints'][i])
+                    tmp['pose_keypoints_2d'].append(result['keypoints'][i+1])
+                    tmp['pose_keypoints_2d'].append(result['keypoints'][i+2])
+                json_results_cmu[result['image_id']]['people'].append(tmp)
             else:
                 json_results.append(result)
 
-    if form == 'cmu': # the form of CMU-Pose/OpenPose
+    if form == 'cmu': # the form of CMU-Pose
+        with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
+            json_file.write(json.dumps(json_results_cmu))
+            if not os.path.exists(os.path.join(outputpath,'sep-json')):
+                os.mkdir(os.path.join(outputpath,'sep-json'))
+            for name in json_results_cmu.keys():
+                with open(os.path.join(outputpath,'sep-json',name.split('.')[0]+'.json'),'w') as json_file:
+                    json_file.write(json.dumps(json_results_cmu[name]))
+    elif form == 'open': # the form of OpenPose
         with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
             json_file.write(json.dumps(json_results_cmu))
             if not os.path.exists(os.path.join(outputpath,'sep-json')):

@@ -162,7 +162,7 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
         #WE will do NMS classwise
         for cls in img_classes:
             if cls != 0:
-                continue
+                break
             #get the detections with one particular class
             cls_mask = image_pred_*(image_pred_[:,-1] == cls).float().unsqueeze(1)
             class_mask_ind = torch.nonzero(cls_mask[:,-2]).squeeze()
@@ -177,25 +177,21 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
 
             #if nms has to be done
             if nms:
-                #For each detection
-                for i in range(idx):
-                    #Get the IOUs of all boxes that come after the one we are looking at 
-                    #in the loop
-                    try:
-                        ious = bbox_iou(image_pred_class[i].unsqueeze(0), image_pred_class[i+1:])
-                    except ValueError:
+                # Perform non-maximum suppression
+                max_detections = []
+                while image_pred_class.size(0):
+                    # Get detection with highest confidence and save as max detection
+                    max_detections.append(image_pred_class[0].unsqueeze(0))
+                    # Stop if we're at the last detection
+                    if len(image_pred_class) == 1:
                         break
+                    # Get the IOUs for all boxes with lower confidence
+                    ious = bbox_iou(max_detections[-1], image_pred_class[1:])
+                    # Remove detections with IoU >= NMS threshold
+                    image_pred_class = image_pred_class[1:][ious < nms_conf]
 
-                    except IndexError:
-                        break
+                image_pred_class = torch.cat(max_detections).data
 
-                    #Zero out all the detections that have IoU > treshhold
-                    iou_mask = (ious < nms_conf).float().unsqueeze(1)
-                    image_pred_class[i+1:] *= iou_mask       
-
-                    #Remove the non-zero entries
-                    non_zero_ind = torch.nonzero(image_pred_class[:,4]).squeeze()
-                    image_pred_class = image_pred_class[non_zero_ind].view(-1,7)
 
             #Concatenate the batch_id of the image to the detection
             #this helps us identify which image does the detection correspond to 

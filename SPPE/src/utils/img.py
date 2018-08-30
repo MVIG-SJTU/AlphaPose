@@ -248,15 +248,15 @@ def cropBox(img, ul, br, resH, resW):
         img = img[np.newaxis, :]
 
     newDim = torch.IntTensor((img.size(0), int(lenH), int(lenW)))
-    newImg = img[:, ul[1]:, ul[0]:].clone()
+    newImg = img[:, ul[1]:, ul[0]:]
     # Crop and Padding
-    size = torch.IntTensor((int(br[1] - ul[1]), int(br[0] - ul[0])))
+    size = torch.IntTensor((br[1] - ul[1], br[0] - ul[0]))
 
     newImg = SpecialCrop(size, 1)(newImg)
     newImg = Pad(newDim)(newImg)
     # Resize to output
-    v_Img = torch.autograd.Variable(newImg)
-    v_Img = torch.unsqueeze(v_Img, 0)
+
+    v_Img = torch.unsqueeze(newImg, 0)
     # newImg = F.upsample_bilinear(v_Img, size=(int(resH), int(resW))).data[0]
     newImg = F.upsample(v_Img, size=(int(resH), int(resW)),
                         mode='bilinear', align_corners=True).data[0]

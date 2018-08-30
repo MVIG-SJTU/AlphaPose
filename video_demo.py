@@ -8,7 +8,7 @@ import torch.utils.data
 import numpy as np
 from opt import opt
 
-from dataloader import VideoDetectionLoader, DataWriter, crop_from_dets, Mscoco
+from dataloader import VideoLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco
 from yolo.darknet import Darknet
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
@@ -24,6 +24,8 @@ from pPose_nms import pose_nms, write_json
 
 args = opt
 args.dataset = 'coco'
+torch.multiprocessing.set_start_method('forkserver', force=True)
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 if __name__ == "__main__":
     videofile = args.video
@@ -34,15 +36,15 @@ if __name__ == "__main__":
     if not len(videofile):
         raise IOError('Error: must contain --video')
 
+    # Load input video
+    data_loader = VideoLoader(videofile, batchSize=args.detbatch).start()
+    (fourcc,fps,frameSize) = data_loader.videoinfo()
+
     # Load detection loader
     print('Loading YOLO model..')
-    test_loader = VideoDetectionLoader(videofile).start()
-    (fourcc,fps,frameSize) = test_loader.videoinfo()
-
-    # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_'+videofile.split('/')[-1].split('.')[0]+'.avi')
-    writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
-
+    det_loader = DetectionLoader(data_loader, batchSize=args.detbatch).start()
+    det_processor = DetectionProcessor(det_loader).start()
+    
     # Load pose model
     pose_dataset = Mscoco()
     if args.fast_inference:
@@ -53,42 +55,52 @@ if __name__ == "__main__":
     pose_model.eval()
 
     runtime_profile = {
-        'ld': [],
         'dt': [],
-        'dn': [],
         'pt': [],
         'pn': []
     }
 
-    im_names_desc =  tqdm(range(test_loader.length()))
+    # Data writer
+    save_path = os.path.join(args.outputpath, 'AlphaPose_'+videofile.split('/')[-1].split('.')[0]+'.avi')
+    writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
+
+    im_names_desc =  tqdm(range(data_loader.length()))
+    batchSize = args.posebatch
     for i in im_names_desc:
         start_time = getTime()
         with torch.no_grad():
-            # Human Detection
-            (inp, orig_img, boxes, scores) = test_loader.read()            
+            (inps, orig_img, im_name, boxes, scores, pt1, pt2) = det_processor.read()
             if boxes is None or boxes.nelement() == 0:
-                writer.save(None, None, None, None, None, orig_img, im_name=str(i)+'.jpg')
+                writer.save(None, None, None, None, None, orig_img, im_name.split('/')[-1])
                 continue
-            #print("test loader:", test_loader.len())
+
             ckpt_time, det_time = getTime(start_time)
             runtime_profile['dt'].append(det_time)
-
             # Pose Estimation
-            inps, pt1, pt2 = crop_from_dets(inp, boxes)
-            inps = Variable(inps.cuda())
-
-            hm = pose_model(inps)
+            
+            datalen = inps.size(0)
+            leftover = 0
+            if (datalen) % batchSize:
+                leftover = 1
+            num_batches = datalen // batchSize + leftover
+            hm = []
+            for j in range(num_batches):
+                inps_j = inps[j*batchSize:min((j +  1)*batchSize, datalen)].cuda()
+                hm_j = pose_model(inps_j)
+                hm.append(hm_j)
+            hm = torch.cat(hm)
             ckpt_time, pose_time = getTime(ckpt_time)
             runtime_profile['pt'].append(pose_time)
 
-            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name=str(i)+'.jpg')
-            #print("writer:" , writer.len())
+            hm = hm.cpu().data
+            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split('/')[-1])
+
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
 
         # TQDM
         im_names_desc.set_description(
-            'det time: {dt:.4f} | pose time: {pt:.4f} | post process: {pn:.4f}'.format(
+            'det time: {dt:.3f} | pose time: {pt:.2f} | post processing: {pn:.4f}'.format(
                 dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
         )
 
