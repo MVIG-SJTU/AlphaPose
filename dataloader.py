@@ -273,13 +273,21 @@ class DetectionLoader:
         self.num_batches = self.datalen // batchSize + leftover
         # initialize the queue used to store frames read from
         # the video file
-        self.Q = mp.Queue(maxsize=queueSize)
+        if opt.sp:
+            self.Q = Queue(maxsize=queueSize)
+        else:
+            self.Q = mp.Queue(maxsize=queueSize)
 
     def start(self):
         # start a thread to read frames from the file video stream
-        p = mp.Process(target=self.update, args=())
-        p.daemon = True
-        p.start()
+        if opt.sp:
+            t = Thread(target=self.update, args=())
+            t.daemon = True
+            t.start()
+        else:
+            p = mp.Process(target=self.update, args=())
+            p.daemon = True
+            p.start()
         return self
 
     def update(self):
@@ -350,13 +358,21 @@ class DetectionProcessor:
         self.datalen = self.detectionLoader.datalen
 
         # initialize the queue used to store data
-        self.Q = pQueue(maxsize=queueSize)
+        if opt.sp:
+            self.Q = Queue(maxsize=queueSize)
+        else:
+            self.Q = pQueue(maxsize=queueSize)
 
     def start(self):
         # start a thread to read frames from the file video stream
-        p = Process(target=self.update, args=())
-        p.daemon = True
-        p.start()
+        if opt.sp:
+            t = Thread(target=self.update, args=())
+            t.daemon = True
+            t.start()
+        else:
+            p = mp.Process(target=self.update, args=())
+            p.daemon = True
+            p.start()
         return self
 
     def update(self):

@@ -9,12 +9,11 @@ import numpy as np
 from opt import opt
 
 from dataloader import VideoLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco
-from yolo.darknet import Darknet
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
 
-from SPPE.src.utils.img import im_to_torch
 import os
+import sys
 from tqdm import tqdm
 import time
 from fn import getTime
@@ -24,8 +23,9 @@ from pPose_nms import pose_nms, write_json
 
 args = opt
 args.dataset = 'coco'
-torch.multiprocessing.set_start_method('forkserver', force=True)
-torch.multiprocessing.set_sharing_strategy('file_system')
+if not args.sp:
+    torch.multiprocessing.set_start_method('forkserver', force=True)
+    torch.multiprocessing.set_sharing_strategy('file_system')
 
 if __name__ == "__main__":
     videofile = args.video
@@ -42,6 +42,7 @@ if __name__ == "__main__":
 
     # Load detection loader
     print('Loading YOLO model..')
+    sys.stdout.flush()
     det_loader = DetectionLoader(data_loader, batchSize=args.detbatch).start()
     det_processor = DetectionProcessor(det_loader).start()
     

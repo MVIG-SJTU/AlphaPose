@@ -8,11 +8,12 @@ import torch.utils.data
 import numpy as np
 from opt import opt
 
-from dataloader import ImageLoader, DataWriter, Mscoco, DetectionLoader, DetectionProcessor
+from dataloader import ImageLoader, DetectionLoader, DetectionProcessor, DataWriter, Mscoco
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
-from SPPE.src.utils.eval import getPrediction_batch
+
 import os
+import sys
 from tqdm import tqdm
 import time
 from fn import getTime
@@ -21,8 +22,10 @@ from pPose_nms import pose_nms, write_json
 
 args = opt
 args.dataset = 'coco'
-torch.multiprocessing.set_start_method('forkserver', force=True)
-torch.multiprocessing.set_sharing_strategy('file_system')
+if not args.sp:
+    torch.multiprocessing.set_start_method('forkserver', force=True)
+    torch.multiprocessing.set_sharing_strategy('file_system')
+
 if __name__ == "__main__":
     inputpath = args.inputpath
     inputlist = args.inputlist
@@ -43,6 +46,7 @@ if __name__ == "__main__":
 
     # Load detection loader
     print('Loading YOLO model..')
+    sys.stdout.flush()
     det_loader = DetectionLoader(data_loader, batchSize=args.detbatch).start()
     det_processor = DetectionProcessor(det_loader).start()
     

@@ -5,3 +5,4 @@ pip3 install --user visdom
 pip3 install --user nibabel
 pip3 install --user pandas
 pip3 install --user tqdm
+pip3 install --user matplotlib

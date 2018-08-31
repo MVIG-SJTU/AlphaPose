@@ -15,6 +15,7 @@ from SPPE.src.main_fast_inference import *
 
 from SPPE.src.utils.img import im_to_torch
 import os
+import sys
 from tqdm import tqdm
 import time
 from fn import getTime
@@ -47,6 +48,7 @@ if __name__ == "__main__":
 
     # Load YOLO model
     print('Loading YOLO model..')
+    sys.stdout.flush()
     det_model = Darknet("yolo/cfg/yolov3.cfg")
     det_model.load_weights('models/yolo/yolov3.weights')
     det_model.net_info['height'] = args.inp_dim
@@ -74,6 +76,7 @@ if __name__ == "__main__":
     }
 
     print('Starting webcam demo, press Ctrl + C to terminate...')
+    sys.stdout.flush()
     im_names_desc =  tqdm(loop())
     for i in im_names_desc:
         try:

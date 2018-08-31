@@ -10,7 +10,7 @@ from SPPE.src.models.FastPose import createModel
 
 import visdom
 import time
-
+import sys
 
 import torch._utils
 try:
@@ -30,6 +30,7 @@ class InferenNet(nn.Module):
 
         model = createModel().cuda()
         print('Loading pose model from {}'.format('./models/sppe/duc_se.pth'))
+        sys.stdout.flush()
         model.load_state_dict(torch.load('./models/sppe/duc_se.pth'))
         model.eval()
         self.pyranet = model
