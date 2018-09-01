@@ -292,7 +292,7 @@ class DetectionLoader:
 
     def update(self):
         # keep looping the whole dataset
-        for i in tqdm(range(self.num_batches)):
+        for i in range(self.num_batches):
             img, orig_img, im_name, im_dim_list = self.dataloder.getitem()
 
 
