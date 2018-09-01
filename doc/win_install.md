@@ -22,9 +22,15 @@ Tested on Win10 with GTX 1060
 	<div align="left">
     <img src="step3.jpg">
 	</div>
-7. Have fun! Now you can run AlphaPose by entering command. Try webcam demo by input ```python3 webcam_demo.py --vis```
-*Note:* For `demo.py` and `video_demo.py`, you need to turn on the `--sp` flag, like
-```python3 demo.py --indir ${img_directory} --outdir examples/res --sp```
+7. Have fun! Now you can run AlphaPose by entering command. Try webcam demo by input 
+```
+python3 webcam_demo.py --vis
+```
+**Note:** For `demo.py` and `video_demo.py`, you need to turn on the `--sp` flag, like
+
+```
+python3 demo.py --indir ${img_directory} --outdir examples/res --sp
+```
 	<div align="left">
     <img src="step4.jpg">
 	</div>

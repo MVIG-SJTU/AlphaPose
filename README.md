@@ -14,6 +14,9 @@ To match poses that correspond to the same person across frames, we also provide
 
 AlphaPose supports both Linux and **Windows!**
 
+<div align="center">
+    <img src="doc/alphapose.gif", width="400">
+</div>
 
 
 ## Installation
