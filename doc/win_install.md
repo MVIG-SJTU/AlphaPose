@@ -31,6 +31,7 @@ python3 webcam_demo.py --vis
 ```
 python3 demo.py --indir ${img_directory} --outdir examples/res --sp
 ```
-	<div align="left">
-    <img src="step4.jpg">
-	</div>
+
+<div align="left">
+<img src="step4.jpg">
+</div>
