@@ -162,7 +162,7 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
         #WE will do NMS classwise
         for cls in img_classes:
             if cls != 0:
-                break
+                continue
             #get the detections with one particular class
             cls_mask = image_pred_*(image_pred_[:,-1] == cls).float().unsqueeze(1)
             class_mask_ind = torch.nonzero(cls_mask[:,-2]).squeeze()

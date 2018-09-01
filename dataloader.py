@@ -11,7 +11,7 @@ from pPose_nms import pose_nms, write_json
 from SPPE.src.utils.eval import getPrediction
 from yolo.util import write_results, dynamic_write_results
 from yolo.darknet import Darknet
-
+from tqdm import tqdm
 import cv2
 import json
 import numpy as np
@@ -251,7 +251,7 @@ class VideoLoader:
 
 
 class DetectionLoader:
-    def __init__(self, dataloder, batchSize=8, queueSize=512):
+    def __init__(self, dataloder, batchSize=8, queueSize=1024):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.det_model = Darknet("yolo/cfg/yolov3.cfg")
@@ -292,21 +292,21 @@ class DetectionLoader:
 
     def update(self):
         # keep looping the whole dataset
-        for i in range(self.num_batches):
+        for i in tqdm(range(self.num_batches)):
             img, orig_img, im_name, im_dim_list = self.dataloder.getitem()
 
 
             with torch.no_grad():
                 # Human Detection
                 img = img.cuda()
-                im_dim_list = im_dim_list.cuda()
                 prediction = self.det_model(img, CUDA=True)
                 # NMS process
                 dets = dynamic_write_results(prediction, opt.confidence,
                                     opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+                dets = dets.cpu()
                 if isinstance(dets, int) or dets.shape[0] == 0:
                     for k in range(len(orig_img)):
-                        while self.Q.full():
+                        if self.Q.full():
                             time.sleep(2)
                         self.Q.put((orig_img[k], im_name[k], None, None, None, None, None))
                     continue
@@ -323,20 +323,20 @@ class DetectionLoader:
                 for j in range(dets.shape[0]):
                     dets[j, [1, 3]] = torch.clamp(dets[j, [1, 3]], 0.0, im_dim_list[j, 0])
                     dets[j, [2, 4]] = torch.clamp(dets[j, [2, 4]], 0.0, im_dim_list[j, 1])
-                boxes = dets[:, 1:5].cpu()
-                scores = dets[:, 5:6].cpu()
+                boxes = dets[:, 1:5]
+                scores = dets[:, 5:6]
 
             for k in range(len(orig_img)):
                 boxes_k = boxes[dets[:,0]==k]
                 if isinstance(boxes_k, int) or boxes_k.shape[0] == 0:
-                    while self.Q.full():
+                    if self.Q.full():
                         time.sleep(2)
                     self.Q.put((orig_img[k], im_name[k], None, None, None, None, None))
                     continue
                 inps = torch.zeros(boxes_k.size(0), 3, opt.inputResH, opt.inputResW)
                 pt1 = torch.zeros(boxes_k.size(0), 2)
                 pt2 = torch.zeros(boxes_k.size(0), 2)
-                while self.Q.full():
+                if self.Q.full():
                     time.sleep(2)
                 self.Q.put((orig_img[k], im_name[k], boxes_k, scores[dets[:,0]==k], inps, pt1, pt2))
 
@@ -350,7 +350,7 @@ class DetectionLoader:
 
 
 class DetectionProcessor:
-    def __init__(self, detectionLoader, queueSize=512):
+    def __init__(self, detectionLoader, queueSize=1024):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.detectionLoader = detectionLoader

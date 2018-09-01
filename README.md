@@ -53,18 +53,11 @@ python3 webcam_demo.py --webcam 0 --outdir examples/res --vis
 ```
 python3 demo.py --list examples/list-coco-demo.txt --indir ${img_directory} --outdir examples/res --save_img
 ```
-- **Speeding up**:  Run AlphaPose for a video, speeding up by increasing the confidence and lowering the NMS threshold:
-```
-python3 video_demo.py --video ${path to video} --outdir examples/results/  --conf 0.5 --nms 0.45
-```
-If you have a gpu with GPU memory larger than 8GB, consider increasing the detection batch:
-```
-python3 demo.py --indir ${img_directory} --outdir examples/res --detbatch 8
-```
 - **Note**:  If you meet OOM(out of memory) problem, decreasing the pose estimation batch until the program can run on your computer:
 ```
 python3 demo.py --indir ${img_directory} --outdir examples/res --posebatch 30
 ```
+- **Speeding up**:  Checkout the [speed_up.md](doc/speed_up.md) for more details.
 - **For more**:  Checkout the [run.md](doc/run.md) for more options
 
 ## FAQ
