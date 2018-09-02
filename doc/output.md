@@ -52,6 +52,17 @@ AlphaPose - Output format
 }
 ```
 
+3. If the `--format` flag is set as 'open', we will save the results for each image in the format used by OpenPose.
+```
+{
+    "version":0.1,
+    "people":[
+        {"pose_keypoints_2d":[x1,y1,c1,...,xk,yk,ck]},
+        {"pose_keypoints_2d":[x1,y1,c1,...,xk,yk,ck]},
+    ]
+}
+```
+
 ### Keypoint Ordering
 The default keypoint order is
 ```
@@ -91,7 +102,7 @@ The default keypoint order is
     {14, "LElbow"},
     {15, "LWrist"},
 ```
-If the `--format` flag is set to 'cmu', the keypoint order is
+If the `--format` flag is set to 'cmu' or 'open', the keypoint order is
 ```
 //Result for COCO (18 body parts)
     {0,  "Nose"},
