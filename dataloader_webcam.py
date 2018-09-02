@@ -127,21 +127,13 @@ class DetectionLoader:
         self.batchSize = batchSize
         # initialize the queue used to store frames read from
         # the video file
-        if opt.sp:
-            self.Q = LifoQueue(maxsize=queueSize)
-        else:
-            self.Q = pQueue(maxsize=queueSize)
+        self.Q = LifoQueue(maxsize=queueSize)
 
     def start(self):
         # start a thread to read frames from the file video stream
-        if opt.sp:
-            t = Thread(target=self.update, args=())
-            t.daemon = True
-            t.start()
-        else:
-            p = mp.Process(target=self.update, args=())
-            p.daemon = True
-            p.start()
+        t = Thread(target=self.update, args=())
+        t.daemon = True
+        t.start()
         return self
 
     def update(self):
@@ -150,7 +142,6 @@ class DetectionLoader:
             img, orig_img, im_name, im_dim_list = self.dataloder.getitem()
             with self.dataloder.Q.mutex:
                 self.dataloder.Q.queue.clear()
-
             with torch.no_grad():
                 # Human Detection
                 img = img.cuda()
@@ -211,21 +202,13 @@ class DetectionProcessor:
         self.stopped = False
 
         # initialize the queue used to store data
-        if opt.sp:
-            self.Q = LifoQueue(maxsize=queueSize)
-        else:
-            self.Q = pQueue(maxsize=queueSize)
+        self.Q = LifoQueue(maxsize=queueSize)
 
     def start(self):
         # start a thread to read frames from the file video stream
-        if opt.sp:
-            t = Thread(target=self.update, args=())
-            t.daemon = True
-            t.start()
-        else:
-            p = mp.Process(target=self.update, args=())
-            p.daemon = True
-            p.start()
+        t = Thread(target=self.update, args=())
+        t.daemon = True
+        t.start()
         return self
 
     def update(self):
