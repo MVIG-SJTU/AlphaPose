@@ -99,11 +99,12 @@ if __name__ == "__main__":
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
 
-        # TQDM
-        im_names_desc.set_description(
+        if args.profile:
+            # TQDM
+            im_names_desc.set_description(
             'det time: {dt:.3f} | pose time: {pt:.2f} | post processing: {pn:.4f}'.format(
                 dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
-        )
+            )
 
     print('===========================> Finish Model Running.')
     if (args.save_img or args.save_video) and not args.vis_fast:
