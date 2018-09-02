@@ -80,7 +80,7 @@ class Image_loader(data.Dataset):
         return len(self.imglist)
 
 class ImageLoader:
-    def __init__(self, im_names, batchSize=8, format='yolo', queueSize=50):
+    def __init__(self, im_names, batchSize=1, format='yolo', queueSize=50):
         self.img_dir = opt.inputpath
         self.imglist = im_names
         self.transform = transforms.Compose([
@@ -125,7 +125,7 @@ class ImageLoader:
             im = im.resize((ow, oh))
             im = self.transform(im)
             while self.Q.full():
-                time.sleep(10)
+                time.sleep(2)
             self.Q.put((im, inp, im_name))
 
     def getitem_yolo(self):
@@ -153,7 +153,7 @@ class ImageLoader:
 
 
             while self.Q.full():
-                time.sleep(5)
+                time.sleep(2)
             
             self.Q.put((img, orig_img, im_name, im_dim_list))
 
@@ -167,7 +167,7 @@ class ImageLoader:
         return self.Q.qsize()
 
 class VideoLoader:
-    def __init__(self, path, batchSize=8, queueSize=256):
+    def __init__(self, path, batchSize=1, queueSize=50):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.path = path
@@ -230,7 +230,7 @@ class VideoLoader:
 
 
             while self.Q.full():
-                time.sleep(5)
+                time.sleep(2)
             
             self.Q.put((img, orig_img, im_name, im_dim_list))
 
@@ -303,14 +303,13 @@ class DetectionLoader:
                 # NMS process
                 dets = dynamic_write_results(prediction, opt.confidence,
                                     opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
-                dets = dets.cpu()
                 if isinstance(dets, int) or dets.shape[0] == 0:
                     for k in range(len(orig_img)):
                         if self.Q.full():
                             time.sleep(2)
                         self.Q.put((orig_img[k], im_name[k], None, None, None, None, None))
                     continue
-
+                dets = dets.cpu()
                 im_dim_list = torch.index_select(im_dim_list,0, dets[:, 0].long())
                 scaling_factor = torch.min(self.det_inp_dim / im_dim_list, 1)[0].view(-1, 1)
 
