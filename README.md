@@ -6,7 +6,7 @@
 
 ## News!
 
-This is the **beta pytorch** version of AlphaPose. Stable version will be ready in two days. Currently AlphaPose runs at about **15-20 fps**. Realtime version is coming very soon. Stay tuned!
+This **pytorch** version of AlphaPose runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 AP!
 
 ## AlphaPose
 [Alpha Pose](http://www.mvig.org/research/alphapose.html) is an accurate multi-person pose estimator, which is the **first open-source system that achieves 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
