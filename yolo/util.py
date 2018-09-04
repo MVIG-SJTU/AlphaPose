@@ -134,7 +134,7 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
 
     output = prediction.new(1, prediction.size(2) + 1)
     write = False
-
+    num = 0
     for ind in range(batch_size):
         #select the image from the batch
         image_pred = prediction[ind]
@@ -158,7 +158,7 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
             img_classes = unique(image_pred_[:,-1])
         except:
             continue
-        num = 0
+        
         #WE will do NMS classwise
         for cls in img_classes:
             if cls != 0:
