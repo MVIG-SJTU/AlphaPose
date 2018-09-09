@@ -138,7 +138,7 @@ def getPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
                 diff = torch.Tensor(
                     (hm[pY][pX + 1] - hm[pY][pX - 1], hm[pY + 1][pX] - hm[pY - 1][pX]))
                 preds[i][j] += diff.sign() * 0.25
-    # preds += 0.5
+    preds += 0.2
 
     preds_tf = torch.zeros(preds.size())
 
