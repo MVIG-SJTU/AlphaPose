@@ -229,7 +229,9 @@ class VideoLoader:
                 # if the `grabbed` boolean is `False`, then we have
                 # reached the end of the video file
                 if not grabbed:
-                    print("Video ended abnormally! Check if the video is standard format.")
+                    self.Q.put((None, None, None, None))
+                    print('===========================> This video get '+str(k)+' frames in total.')
+                    sys.stdout.flush()
                     return
                 # process and add the frame to the queue
                 img_k, orig_img_k, im_dim_list_k = prep_frame(frame, inp_dim)
@@ -311,7 +313,9 @@ class DetectionLoader:
         # keep looping the whole dataset
         for i in range(self.num_batches):
             img, orig_img, im_name, im_dim_list = self.dataloder.getitem()
-
+            if img is None:
+                self.Q.put((None, None, None, None, None, None, None))
+                return
 
             with torch.no_grad():
                 # Human Detection
@@ -397,6 +401,9 @@ class DetectionProcessor:
             
             with torch.no_grad():
                 (orig_img, im_name, boxes, scores, inps, pt1, pt2) = self.detectionLoader.read()
+                if orig_img is None:
+                    self.Q.put((None, None, None, None, None, None, None))
+                    return
                 if boxes is None or boxes.nelement() == 0:
                     while self.Q.full():
                         time.sleep(0.2)
