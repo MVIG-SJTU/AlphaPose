@@ -27,10 +27,9 @@ AlphaPose supports both Linux and **Windows!**
   git clone -b pytorch https://github.com/MVIG-SJTU/AlphaPose.git
   ```
 
-2. Install [pytorch 0.4.0](https://github.com/pytorch/pytorch)
+2. Install [pytorch 0.4.0](https://github.com/pytorch/pytorch) and other dependencies.
   ```Shell
-  chmod +x install.sh
-  ./install.sh
+  pip install -r requirements.txt
   ```
 
 3. Download the models manually: **duc_se.pth** (2018/08/30) ([Google Drive]( https://drive.google.com/open?id=1OPORTWB2cwd5YTVBX-NE8fsauZJWsrtW) | [Baidu pan](https://pan.baidu.com/s/15jbRNKuslzm5wRSgUVytrA)), **yolov3.weights**([Google Drive](https://drive.google.com/open?id=1yjrziA2RzFqWAQG4Qq7XN0vumsMxwSjS) | [Baidu pan](https://pan.baidu.com/s/108SjV-uIJpxnqDMT19v-Aw)). Place them into `./models/sppe` and `./models/yolo` respectively.
