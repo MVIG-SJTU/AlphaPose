@@ -117,7 +117,7 @@ parser.add_argument('--outdir', dest='outputpath',
                     help='output-directory', default="examples/res/")
 parser.add_argument('--inp_dim', dest='inp_dim', type=str, default='608',
                     help='inpdim')
-parser.add_argument('--conf', dest='confidence', type=float, default=0.1,
+parser.add_argument('--conf', dest='confidence', type=float, default=0.05,
                     help='bounding box confidence threshold')
 parser.add_argument('--nms', dest='nms_thesh', type=float, default=0.6,
                     help='bounding box nms threshold')
@@ -143,4 +143,4 @@ parser.add_argument('--vis_fast', dest='vis_fast',
                     help='use fast rendering', action='store_true', default=False)
 opt = parser.parse_args()
 
-opt.num_classes = 80
+opt.num_classes = 500

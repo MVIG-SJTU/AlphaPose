@@ -115,8 +115,8 @@ def dynamic_write_results(prediction, confidence, num_classes, nms=True, nms_con
 
 
 def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
-    conf_mask = (prediction[:,:,4] > confidence).float().unsqueeze(2)
-    prediction = prediction*conf_mask
+    conf_mask = (prediction[:, :, 4] > confidence).float().float().unsqueeze(2)
+    prediction = prediction * conf_mask
 
     try:
         ind_nz = torch.nonzero(prediction[:,:,4]).transpose(0,1).contiguous()
@@ -158,8 +158,9 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
             img_classes = unique(image_pred_[:,-1])
         except:
             continue
-        
+
         #WE will do NMS classwise
+        #print(img_classes)
         for cls in img_classes:
             if cls != 0:
                 continue
