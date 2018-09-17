@@ -113,8 +113,8 @@ class DetectionLoader:
     def __init__(self, dataloder, batchSize=1, queueSize=1024):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
-        self.det_model = Darknet("yolo/cfg/yolov3.cfg")
-        self.det_model.load_weights('models/yolo/yolov3.weights')
+        self.det_model = Darknet("yolo/cfg/yolov3-spp.cfg")
+        self.det_model.load_weights('models/yolo/yolov3-spp.weights')
         self.det_model.net_info['height'] = opt.inp_dim
         self.det_inp_dim = int(self.det_model.net_info['height'])
         assert self.det_inp_dim % 32 == 0
@@ -244,8 +244,8 @@ class WebcamDetectionLoader:
     def __init__(self, webcam = 0, batchSize=1, queueSize=256):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
-        self.det_model = Darknet("yolo/cfg/yolov3.cfg")
-        self.det_model.load_weights('models/yolo/yolov3.weights')
+        self.det_model = Darknet("yolo/cfg/yolov3-spp.cfg")
+        self.det_model.load_weights('models/yolo/yolov3-spp.weights')
         self.det_model.net_info['height'] = opt.inp_dim
         self.det_inp_dim = int(self.det_model.net_info['height'])
         assert self.det_inp_dim % 32 == 0

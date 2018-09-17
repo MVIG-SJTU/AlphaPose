@@ -143,4 +143,4 @@ parser.add_argument('--vis_fast', dest='vis_fast',
                     help='use fast rendering', action='store_true', default=False)
 opt = parser.parse_args()
 
-opt.num_classes = 500
+opt.num_classes = 80

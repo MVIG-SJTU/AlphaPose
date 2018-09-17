@@ -32,8 +32,8 @@ if __name__ == '__main__':
 
     #Set up the neural network
     print("Loading network.....")
-    model = Darknet("cfg/yolov3.cfg")
-    model.load_weights("yolov3.weights")
+    model = Darknet("cfg/yolov3-spp.cfg")
+    model.load_weights("yolov3-spp.weights")
     print("Network successfully loaded")
 
     model.net_info["height"] = "608"

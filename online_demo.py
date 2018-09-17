@@ -49,8 +49,8 @@ if __name__ == "__main__":
     # Load YOLO model
     print('Loading YOLO model..')
     sys.stdout.flush()
-    det_model = Darknet("yolo/cfg/yolov3.cfg")
-    det_model.load_weights('models/yolo/yolov3.weights')
+    det_model = Darknet("yolo/cfg/yolov3-spp.cfg")
+    det_model.load_weights('models/yolo/yolov3-spp.weights')
     det_model.net_info['height'] = args.inp_dim
     det_inp_dim = int(det_model.net_info['height'])
     assert det_inp_dim % 32 == 0
