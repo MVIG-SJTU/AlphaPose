@@ -4,7 +4,7 @@ This folder includes PyTorch code for training the Single Person Pose Estimation
 1. Install PyTorch >= 0.4.0 following [official instruction](https://pytorch.org/get-started/locally/).
 2. Install other dependencies.
 ``` bash
-cd ${TRAIN_ROOT}$
+cd ${TRAIN_ROOT}
 pip install -r requirements.txt
 ```
 3. Disable CUDNN for batchnormalization
@@ -35,6 +35,7 @@ ${TRAIN_ROOT}
 
 ## Train on COCO
 ``` bash
+cd src
 # Train without DPG first
 python train.py --dataset coco --expID exp1 --nClasses 17 --LR 1e-4
 # Then, train with DPG
