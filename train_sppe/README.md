@@ -72,4 +72,4 @@ imgname:    [16]        #ascii number of imagename
 part:       [17 x 2]    (kp1_x, kp1_y, kp2_x, kp2_y, ..., kp17_x, kp17_y)
 ```
 
-You can refer to this python demo to create your own `h5` files. How to save data in `h5` files, you can refer to [h5py quick start](http://docs.h5py.org/en/stable/quick.html#quick).
+Please refer to this python demo to create your own `h5` files. How to save data in `h5` files, please refer to [h5py quick start](http://docs.h5py.org/en/stable/quick.html#quick).
