@@ -45,3 +45,31 @@ python train.py --dataset coco --expID exp1 --nClasses 17 --LR 1e-4 --addDPG
 python train.py --dataset coco --expID exp1 --nClasses 17 --LR 1e-5 --addDPG --loadModel #{MODEL_DIR}
 ```
 
+## Train on new dataset
+Please create the `h5` file from your own datset. Here is the python demo to read the `h5` file.
+``` python
+>>> import h5py
+>>> annot = h5py.File('annot_coco.h5')
+>>> for k in annot.keys():
+...     print(k)
+bndbox
+imgname
+part
+
+>>> bndboxes = annot['bndbox'][:]
+>>> bndbox.shape
+(144213, 1, 4)
+>>> imgnames = annot['imgname'][:]
+>>> imgname.shape
+(144213, 16)
+>>> parts = annot['part'][:]
+>>> part.shape
+(144213, 17, 2)
+```
+```
+bndbox:     [1 x 4]     (upleft_x, upleft_y, bottomright_x, bottomright_y)
+imgname:    [16]        #ascii number of imagename
+part:       [17 x 2]    (kp1_x, kp1_y, kp2_x, kp2_y, ..., kp17_x, kp17_y)
+```
+
+You can refer to this python demo to create your own `h5` files. How to save data in `h5` files, you can refer to [h5py quick start](http://docs.h5py.org/en/stable/quick.html#quick).
