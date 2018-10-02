@@ -21,11 +21,11 @@ Results on PoseTrack Challenge validation set:
 2. Task3: Pose Tracking (MOTA)
 <center>
 
-| Method | Head MOTA | Shoulder MOTA | Elbow MOTA | Wrist MOTA | Hip MOTA | Knee MOTA | Ankle MOTA | Total MOTA | Total MOTP|
-|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|
-| Detect-and-Track(FAIR) | **61.7** | 65.5 | 57.3 | 45.7 | 54.3 | 53.1 | 45.7 | 55.2 | 61.5 |
-| **PoseFlow(DeepMatching ~8FPS)** | 59.8 | **67.0** | **59.8** | **51.6** | **60.0** | **58.4** | **50.5** | **58.3** | **67.8**|
-| **PoseFlow(OrbMatching ~24FPS)** | 59.0 | **66.8** | **60.0** | **51.8** | **59.4** | **58.4** | **50.3** | **58.0** | **62.2**|
+| Method | Head MOTA | Shoulder MOTA | Elbow MOTA | Wrist MOTA | Hip MOTA | Knee MOTA | Ankle MOTA | Total MOTA | Total MOTP| Speed(FPS) |
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|
+| Detect-and-Track(FAIR) | **61.7** | 65.5 | 57.3 | 45.7 | 54.3 | 53.1 | 45.7 | 55.2 | 61.5 |Unknown|
+| **PoseFlow(DeepMatch)** | 59.8 | **67.0** | 59.8 | 51.6 | **60.0** | **58.4** | **50.5** | **58.3** | **67.8**|8|
+| **PoseFlow(OrbMatch)** | 59.0 | 66.8 | **60.0** | **51.8** | 59.4 | **58.4** | 50.3 | 58.0 | 62.2|24|
 
 </center>
 
@@ -44,15 +44,17 @@ Results on PoseTrack Challenge validation set:
 ```shell
 pip install -r requirements.txt
 
----DeepMatching Version---
+# Generate correspondences by DeepMatching
+# (More Robust but Slower)
 cd deepmatching
 make clean all
 make
 cd ..
-python matching.py --orb=0 # default using DeepMatching (More Robust but Slower)
+python matching.py --orb=0 
 
----Orb Version---
-python matching.py --orb=1 # using ORB Matching (Faster but Less Robust)
+# Generate correspondences by Orb
+# (Faster but Less Robust)
+python matching.py --orb=1 
 
 ```
 ## Quick Start
