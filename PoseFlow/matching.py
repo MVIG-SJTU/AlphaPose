@@ -12,6 +12,7 @@ import os
 import cv2
 from tqdm import tqdm
 import numpy as np
+import time
 import argparse
 
 def generate_fake_cor(img, out_path):
@@ -34,24 +35,24 @@ def orb_matching(img1_path, img2_path, vidname, img1_id, img2_id):
     img2 = cv2.cvtColor(cv2.imread(img2_path), cv2.COLOR_BGR2RGB)
     
     # Initiate ORB detector
-    orb = cv2.ORB_create(nfeatures=1000, scoreType=cv2.ORB_FAST_SCORE)
+    orb = cv2.ORB_create(nfeatures=10000, scoreType=cv2.ORB_FAST_SCORE)
 
     # find the keypoints and descriptors with ORB
     kp1, des1 = orb.detectAndCompute(img1,None)
     kp2, des2 = orb.detectAndCompute(img2,None)
 
-    if len(kp1)*len(kp2) < 100:
+    if len(kp1)*len(kp2) < 400:
         generate_fake_cor(img1, out_path)
         return
 
     # FLANN parameters
     FLANN_INDEX_LSH = 6
     index_params= dict(algorithm = FLANN_INDEX_LSH,
-                       table_number = 6, # 12
+                       table_number = 12, # 12
                        key_size = 12,     # 20
-                       multi_probe_level = 1) #2
+                       multi_probe_level = 2) #2
 
-    search_params = dict(checks=50)   # or pass empty dictionary
+    search_params = dict(checks=100)   # or pass empty dictionary
 
     flann = cv2.FlannBasedMatcher(index_params,search_params)
 
@@ -64,24 +65,26 @@ def orb_matching(img1_path, img2_path, vidname, img1_id, img2_id):
     for i, m_n in enumerate(matches):
         if len(m_n) != 2:
             continue
-        elif m_n[0].distance < 0.70*m_n[1].distance:
+        elif m_n[0].distance < 0.80*m_n[1].distance:
             ret = fd.write("%d %d %d %d %f \n"%(kp1[m_n[0].queryIdx].pt[0], kp1[m_n[0].queryIdx].pt[0], kp2[m_n[0].trainIdx].pt[0], kp2[m_n[0].trainIdx].pt[1], m_n[0].distance))
     
     # Close opened file
     fd.close()
 
+    # print(os.stat(out_path).st_size)
+
+    if os.stat(out_path).st_size<1000:
+        generate_fake_cor(img1, out_path)
+
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='FoseFlow Matching')
-    parser.add_argument('--orb', type=bool, default=False)
+    parser.add_argument('--orb', type=int, default=0)
     args = parser.parse_args()
 
     image_dir = "posetrack_data/images"
     imgnames = []
     vidnames = []
-
-    if not args.orb:
-        os.chdir("./deepmatching")
 
     for a,b,c in os.walk(image_dir):
         if len(a.split("/")) == 4:
@@ -115,5 +118,5 @@ if __name__ == '__main__':
                     orb_matching(img1,img2,vidname,img1_id,img2_id)
                 else:
                     # calc deep matching
-                    cmd = "./deepmatching %s %s -nt 10 -downscale 3 -out %s/%s_%s.txt > cache"%(img1,img2,vidname,img1_id,img2_id)
+                    cmd = "./deepmatching/deepmatching %s %s -nt 10 -downscale 3 -out %s/%s_%s.txt > cache"%(img1,img2,vidname,img1_id,img2_id)
                     os.system(cmd)

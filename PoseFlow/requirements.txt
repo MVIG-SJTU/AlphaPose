@@ -1,9 +1,9 @@
-numpy==1.13.1
-matplotlib==2.1.1
-scipy==0.19.1
-Image==1.5.20
-Pillow==5.0.0
+numpy==1.14.5
+scipy==1.1.0
+opencv_python==3.4.2.16
+opencv_contrib_python==3.4.2.16
+matplotlib==2.2.2
+tqdm==4.23.4
+Image==1.5.25
+Pillow==5.3.0
 munkres==1.0.12
-tqdm==4.19.8
-opencv-contrib-python==3.4.2.16
-opencv-python==3.4.2.16s

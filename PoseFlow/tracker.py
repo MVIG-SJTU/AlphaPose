@@ -37,7 +37,7 @@ if __name__ == '__main__':
     parser.add_argument('--mag', type=int, default=30)
     parser.add_argument('--match', type=float, default=0.2)
     parser.add_argument('--dataset', type=str, default='val')
-    parser.add_argument('--orb', type=bool, default=False)
+    parser.add_argument('--orb', type=int, default=0)
 
     args = parser.parse_args()
 
@@ -50,9 +50,10 @@ if __name__ == '__main__':
     # 6. box width/height around keypoint for computing pose IoU
     # 7. match threshold in Hungarian Matching
     # 8. dataset = 'test' or 'val'
+    # 9. use orb matching or not
 
     link_len = args.link
-    weights = [1,0,1,0,0,0] 
+    weights = [1,2,1,2,0,0] 
     weights_fff = [0,1,0,1,0,0]
     drop = args.drop
     num = args.num
@@ -130,7 +131,7 @@ if __name__ == '__main__':
                 cor_file = os.path.join(image_dir, video_name, "".join([frame_id, '_', next_frame_id, '.txt']))
 
             # regenerate the missed pair-matching txt
-            if not os.path.exists(cor_file) or os.stat(cor_file).st_size<1000:
+            if not os.path.exists(cor_file) or os.stat(cor_file).st_size<200:
                 
                 dm = "/home/yuliang/code/PoseTrack-CVPR2017/external/deepmatching/deepmatching"
                 img1_path = os.path.join(image_dir,video_name,frame_name)
