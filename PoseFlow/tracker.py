@@ -6,14 +6,13 @@ Project: AlphaPose
 File Created: Thursday, 1st March 2018 6:12:23 pm
 Author: Yuliang Xiu (yuliangxiu@sjtu.edu.cn)
 -----
-Last Modified: Thursday, 20th March 2018 1:18:17 am
+Last Modified: Monday, 1st October 2018 12:53:12 pm
 Modified By: Yuliang Xiu (yuliangxiu@sjtu.edu.cn>)
 -----
 Copyright 2018 - 2018 Shanghai Jiao Tong University, Machine Vision and Intelligence Group
 '''
 
 import numpy as np
-import cv2 as cv
 import os
 import json
 import copy
@@ -22,6 +21,7 @@ from munkres import Munkres, print_matrix
 from PIL import Image
 from tqdm import tqdm
 from utils import *
+from matching import orb_matching
 import argparse
 
 
@@ -37,6 +37,7 @@ if __name__ == '__main__':
     parser.add_argument('--mag', type=int, default=30)
     parser.add_argument('--match', type=float, default=0.2)
     parser.add_argument('--dataset', type=str, default='val')
+    parser.add_argument('--orb', type=bool, default=False)
 
     args = parser.parse_args()
 
@@ -58,6 +59,7 @@ if __name__ == '__main__':
     mag = args.mag
     match_thres = args.match
     dataset = args.dataset
+    use_orb = args.orb
             
     anno_dir = "./posetrack_data/annotations/{}".format(dataset)
     notrack_json = "alpha-pose-results-{}.json".format(dataset) 
@@ -122,25 +124,30 @@ if __name__ == '__main__':
                         track[video_name][frame_name][pid]['match_score'] = 0
 
             max_pid_id = max(max_pid_id, track[video_name][frame_name]['num_boxes'])
-            cor_file = os.path.join(image_dir, video_name, "".join([frame_id, '_', next_frame_id, '.txt']))
+            if use_orb:
+                cor_file = os.path.join(image_dir, video_name, "".join([frame_id, '_', next_frame_id, '_orb.txt']))
+            else:
+                cor_file = os.path.join(image_dir, video_name, "".join([frame_id, '_', next_frame_id, '.txt']))
 
             # regenerate the missed pair-matching txt
-            if not os.path.exists(cor_file):
+            if not os.path.exists(cor_file) or os.stat(cor_file).st_size<1000:
                 
                 dm = "/home/yuliang/code/PoseTrack-CVPR2017/external/deepmatching/deepmatching"
                 img1_path = os.path.join(image_dir,video_name,frame_name)
                 img2_path = os.path.join(image_dir,video_name,next_frame_name)
-                
-                cmd = "%s %s %s -nt 20 -downscale 2 -out %s"%(dm,img1_path,img2_path,cor_file)
-                os.system(cmd)
-            
+
+                if use_orb:
+                    orb_matching(img1_path,img2_path, os.path.join(image_dir, video_name), frame_id, next_frame_id)
+                else:
+                    cmd = "%s %s %s -nt 20 -downscale 2 -out %s"%(dm,img1_path,img2_path,cor_file)
+                    os.system(cmd)
+
             all_cors = np.loadtxt(cor_file)
 
             # if there is no people in this frame, then copy the info from former frame
             if track[video_name][next_frame_name]['num_boxes'] == 0:
                 track[video_name][next_frame_name] = copy.deepcopy(track[video_name][frame_name])
                 continue
-                
             cur_all_pids, cur_all_pids_fff = stack_all_pids(track[video_name], frame_list[:-1], idx, max_pid_id, link_len)
             match_indexes, match_scores = best_matching_hungarian(
                 all_cors, cur_all_pids, cur_all_pids_fff, track[video_name][next_frame_name], weights, weights_fff, num, mag)

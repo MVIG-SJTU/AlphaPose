@@ -5,3 +5,5 @@ Image==1.5.20
 Pillow==5.0.0
 munkres==1.0.12
 tqdm==4.19.8
+opencv-contrib-python==3.4.2.16
+opencv-python==3.4.2.16s

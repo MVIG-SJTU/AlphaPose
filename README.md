@@ -155,14 +155,12 @@ Please cite these papers in your publications if it helps your research:
       year={2017}
     }
 
-    @ARTICLE{2018arXiv180200977X,
+    @inproceedings{xiu2018poseflow,
       author = {Xiu, Yuliang and Li, Jiefeng and Wang, Haoyu and Fang, Yinghong and Lu, Cewu},
       title = {{Pose Flow}: Efficient Online Pose Tracking},
-      journal = {ArXiv e-prints},
-      eprint = {1802.00977},
+      booktitle={BMVC},
       year = {2018}
     }
-
 
 
 ## License

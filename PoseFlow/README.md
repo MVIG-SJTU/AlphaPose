@@ -31,19 +31,25 @@ Results on PoseTrack Challenge validation set:
 ## Requirements
 
 - Python 2.7.13
+- OpenCV(contains OpenCV-contrib) 3.4.2.16
 
 ## Installation
 
 1. Download PoseTrack Dataset from [PoseTrack](https://posetrack.net/) to `AlphaPose/PoseFlow/posetrack_data/`
-2. Use [DeepMatching](http://lear.inrialpes.fr/src/deepmatching/) to extract dense correspondences between adjcent frames in every video
+2. (Option) Use [DeepMatching](http://lear.inrialpes.fr/src/deepmatching/) to extract dense correspondences between adjcent frames in every video, Please refer to [DeepMatching Compile Error](http://xiuyuliang.cn/2014/12/05/deepmatching/) to compile DeepMatching correctly
 
 ```shell
 pip install -r requirements.txt
+
+(option---)
 cd deepmatching
 make clean all
 make
 cd ..
-python deepmatching.py
+python matching.py # default using DeepMatching (More Robust but Slower)
+(---option)
+
+python matching.py --orb=True # using ORB Matching (Faster but Less Robust)
 ```
 ## Quick Start
 
@@ -51,7 +57,7 @@ Firstly, using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) to generate m
 
 Run pose tracking
 ```shell
-python tracker.py --dataset=val/test
+python tracker.py --dataset=val/test  --orb=True/False
 ```
 ## Evaluation
 
@@ -71,13 +77,14 @@ python poseval/py/evaluate.py --groundTruth=./posetrack_data/annotations/val \
 
 Please cite these papers in your publications if it helps your research:
 
-    @ARTICLE{2018arXiv180200977X,
+    @inproceedings{xiu2018poseflow,
       author = {Xiu, Yuliang and Li, Jiefeng and Wang, Haoyu and Fang, Yinghong and Lu, Cewu},
       title = {{Pose Flow}: Efficient Online Pose Tracking},
-      journal = {ArXiv e-prints},
-      eprint = {1802.00977},
+      booktitle={BMVC},
       year = {2018}
     }
+
+
 
 
 
