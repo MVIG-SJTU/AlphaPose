@@ -56,7 +56,12 @@ python3 demo.py --list examples/list-coco-demo.txt --indir ${img_directory} --ou
 ```
 python3 demo.py --indir ${img_directory} --outdir examples/res --posebatch 30
 ```
+- **Getting more accurate**: You can enable flip testing to get more accurate results by disable fast_inference, e.g.:
+```
+python3 demo.py --indir ${img_directory} --outdir examples/res --fast_inference False
+```
 - **Speeding up**:  Checkout the [speed_up.md](doc/speed_up.md) for more details.
+- **Output format**: Checkout the [output.md](doc/output.md) for more details.
 - **For more**:  Checkout the [run.md](doc/run.md) for more options
 
 ## FAQ
