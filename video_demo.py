@@ -12,6 +12,7 @@ from dataloader import VideoLoader, DetectionLoader, DetectionProcessor, DataWri
 from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
 
+import ntpath
 import os
 import sys
 from tqdm import tqdm
@@ -62,7 +63,7 @@ if __name__ == "__main__":
     }
 
     # Data writer
-    save_path = os.path.join(args.outputpath, 'AlphaPose_'+videofile.split('/')[-1].split('.')[0]+'.avi')
+    save_path = os.path.join(args.outputpath, 'AlphaPose_'+ntpath.basename(videofile).split('.')[0]+'.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
 
     im_names_desc =  tqdm(range(data_loader.length()))
