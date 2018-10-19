@@ -1,12 +1,13 @@
+from __future__ import print_function
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # All of these examples are really, really outdated but offer some insights 
 # into using the python code, if you want to check it out
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 import numpy as np
 import pypose as pose
 import pypose.mpii as ds  # Use this to swap which dataset you want to use
+from six.moves import xrange
 
 # Sample dataset generation
 if False:
@@ -48,10 +49,10 @@ if False:
     pdf = pose.report.PdfPages(pose.ref.posedir+'/img/reports/fwd_back_sample.pdf')
 
     # Add whatever pages you want
-    print "Doing overall comparison..."
+    print("Doing overall comparison...")
     pose.report.filtercomparison(ds.name, dists, filts, filtnames=filtnames, title=title, pdf=pdf)
     for i,filt in enumerate(filts[:-1]):
-        print "Generating images for - %s..." % filtnames[i]
+        print("Generating images for - %s..." % filtnames[i])
         pose.report.sampleimages(ds, preds, dists=dists, pdf=pdf, title=filtnames[i], filt=filt)
         pose.report.sampleimages(ds, preds, dists=dists, pdf=pdf, title=filtnames[i], filt=filt, get_worst=True)
 
@@ -81,11 +82,11 @@ if True:
     title='Performance Comparison - Torso Deviation from Vertical'
     pdf = pose.report.PdfPages(pose.ref.posedir+'/img/reports/torso_angle_sample.pdf')
 
-    print "Doing overall comparison..."
+    print("Doing overall comparison...")
     pose.report.filtercomparison(ds.name, dists, filts, filtnames=filtnames, title=title, pdf=pdf)
     for i in xrange(7):
         # This loop will only generate poor performing images for the first filter (people who are upright)
-        print "Generating images for page - %d..." % i
+        print("Generating images for page - %d..." % i)
         pose.report.sampleimages(ds, preds, dists=dists, pdf=pdf, title=filtnames[0], filt=filts[0],
                                 get_worst=True, page_num=i+1)
 

@@ -1,8 +1,10 @@
+from __future__ import print_function
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from six.moves import xrange
 import sys, getopt
 import h5py
 
@@ -546,7 +548,7 @@ def limbreport(dataset, exp_id, pdf=None):
 # =============================================================================
 
 def helpmessage():
-    print "This isn't too helpful, updating message soon..."
+    print("This isn't too helpful, updating message soon...")
     sys.exit(2)
 
 # Main
@@ -566,7 +568,7 @@ def main(argv):
         opts, args = getopt.getopt(argv, "hd:e:c:p:viol", ["help", "dataset=", "expID=", "compare=", "prev=",
                                                            "vert", "images", "obs", "limb"])
     except getopt.GetoptError:
-        print "Incorrect arguments"
+        print("Incorrect arguments")
         helpmessage()
         sys.exit(2)
     for opt, arg in opts:
@@ -582,13 +584,13 @@ def main(argv):
         elif opt in ('-l', '--limb'): limb = True
 
     if dataset is None:
-        print "No dataset chosen."
+        print("No dataset chosen.")
         helpmessage()
     if not (dataset in ['mpii','flic']):
-        print "Bad argument for --dataset"
+        print("Bad argument for --dataset")
         helpmessage()
     if exp_id is None:
-        print "No experiment number provided."
+        print("No experiment number provided.")
         helpmessage()
     expdir = ref.posedir + '/exp/' + dataset + '/' + exp_id
 
@@ -608,7 +610,7 @@ def main(argv):
         annot = ref.load(dataset, 'valid')
 
     # Load predictions
-    print "Loading predictions"
+    print("Loading predictions")
     pred_opts = [num_parts, vert, obs]
     preds, dists, _ = loadpreds(dataset, expdir + '/preds.h5', pred_opts, images)
 
@@ -646,7 +648,7 @@ def main(argv):
 
     filt = None
 
-    print "Creating overview page"
+    print("Creating overview page")
     # Main report creation
     pdf = PdfPages(expdir + '/report.pdf')
 
@@ -655,7 +657,7 @@ def main(argv):
                      other_dists=other_dists, pdf=pdf)
 
     if images:
-        print "Creating prediction examples page"
+        print("Creating prediction examples page")
         # Overall performance examples
         num_good_exs = 2
         num_bad_exs = 6
