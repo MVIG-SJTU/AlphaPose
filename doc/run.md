@@ -18,6 +18,7 @@ Here, we first list the flags of this script and then give some examples.
 - `--detbatch`: Batch size for the detection network. 
 - `--posebatch`: Maximum batch size for the pose estimation network. If you met OOM problem, decrease this value until it fit in the memory.
 - `--sp`: Run the program using a single process. Windows users need to turn this flag on.
+- `--inp_dim`: The input size of detection network. The inp_dim should be multiple of 32. Default is 608.
 
 ## Examples
 - **Run AlphaPose for all images in a folder ,save the results in the format of CMU-Pose and save the images**:
