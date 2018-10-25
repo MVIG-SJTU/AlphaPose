@@ -7,6 +7,7 @@ Created on Wed Nov  9 10:58:09 2016
 
 import json
 import numpy as np
+from six.moves import xrange
 import h5py
 import os
 import argparse

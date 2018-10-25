@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -11,17 +12,17 @@ plt.ion()
 try:
     experiments_to_show = sys.argv[1].split(',')
 except:
-    print "Error: No experiments provided"
+    print("Error: No experiments provided")
     exit()
 
-print "Monitoring the following experiments:",
-for exp in experiments_to_show: print exp,
-print ""
+print("Monitoring the following experiments:", end=' ')
+for exp in experiments_to_show: print(exp, end=' ')
+print("")
 
 track_multiple = sys.argv[2] == '1'
 if track_multiple:
     exp_to_track = experiments_to_show[0]
-    print "Tracking all variations of:",exp_to_track
+    print("Tracking all variations of:",exp_to_track)
     experiments_to_show.remove(exp_to_track)
 
 def readlog(filepath):
@@ -55,9 +56,9 @@ while True:
                     if not subdirname in experiments_to_show:
                         experiments_to_show += [subdirname]
 
-    print "Updated experiments to show:",
-    for exp in experiments_to_show: print exp,
-    print ""
+    print("Updated experiments to show:", end=' ')
+    for exp in experiments_to_show: print(exp, end=' ')
+    print("")
 
     idx = [1, 2, 0] # Epoch, Loss, Accuracy indices
 
@@ -111,6 +112,6 @@ while True:
             axs[k].set_ylim(0,1)
 
     axs['Test accuracy'].legend(loc='lower right', fontsize=10)
-    print time.strftime('%X %x %Z')
+    print(time.strftime('%X %x %Z'))
     plt.show()
     plt.pause(900)

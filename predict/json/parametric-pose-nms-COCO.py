@@ -4,9 +4,11 @@ Created on Wed Nov  9 10:58:09 2016
 
 @author: benjamin
 """
+from __future__ import print_function
 
 import json
 import numpy as np
+from six.moves import xrange
 import h5py
 import os
 import zipfile
@@ -202,7 +204,7 @@ def test_parametric_pose_NMS_json(delta1,delta2,mu,gamma,outputpath):
             for point_id in xrange(17):
                 if math.isnan(merge_poses[point_id,0]):
                    merge_poses[point_id,0] = 0
-                   print point_id
+                   print(point_id)
                 if math.isnan(merge_poses[point_id,1]):
                    merge_poses[point_id,1] = 1
                 NMS_preds.write("\t{}\t{}".format(merge_poses[point_id,0]-0.25,merge_poses[point_id,1]-0.25))

@@ -1,10 +1,12 @@
 import numpy as np
 import scipy.misc
 import scipy.signal
+from six.moves import xrange
 import math
 
 import draw
 import ref
+
 
 # =============================================================================
 # General image processing functions

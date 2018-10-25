@@ -1,4 +1,6 @@
+from __future__ import print_function
 import numpy as np
+from six.moves import xrange
 import ref
 import img
 
@@ -22,7 +24,7 @@ def getdists(pred, dotrain=False):
     elif pred.shape[1] == 16:
         dataset = 'mpii'
     else:
-        print "Error: Bad prediction file."
+        print("Error: Bad prediction file.")
         return 0
 
     idx_ref = []
