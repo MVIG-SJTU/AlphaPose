@@ -7,12 +7,18 @@ This folder includes PyTorch code for training the Single Person Pose Estimation
 cd ${TRAIN_ROOT}
 pip install -r requirements.txt
 ```
-3. Disable CUDNN for batchnormalization
+3.Disable cudnn for batch_norm: (See: [@Microsoft / human-pose-estimation.pytorch#installation](https://github.com/Microsoft/human-pose-estimation.pytorch#installation))
 ```
 # PYTORCH=/path/to/pytorch
+# for pytorch v0.4.0
 sed -i "1194s/torch\.backends\.cudnn\.enabled/False/g" ${PYTORCH}/torch/nn/functional.py
-```
+# for pytorch v0.4.1
+sed -i "1254s/torch\.backends\.cudnn\.enabled/False/g" ${PYTORCH}/torch/nn/functional.py
 
+# Note that instructions like # PYTORCH=/path/to/pytorch indicate that you should pick 
+# a path where you'd like to have pytorch installed and then set an environment
+# variable (PYTORCH in this case) accordingly.
+```
 ## Data preparation
 
 ### COCO Data
