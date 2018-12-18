@@ -16,7 +16,6 @@ ssd/examples
 */.ipynb_checkpoints/
 
 *.pth
-*.json
 *.h5
 *.zip
 *.weights

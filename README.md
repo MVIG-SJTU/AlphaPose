@@ -6,7 +6,8 @@
 
 ## News!
 
-This **pytorch** version of AlphaPose runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 AP!
+- Dec 2018: [General version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch/PoseFlow) of PoseFlow is released! 3X Faster and support pose tracking results visualization!
+- Sep 2018: [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! It runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 mAP!
 
 ## AlphaPose
 [Alpha Pose](http://www.mvig.org/research/alphapose.html) is an accurate multi-person pose estimator, which is the **first open-source system that achieves 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
@@ -64,11 +65,21 @@ python3 demo.py --indir ${img_directory} --outdir examples/res --fast_inference 
 - **Output format**: Checkout the [output.md](doc/output.md) for more details.
 - **For more**:  Checkout the [run.md](doc/run.md) for more options
 
+## Pose Tracking
+
+<p align='center'>
+    <img src="doc/posetrack.gif", width="360">
+    <img src="doc/posetrack2.gif", width="344">
+</p>
+
+Please read [PoseFlow/README.md](PoseFlow/) for details.
+
+
 ## FAQ
 Check out [faq.md](doc/faq.md) for faq.
 
 ## Contributors
-Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 
+Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/), [Yuliang Xiu](http://xiuyuliang.cn) and [Cewu Lu](http://www.mvig.org/). 
 
 ## Citation
 Please cite these papers in your publications if it helps your research:
@@ -80,11 +91,10 @@ Please cite these papers in your publications if it helps your research:
       year={2017}
     }
 
-    @ARTICLE{2018arXiv180200977X,
+    @inproceedings{xiu2018poseflow,
       author = {Xiu, Yuliang and Li, Jiefeng and Wang, Haoyu and Fang, Yinghong and Lu, Cewu},
       title = {{Pose Flow}: Efficient Online Pose Tracking},
-      journal = {ArXiv e-prints},
-      eprint = {1802.00977},
+      booktitle={BMVC},
       year = {2018}
     }
 
