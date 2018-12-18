@@ -4,7 +4,7 @@ Official implementation of [Pose Flow: Efficient Online Pose Tracking ](https://
 
 <p align='center'>
     <img src="posetrack1.gif", width="360">
-    <img src="posetrack2.gif", width="350">
+    <img src="posetrack2.gif", width="344">
 </p>
 
 Results on PoseTrack Challenge validation set:

@@ -11,19 +11,24 @@ To match poses that correspond to the same person across frames, we also provide
 
 
 ## News!
-Now [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! It runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 mAP!
+- Dec 2018: [General version](https://github.com/MVIG-SJTU/AlphaPose/tree/master/PoseFlow) of PoseFlow is released! 3X Faster and support pose tracking results visualization!
+- Sep 2018: [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! It runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 mAP!
 
 ## Contents
-1. [AlphaPose](#alphapose)
-2. [Results](#results)
-3. [Installation](#installation)
-4. [Quick Start](#quick-start)
-5. [Output](#output)
-6. [Speeding Up Alpha Pose](#speeding-up-alpha-pose)
-7. [Feedbacks](#feedbacks)
-8. [Contributors](#contributors)
-9. [Citation](#citation)
-10. [License](#license)
+- [AlphaPose](#alphapose)
+- [News!](#news)
+- [Contents](#contents)
+- [Results](#results)
+  - [Pose Estimation](#pose-estimation)
+  - [Pose Tracking](#pose-tracking)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Output](#output)
+- [Speeding Up AlphaPose](#speeding-up-alphapose)
+- [Feedbacks](#feedbacks)
+- [Contributors](#contributors)
+- [Citation](#citation)
+- [License](#license)
 
 
 
@@ -58,6 +63,7 @@ Results on MPII full test set:
 ### Pose Tracking
 <p align='center'>
     <img src="doc/posetrack.gif", width="360">
+    <img src="doc/posetrack2.gif", width="344">
 </p>
 
 Results on PoseTrack Challenge validation set:
