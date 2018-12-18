@@ -50,7 +50,9 @@ def display_pose(intputpath, outputpath, imgname):
     ax.set_xlim([0,width])
     ax.set_ylim([height,0])
     extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    fig.savefig(os.path.join(outputpath,'RENDER',imgname.split('/')[-1]),pad_inches = 0.0, bbox_inches=extent, dpi=13)
+    fig.savefig(os.path.join(outputpath,'RENDER',imgname.split('.')[0]+'.png'),pad_inches = 0.0, bbox_inches=extent, dpi=13)
+
+    #fig.savefig(os.path.join(outputpath,'RENDER',imgname.split('/')[-1]),pad_inches = 0.0, bbox_inches=extent, dpi=13)
     plt.close()
 
         
