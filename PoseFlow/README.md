@@ -3,7 +3,9 @@
 Official implementation of [Pose Flow: Efficient Online Pose Tracking ](https://arxiv.org/abs/1802.00977).
 
 <p align='center'>
-    <img src="posetrack.gif", width="360">
+    <img src="posetrack1.gif", width="360">
+    <img src="posetrack2.gif", width="360">
+    <img src="posetrack3.gif", width="360">
 </p>
 
 Results on PoseTrack Challenge validation set:
@@ -29,6 +31,10 @@ Results on PoseTrack Challenge validation set:
 
 </center>
 
+## Latest Features
+- Dec 2018: <strong>PoseFlow(General Version)</strong> released! Support ANY DATASET and pose tracking results visualization.
+- Oct 2018: Support generating correspondence files with ORB(OpenCV), 3X FASTER and no need to compile DeepMatching library. 
+
 ## Requirements
 
 - Python 2.7.13
@@ -44,28 +50,55 @@ Results on PoseTrack Challenge validation set:
 ```shell
 pip install -r requirements.txt
 
-# Generate correspondences by DeepMatching
-# (More Robust but Slower)
 cd deepmatching
 make clean all
 make
 cd ..
+```
+
+## For Any Datasets (General Version)
+
+1. Using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) to generate multi-person pose estimation results.
+
+```shell
+./run.sh --indir ${image_dir}$ --outdir ${results_dir}$
+```
+2. Run pose tracking
+
+
+```shell
+python tracker-general.py --imgdir ${image_dir}$ 
+                          --in_json ${results_dir}$/POSE/alpha-pose-results-forvis.json 
+                          --out_json ${results_dir}$/POSE/alpha-pose-results-forvis-tracked.json
+                          --visdir ${render_dir}$
+```
+
+
+## For PoseTrack Dataset Evaluation (Paper Baseline)
+
+1. Using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) to generate multi-person pose estimation results on videos with format like `alpha-pose-results-sample.json`.
+
+2. Using DeepMatching/ORB to generate correspondence files.
+
+```shell
+# Generate correspondences by DeepMatching
+# (More Robust but Slower)
 python matching.py --orb=0 
+
+or
 
 # Generate correspondences by Orb
 # (Faster but Less Robust)
-python matching.py --orb=1 
-
+python matching.py --orb=1
 ```
-## Quick Start
 
-Firstly, using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) to generate multi-person pose estimation results on videos, please see `alpha-pose-results-sample.json` to know json format.
+3. Run pose tracking
 
-Run pose tracking
+
 ```shell
-python tracker.py --dataset=val/test  --orb=1/0
+python tracker-baseline.py --dataset=val/test  --orb=1/0
 ```
-## Evaluation
+4. Evaluation
 
 Original [poseval](https://github.com/leonid-pishchulin/poseval) has some instructions on how to convert annotation files from MAT to JSON.
 
@@ -79,6 +112,8 @@ python poseval/py/evaluate.py --groundTruth=./posetrack_data/annotations/val \
                     --predictions=./${track_result_dir}/ \
                     --evalPoseTracking --evalPoseEstimation
 ```
+
+
 ## Citation
 
 Please cite these papers in your publications if it helps your research:

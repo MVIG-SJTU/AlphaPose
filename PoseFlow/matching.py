@@ -66,7 +66,7 @@ def orb_matching(img1_path, img2_path, vidname, img1_id, img2_id):
         if len(m_n) != 2:
             continue
         elif m_n[0].distance < 0.80*m_n[1].distance:
-            ret = fd.write("%d %d %d %d %f \n"%(kp1[m_n[0].queryIdx].pt[0], kp1[m_n[0].queryIdx].pt[0], kp2[m_n[0].trainIdx].pt[0], kp2[m_n[0].trainIdx].pt[1], m_n[0].distance))
+            ret = fd.write("%d %d %d %d %f \n"%(kp1[m_n[0].queryIdx].pt[0], kp1[m_n[0].queryIdx].pt[1], kp2[m_n[0].trainIdx].pt[0], kp2[m_n[0].trainIdx].pt[1], m_n[0].distance))
     
     # Close opened file
     fd.close()
