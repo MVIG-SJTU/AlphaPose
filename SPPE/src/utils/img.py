@@ -7,8 +7,9 @@ import torch.nn.functional as F
 
 from PIL import Image
 from copy import deepcopy
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
-
 
 def im_to_torch(img):
     img = np.transpose(img, (2, 0, 1))  # C*H*W
