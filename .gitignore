@@ -7,6 +7,9 @@ PoseFlow/alpha-pose-results-test.json
 PoseFlow/alpha-pose-results-val.json
 PoseFlow/test-predict
 PoseFlow/val-predict
+images
+models
+
 *.npy
 *.so
 *.pyc
