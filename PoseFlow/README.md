@@ -57,11 +57,27 @@ cd ..
 
 ## For Any Datasets (General Version)
 
-1. Using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) to generate multi-person pose estimation results.
+1. Using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) to generate multi-person pose estimation results.
+
+```shell
+# pytorch version
+python demo.py --indir ${image_dir}$ --outdir ${results_dir}$
+
+# torch version
+./run.sh --indir ${image_dir}$ --outdir ${results_dir}$
+```
+
 2. Run pose tracking
 
 
 ```shell
+# pytorch version
+python tracker-general.py --imgdir ${image_dir}$ 
+                          --in_json ${results_dir}$/alphapose-results.json 
+                          --out_json ${results_dir}$/alphapose-results-forvis-tracked.json
+                          --visdir ${render_dir}$
+
+# torch version
 python tracker-general.py --imgdir ${image_dir}$ 
                           --in_json ${results_dir}$/POSE/alpha-pose-results-forvis.json 
                           --out_json ${results_dir}$/POSE/alpha-pose-results-forvis-tracked.json
@@ -71,8 +87,7 @@ python tracker-general.py --imgdir ${image_dir}$
 
 ## For PoseTrack Dataset Evaluation (Paper Baseline)
 
-1. Using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) to generate multi-person pose estimation results on videos with format like `alpha-pose-results-sample.json`.
-
+1. Using [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) to generate multi-person pose estimation results on videos with format like `alpha-pose-results-sample.json`.
 2. Using DeepMatching/ORB to generate correspondence files.
 
 ```shell
