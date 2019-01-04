@@ -1,7 +1,7 @@
 import numpy as np
+import cv2
 import torch
 import scipy.misc
-from torchsample.transforms import SpecialCrop, Pad
 from torchvision import transforms
 import torch.nn.functional as F
 
@@ -242,26 +242,65 @@ def transformBoxInvert_batch(pt, ul, br, inpH, inpW, resH, resW):
 
 def cropBox(img, ul, br, resH, resW):
     ul = ul.int()
-    br = br.int()
-    lenH = max(br[1] - ul[1], (br[0] - ul[0]) * resH / resW)
+    br = (br - 1).int()
+    # br = br.int()
+    lenH = max((br[1] - ul[1]).item(), (br[0] - ul[0]).item() * resH / resW)
     lenW = lenH * resW / resH
     if img.dim() == 2:
         img = img[np.newaxis, :]
 
-    newDim = torch.IntTensor((img.size(0), int(lenH), int(lenW)))
-    newImg = img[:, ul[1]:, ul[0]:]
-    # Crop and Padding
-    size = torch.IntTensor((br[1] - ul[1], br[0] - ul[0]))
+    box_shape = [br[1] - ul[1], br[0] - ul[0]]
+    pad_size = [(lenH - box_shape[0]) // 2, (lenW - box_shape[1]) // 2]
+    # Padding Zeros
+    img[:, :ul[1], :], img[:, :, :ul[0]] = 0, 0
+    img[:, br[1] + 1:, :], img[:, :, br[0] + 1:] = 0, 0
 
-    newImg = SpecialCrop(size, 1)(newImg)
-    newImg = Pad(newDim)(newImg)
-    # Resize to output
+    src = np.zeros((3, 2), dtype=np.float32)
+    dst = np.zeros((3, 2), dtype=np.float32)
 
-    v_Img = torch.unsqueeze(newImg, 0)
-    # newImg = F.upsample_bilinear(v_Img, size=(int(resH), int(resW))).data[0]
-    newImg = F.upsample(v_Img, size=(int(resH), int(resW)),
-                        mode='bilinear', align_corners=True).data[0]
-    return newImg
+    src[0, :] = np.array(
+        [ul[0] - pad_size[1], ul[1] - pad_size[0]], np.float32)
+    src[1, :] = np.array(
+        [br[0] + pad_size[1], br[1] + pad_size[0]], np.float32)
+    dst[0, :] = 0
+    dst[1, :] = np.array([resW - 1, resH - 1], np.float32)
+
+    src[2:, :] = get_3rd_point(src[0, :], src[1, :])
+    dst[2:, :] = get_3rd_point(dst[0, :], dst[1, :])
+
+    trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+
+    dst_img = cv2.warpAffine(torch_to_im(img), trans,
+                             (resW, resH), flags=cv2.INTER_LINEAR)
+
+    return im_to_torch(torch.Tensor(dst_img))
+
+
+def cv_rotate(img, rot, resW, resH):
+    center = np.array((resW - 1, resH - 1)) / 2
+    rot_rad = np.pi * rot / 180
+
+    src_dir = get_dir([0, (resH - 1) * -0.5], rot_rad)
+    dst_dir = np.array([0, (resH - 1) * -0.5], np.float32)
+
+    src = np.zeros((3, 2), dtype=np.float32)
+    dst = np.zeros((3, 2), dtype=np.float32)
+
+    src[0, :] = center
+    src[1, :] = center + src_dir
+    dst[0, :] = [(resW - 1) * 0.5, (resH - 1) * 0.5]
+    dst[1, :] = np.array([(resW - 1) * 0.5, (resH - 1) * 0.5]) + dst_dir
+
+    src[2:, :] = get_3rd_point(src[0, :], src[1, :])
+    dst[2:, :] = get_3rd_point(dst[0, :], dst[1, :])
+
+    trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+
+    dst_img = cv2.warpAffine(torch_to_im(img), trans,
+                             (resW, resH), flags=cv2.INTER_LINEAR)
+
+    return im_to_torch(torch.Tensor(dst_img))
+
 
 
 def flip_v(x, cuda=True, volatile=True):
@@ -376,3 +415,18 @@ def drawCOCO(inps, preds, scores):
     plt.show()
 
     return imgs
+
+
+def get_3rd_point(a, b):
+    direct = a - b
+    return b + np.array([-direct[1], direct[0]], dtype=np.float32)
+
+
+def get_dir(src_point, rot_rad):
+    sn, cs = np.sin(rot_rad), np.cos(rot_rad)
+
+    src_result = [0, 0]
+    src_result[0] = src_point[0] * cs - src_point[1] * sn
+    src_result[1] = src_point[0] * sn + src_point[1] * cs
+
+    return src_result

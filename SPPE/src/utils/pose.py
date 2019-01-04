@@ -1,10 +1,9 @@
-from utils.img import (load_image, drawGaussian, drawBigCircle, drawSmallCircle,
+from utils.img import (load_image, drawGaussian, drawBigCircle, drawSmallCircle, cv_rotate,
                        cropBox, transformBox, transformBoxInvert, flip, shuffleLR, drawCOCO)
 from utils.eval import getPrediction
 import torch
 import numpy as np
 import random
-import torchsample.transforms as tr
 from opt import opt
 
 
@@ -162,12 +161,9 @@ def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dat
         if random.uniform(0, 1) < 0.6:
             r = 0
         if r != 0:
-            rotate = tr.Rotate(r)
-
-            inp = rotate(inp)
-            ori_inp = rotate(ori_inp)
-            out_bigcircle = rotate(out_bigcircle)
-            out_smallcircle = rotate(out_smallcircle)
-            out = rotate(out)
+            inp = cv_rotate(inp, r, opt.inputResW, opt.inputResH)
+            out_bigcircle = cv_rotate(out_bigcircle, r, opt.outputResW, opt.outputResH)
+            out_smallcircle = cv_rotate(out_smallcircle, r, opt.outputResW, opt.outputResH)
+            out = cv_rotate(out, r, opt.outputResW, opt.outputResH)
 
     return inp, out_bigcircle, out_smallcircle, out, setMask

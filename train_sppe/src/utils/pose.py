@@ -3,11 +3,10 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
-from utils.img import (load_image, drawGaussian, cropBox, transformBox, flip, shuffleLR)
+from utils.img import (load_image, drawGaussian, cropBox, transformBox, flip, shuffleLR, cv_rotate)
 import torch
 import numpy as np
 import random
-import torchsample.transforms as tr
 from opt import opt
 
 
@@ -137,9 +136,7 @@ def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dat
         if random.uniform(0, 1) < 0.6:
             r = 0
         if r != 0:
-            rotate = tr.Rotate(r)
-
-            inp = rotate(inp)
-            out = rotate(out)
+            inp = cv_rotate(inp, r, opt.inputResW, opt.inputResH)
+            out = cv_rotate(out, r, opt.outputResW, opt.outputResH)
 
     return inp, out, setMask
