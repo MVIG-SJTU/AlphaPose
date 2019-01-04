@@ -750,10 +750,8 @@ def crop_from_dets(img, boxes, inps, pt1, pt2):
 
         ht = bottomRight[1] - upLeft[1]
         width = bottomRight[0] - upLeft[0]
-        if width > 100:
-            scaleRate = 0.2
-        else:
-            scaleRate = 0.3
+
+        scaleRate = 0.3
 
         upLeft[0] = max(0, upLeft[0] - width * scaleRate / 2)
         upLeft[1] = max(0, upLeft[1] - ht * scaleRate / 2)
