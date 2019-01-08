@@ -37,17 +37,18 @@ AlphaPose supports both Linux and **Windows!**
 
 
 ## Quick Start
+- Default Device is CPU, if you want to use NVIDIA GPU, add **--useCUDA** in command line.
 - **Input dir**:  Run AlphaPose for all images in a folder with:
 ```
 python3 demo.py --indir ${img_directory} --outdir examples/res 
 ```
 - **Video**:  Run AlphaPose for a video and save the rendered video with:
 ```
-python3 video_demo.py --video ${path to video} --outdir examples/res --save_video
+python3 demo.py --video ${path to video} --outdir examples/res --save_video
 ```
 - **Webcam**:  Run AlphaPose using webcam and visualize the results with:
 ```
-python3 webcam_demo.py --webcam 0 --outdir examples/res --vis
+python3 demo.py --webcam 0 --outdir examples/res --vis
 ```
 - **Input list**:  Run AlphaPose for images in a list and save the rendered images with:
 ```
@@ -62,24 +63,16 @@ python3 demo.py --indir ${img_directory} --outdir examples/res --posebatch 30
 python3 demo.py --indir ${img_directory} --outdir examples/res --fast_inference False
 ```
 - **Speeding up**:  Checkout the [speed_up.md](doc/speed_up.md) for more details.
+
+
 - **Output format**: Checkout the [output.md](doc/output.md) for more details.
 - **For more**:  Checkout the [run.md](doc/run.md) for more options
-
-## Pose Tracking
-
-<p align='center'>
-    <img src="doc/posetrack.gif", width="360">
-    <img src="doc/posetrack2.gif", width="344">
-</p>
-
-Please read [PoseFlow/README.md](PoseFlow/) for details.
-
 
 ## FAQ
 Check out [faq.md](doc/faq.md) for faq.
 
 ## Contributors
-Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/), [Yuliang Xiu](http://xiuyuliang.cn) and [Cewu Lu](http://www.mvig.org/). 
+Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 
 
 ## Citation
 Please cite these papers in your publications if it helps your research:

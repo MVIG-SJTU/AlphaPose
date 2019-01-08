@@ -269,7 +269,7 @@ class VideoLoader:
 
 
 class DetectionLoader:
-    def __init__(self, dataloder, batchSize=1, queueSize=1024):
+    def __init__(self, dataloder, batchSize=1, queueSize=1024, device=torch.device("cpu"), notWebcam=True):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.det_model = Darknet("yolo/cfg/yolov3-spp.cfg")
@@ -278,17 +278,22 @@ class DetectionLoader:
         self.det_inp_dim = int(self.det_model.net_info['height'])
         assert self.det_inp_dim % 32 == 0
         assert self.det_inp_dim > 32
-        self.det_model.cuda()
+        self.det_model.to(device)
         self.det_model.eval()
 
+        self.device = device
         self.stopped = False
         self.dataloder = dataloder
         self.batchSize = batchSize
-        self.datalen = self.dataloder.length()
-        leftover = 0
-        if (self.datalen) % batchSize:
+        self.notWebcam = notWebcam
+        
+        if self.notWebcam:
+          self.datalen = self.dataloder.length()
+          leftover = 0
+          if (self.datalen) % batchSize:
             leftover = 1
-        self.num_batches = self.datalen // batchSize + leftover
+          self.num_batches = self.datalen // batchSize + leftover
+          
         # initialize the queue used to store frames read from
         # the video file
         if opt.sp:
@@ -310,19 +315,29 @@ class DetectionLoader:
 
     def update(self):
         # keep looping the whole dataset
-        for i in range(self.num_batches):
+        
+        if self.notWebcam:
+            batch = self.datalen
+        else:
+            batch = True
+        
+        #for i in range(self.num_batches):
+        while batch:
             img, orig_img, im_name, im_dim_list = self.dataloder.getitem()
-            if img is None:
+            if img is None and type(batch) is int:
                 self.Q.put((None, None, None, None, None, None, None))
                 return
+            elif not type(batch) is int:
+                with self.dataloder.Q.mutex:
+                    self.dataloder.Q.queue.clear()
 
             with torch.no_grad():
                 # Human Detection
-                img = img.cuda()
-                prediction = self.det_model(img, CUDA=True)
+                img = img.to(self.device)
+                CUDA=True if self.device.type=="cuda" else False
+                prediction = self.det_model(img, CUDA=CUDA)
                 # NMS process
-                dets = dynamic_write_results(prediction, opt.confidence,
-                                    opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+                dets = dynamic_write_results(prediction, CUDA=CUDA)
                 if isinstance(dets, int) or dets.shape[0] == 0:
                     for k in range(len(orig_img)):
                         if self.Q.full():
@@ -359,6 +374,9 @@ class DetectionLoader:
                     time.sleep(2)
                 self.Q.put((orig_img[k], im_name[k], boxes_k, scores[dets[:,0]==k], inps, pt1, pt2))
 
+            if type(batch) is int:
+                batch -= 1
+
     def read(self):
         # return next frame in the queue
         return self.Q.get()
@@ -369,12 +387,14 @@ class DetectionLoader:
 
 
 class DetectionProcessor:
-    def __init__(self, detectionLoader, queueSize=1024):
+    def __init__(self, detectionLoader, queueSize=1024, notWebcam=True):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.detectionLoader = detectionLoader
         self.stopped = False
-        self.datalen = self.detectionLoader.datalen
+        self.notWebcam = notWebcam
+        if self.notWebcam:
+            self.datalen = self.detectionLoader.datalen
 
         # initialize the queue used to store data
         if opt.sp:
@@ -396,11 +416,17 @@ class DetectionProcessor:
 
     def update(self):
         # keep looping the whole dataset
-        for i in range(self.datalen):
+        if self.notWebcam:
+            time = self.datalen
+        else:
+            time = True
+        
+        #for i in range(self.datalen):
+        while time:
             
             with torch.no_grad():
                 (orig_img, im_name, boxes, scores, inps, pt1, pt2) = self.detectionLoader.read()
-                if orig_img is None:
+                if orig_img is None and type(time) is int:
                     self.Q.put((None, None, None, None, None, None, None))
                     return
                 if boxes is None or boxes.nelement() == 0:
@@ -408,12 +434,16 @@ class DetectionProcessor:
                         time.sleep(0.2)
                     self.Q.put((None, orig_img, im_name, boxes, scores, None, None))
                     continue
+                    
                 inp = im_to_torch(cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB))
                 inps, pt1, pt2 = crop_from_dets(inp, boxes, inps, pt1, pt2)
 
                 while self.Q.full():
                     time.sleep(0.2)
                 self.Q.put((inps, orig_img, im_name, boxes, scores, pt1, pt2))
+                
+            if type(time) is int:
+               time -= 1
 
     def read(self):
         # return next frame in the queue
@@ -425,7 +455,7 @@ class DetectionProcessor:
 
 
 class VideoDetectionLoader:
-    def __init__(self, path, batchSize=4, queueSize=256):
+    def __init__(self, path, batchSize=4, queueSize=256, device="cpu"):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.det_model = Darknet("yolo/cfg/yolov3-spp.cfg")
@@ -434,9 +464,10 @@ class VideoDetectionLoader:
         self.det_inp_dim = int(self.det_model.net_info['height'])
         assert self.det_inp_dim % 32 == 0
         assert self.det_inp_dim > 32
-        self.det_model.cuda()
+        self.det_model.to(device)
         self.det_model.eval()
 
+        self.device = device
         self.stream = cv2.VideoCapture(path)
         assert self.stream.isOpened(), 'Cannot capture source'
         self.stopped = False
@@ -492,14 +523,13 @@ class VideoDetectionLoader:
                 ht = inp[0].size(1)
                 wd = inp[0].size(2)
                 # Human Detection
-                img = Variable(torch.cat(img)).cuda()
+                img = Variable(torch.cat(img)).to(self.device)
                 im_dim_list = torch.FloatTensor(im_dim_list).repeat(1,2)
-                im_dim_list = im_dim_list.cuda()
+                im_dim_list = im_dim_list.to(self.device)
 
-                prediction = self.det_model(img, CUDA=True)
+                prediction = self.det_model(img, CUDA=False)
                 # NMS process
-                dets = dynamic_write_results(prediction, opt.confidence,
-                                    opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+                dets = dynamic_write_results(prediction)
                 if isinstance(dets, int) or dets.shape[0] == 0:
                     for k in range(len(inp)):
                         while self.Q.full():
@@ -518,8 +548,8 @@ class VideoDetectionLoader:
                 for j in range(dets.shape[0]):
                     dets[j, [1, 3]] = torch.clamp(dets[j, [1, 3]], 0.0, im_dim_list[j, 0])
                     dets[j, [2, 4]] = torch.clamp(dets[j, [2, 4]], 0.0, im_dim_list[j, 1])
-                boxes = dets[:, 1:5].cpu()
-                scores = dets[:, 5:6].cpu()
+                boxes = dets[:, 1:5].to(self.device)
+                scores = dets[:, 5:6].to(self.device)
 
             for k in range(len(inp)):
                 while self.Q.full():
@@ -547,15 +577,15 @@ class VideoDetectionLoader:
 
 
 class WebcamLoader:
-    def __init__(self, webcam, queueSize=256):
+    def __init__(self, stream, queueSize=256):
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
-        self.stream = cv2.VideoCapture(int(webcam))
-        assert self.stream.isOpened(), 'Cannot capture source'
+        self.stream = stream
         self.stopped = False
         # initialize the queue used to store frames read from
         # the video file
         self.Q = LifoQueue(maxsize=queueSize)
+        self.batchSize = 1
 
     def start(self):
         # start a thread to read frames from the file video stream
@@ -566,23 +596,37 @@ class WebcamLoader:
 
     def update(self):
         # keep looping infinitely
+        i = 0
         while True:
             # otherwise, ensure the queue has room in it
             if not self.Q.full():
-                # read the next frame from the file
-                (grabbed, frame) = self.stream.read()
-                # if the `grabbed` boolean is `False`, then we have
-                # reached the end of the video file
-                if not grabbed:
-                    self.stop()
-                    return
-                # process and add the frame to the queue
-                inp_dim = int(opt.inp_dim)
-                img, orig_img, dim = prep_frame(frame, inp_dim)
-                inp = im_to_torch(orig_img)
-                im_dim_list = torch.FloatTensor([dim]).repeat(1, 2)
+                img = []
+                orig_img = []
+                im_name = []
+                im_dim_list = []
+                for k in range(self.batchSize):
+                    (grabbed, frame) = self.stream.read()
+                    # if the `grabbed` boolean is `False`, then we have
+                    # reached the end of the video file
+                    if not grabbed:
+                        self.stop()
+                        return
+                    inp_dim = int(opt.inp_dim)
+                    img_k, orig_img_k, im_dim_list_k = prep_frame(frame, inp_dim)
+                
+                    img.append(img_k)
+                    orig_img.append(orig_img_k)
+                    im_name.append(str(i)+'.jpg')
+                    im_dim_list.append(im_dim_list_k)
 
-                self.Q.put((img, orig_img, inp, im_dim_list))
+                with torch.no_grad():
+                    # Human Detection
+                    img = torch.cat(img)
+                    im_dim_list = torch.FloatTensor(im_dim_list).repeat(1,2)
+
+                    self.Q.put((img, orig_img, im_name, im_dim_list))
+                    i = i+1
+
             else:
                 with self.Q.mutex:
                     self.Q.queue.clear()
@@ -593,7 +637,7 @@ class WebcamLoader:
         frameSize=(int(self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)),int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         return (fourcc,fps,frameSize)
 
-    def read(self):
+    def getitem(self):
         # return next frame in the queue
         return self.Q.get()
 

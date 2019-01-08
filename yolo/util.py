@@ -47,8 +47,6 @@ def predict_transform(prediction, inp_dim, anchors, num_classes, CUDA = True):
     prediction[:,:,1] = torch.sigmoid(prediction[:,:,1])
     prediction[:,:,4] = torch.sigmoid(prediction[:,:,4])
     
-
-    
     #Add the center offsets
     grid_len = np.arange(grid_size)
     a,b = np.meshgrid(grid_len, grid_len)
@@ -101,9 +99,9 @@ def unique(tensor):
     return tensor_res
 
 
-def dynamic_write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
+def dynamic_write_results(prediction, confidence=0.05, num_classes=80, nms=True, nms_conf=0.4, CUDA=False):
     prediction_bak = prediction.clone()
-    dets = write_results(prediction.clone(), confidence, num_classes, nms, nms_conf)
+    dets = write_results(prediction.clone(), confidence, num_classes, nms, nms_conf, CUDA)
     if isinstance(dets, int):
         return dets
 
@@ -114,7 +112,7 @@ def dynamic_write_results(prediction, confidence, num_classes, nms=True, nms_con
     return dets
 
 
-def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
+def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4, CUDA=False):
     conf_mask = (prediction[:, :, 4] > confidence).float().float().unsqueeze(2)
     prediction = prediction * conf_mask
 
@@ -187,7 +185,7 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
                     if len(image_pred_class) == 1:
                         break
                     # Get the IOUs for all boxes with lower confidence
-                    ious = bbox_iou(max_detections[-1], image_pred_class[1:])
+                    ious = bbox_iou(max_detections[-1], image_pred_class[1:], CUDA=CUDA)
                     # Remove detections with IoU >= NMS threshold
                     image_pred_class = image_pred_class[1:][ious < nms_conf]
 
@@ -251,8 +249,8 @@ def predict_transform_half(prediction, inp_dim, anchors, num_classes, CUDA = Tru
     y_offset = torch.FloatTensor(b).view(-1,1)
     
     if CUDA:
-        x_offset = x_offset.cuda().half()
-        y_offset = y_offset.cuda().half()
+        x_offset = x_offset.cpu().half()
+        y_offset = y_offset.cpu().half()
     
     x_y_offset = torch.cat((x_offset, y_offset), 1).repeat(1,num_anchors).view(-1,2).unsqueeze(0)
     
@@ -262,7 +260,7 @@ def predict_transform_half(prediction, inp_dim, anchors, num_classes, CUDA = Tru
     anchors = torch.HalfTensor(anchors)
     
     if CUDA:
-        anchors = anchors.cuda()
+        anchors = anchors.cpu()
     
     anchors = anchors.repeat(grid_size*grid_size, 1).unsqueeze(0)
     prediction[:,:,2:4] = torch.exp(prediction[:,:,2:4])*anchors

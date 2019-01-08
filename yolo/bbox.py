@@ -48,7 +48,7 @@ def sanity_fix(box):
         
     return box
 
-def bbox_iou(box1, box2):
+def bbox_iou(box1, box2, CUDA=False):
     """
     Returns the IoU of two bounding boxes 
     
@@ -65,8 +65,10 @@ def bbox_iou(box1, box2):
     inter_rect_y2 =  torch.min(b1_y2, b2_y2)
     
     #Intersection area
-    
-    inter_area = torch.max(inter_rect_x2 - inter_rect_x1 + 1,torch.zeros(inter_rect_x2.shape).cuda())*torch.max(inter_rect_y2 - inter_rect_y1 + 1, torch.zeros(inter_rect_x2.shape).cuda())
+    if CUDA:
+        inter_area = torch.max(inter_rect_x2 - inter_rect_x1 + 1,torch.zeros(inter_rect_x2.shape).cuda())*torch.max(inter_rect_y2 - inter_rect_y1 + 1, torch.zeros(inter_rect_x2.shape).cuda())
+    else:
+        inter_area = torch.max(inter_rect_x2 - inter_rect_x1 + 1,torch.zeros(inter_rect_x2.shape).cpu())*torch.max(inter_rect_y2 - inter_rect_y1 + 1, torch.zeros(inter_rect_x2.shape).cpu())
     
     #Union Area
     b1_area = (b1_x2 - b1_x1 + 1)*(b1_y2 - b1_y1 + 1)

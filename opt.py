@@ -1,5 +1,6 @@
 import argparse
 import torch
+import os
 
 parser = argparse.ArgumentParser(description='PyTorch AlphaPose Training')
 
@@ -8,7 +9,7 @@ parser.add_argument('--expID', default='default', type=str,
                     help='Experiment ID')
 parser.add_argument('--dataset', default='coco', type=str,
                     help='Dataset choice: mpii | coco')
-parser.add_argument('--nThreads', default=30, type=int,
+parser.add_argument('--nThreads', default=0, type=int,
                     help='Number of data loading threads')
 parser.add_argument('--debug', default=False, type=bool,
                     help='Print the debug information')
@@ -16,9 +17,11 @@ parser.add_argument('--snapshot', default=1, type=int,
                     help='How often to take a snapshot of the model (0 = never)')
 
 "----------------------------- AlphaPose options -----------------------------"
+parser.add_argument('--useCUDA', default=False, action='store_true',
+                    help='Ture: Use CUDA; False: Use CPU')
 parser.add_argument('--addDPG', default=False, type=bool,
                     help='Train with data augmentation')
-parser.add_argument('--sp', default=False, action='store_true',
+parser.add_argument('--sp', default=True, action='store_true',
                     help='Use single process for pytorch')
 parser.add_argument('--profile', default=False, action='store_true',
                     help='add speed profiling at screen output')
@@ -26,7 +29,7 @@ parser.add_argument('--profile', default=False, action='store_true',
 "----------------------------- Model options -----------------------------"
 parser.add_argument('--netType', default='hgPRM', type=str,
                     help='Options: hgPRM | resnext')
-parser.add_argument('--loadModel', default=None, type=str,
+parser.add_argument('--loadModel', default=os.sep.join(['.', 'models', 'sppe', 'duc_se.pth']), type=str,
                     help='Provide full path to a previously trained model')
 parser.add_argument('--Continue', default=False, type=bool,
                     help='Pick up where an experiment left off')
@@ -108,7 +111,7 @@ parser.add_argument('--port', dest='port',
 parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16 res101]',
                     default='res152')
 parser.add_argument('--indir', dest='inputpath',
-                    help='image-directory', default="")
+                    help='image-directory', default=os.sep.join(['examples', 'demo']))
 parser.add_argument('--list', dest='inputlist',
                     help='image-list', default="")
 parser.add_argument('--mode', dest='mode',
@@ -136,7 +139,7 @@ parser.add_argument('--posebatch', type=int, default=80,
 parser.add_argument('--video', dest='video',
                     help='video-name', default="")
 parser.add_argument('--webcam', dest='webcam', type=str,
-                    help='webcam number', default='0')
+                    help='webcam number', default='-1')
 parser.add_argument('--save_video', dest='save_video',
                     help='whether to save rendered video', default=False, action='store_true')
 parser.add_argument('--vis_fast', dest='vis_fast',
