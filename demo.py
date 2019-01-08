@@ -34,6 +34,7 @@ if not deviceSupportCUDA and opt.useCUDA:
 
 device = torch.device("cuda" if opt.useCUDA else "cpu")
 print("The Test using device is {}".format(device))
+print("Pytorch Version {}".format(torch.__version__))
 
 def TestImage(im_names):
     #inputpath = args.inputpath
@@ -318,7 +319,7 @@ def main():
   if opt.webcam != -1:
     stream = cv2.VideoCapture(int(opt.webcam))
     if stream.isOpened():
-      print("\nWecam Test is doing.")
+      print("Wecam Test is doing.")
       TestWecam(stream)
       return
     
@@ -329,7 +330,7 @@ def main():
     isTestVideo = True
   
   if isTestVideo:
-    print("\nVideo Test is doing.")
+    print("Video Test is doing.")
     TestVideo(args.video)
     return
   
