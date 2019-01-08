@@ -63,16 +63,23 @@ python3 demo.py --indir ${img_directory} --outdir examples/res --posebatch 30
 python3 demo.py --indir ${img_directory} --outdir examples/res --fast_inference False
 ```
 - **Speeding up**:  Checkout the [speed_up.md](doc/speed_up.md) for more details.
-
-
 - **Output format**: Checkout the [output.md](doc/output.md) for more details.
 - **For more**:  Checkout the [run.md](doc/run.md) for more options
+
+## Pose Tracking
+
+<p align='center'>
+    <img src="doc/posetrack.gif", width="360">
+    <img src="doc/posetrack2.gif", width="344">
+</p>
+
+Please read [PoseFlow/README.md](PoseFlow/) for details.
 
 ## FAQ
 Check out [faq.md](doc/faq.md) for faq.
 
 ## Contributors
-Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/) and [Cewu Lu](http://www.mvig.org/). 
+Pytorch version of AlphaPose is developed and maintained by [Jiefeng Li](http://jeff-leaf.site/), [Hao-Shu Fang](https://fang-haoshu.github.io/), [Yuliang Xiu](http://xiuyuliang.cn) and [Cewu Lu](http://www.mvig.org/). 
 
 ## Citation
 Please cite these papers in your publications if it helps your research:
