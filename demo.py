@@ -94,7 +94,7 @@ def TestImage(im_names):
         with torch.no_grad():
             (inps, orig_img, im_name, boxes, scores, pt1, pt2) = det_processor.read()
             if boxes is None or boxes.nelement() == 0:
-                writer.save(None, None, None, None, None, orig_img, im_name.split('/')[-1])
+                writer.save(None, None, None, None, None, orig_img, im_name.split(os.sep)[-1])
                 continue
 
             ckpt_time, det_time = getTime(start_time)
@@ -115,7 +115,7 @@ def TestImage(im_names):
             ckpt_time, pose_time = getTime(ckpt_time)
             runtime_profile['pt'].append(pose_time)
             hm = hm.cpu()
-            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split('/')[-1])
+            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split(os.sep)[-1])
 
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
@@ -182,7 +182,7 @@ def TestVideo(videofile):
             if orig_img is None:
                 break
             if boxes is None or boxes.nelement() == 0:
-                writer.save(None, None, None, None, None, orig_img, im_name.split('/')[-1])
+                writer.save(None, None, None, None, None, orig_img, im_name.split(os.sep)[-1])
                 continue
 
             ckpt_time, det_time = getTime(start_time)
@@ -203,7 +203,7 @@ def TestVideo(videofile):
             hm = torch.cat(hm)
 
             hm = hm.cpu().data
-            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split('/')[-1])
+            writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split(os.sep)[-1])
             ckpt_time, post_time = getTime(ckpt_time)
             runtime_profile['pn'].append(post_time)
         
@@ -272,7 +272,7 @@ def TestWecam(stream):
       with torch.no_grad():
         (inps, orig_img, im_name, boxes, scores, pt1, pt2) = det_processor.read()
         if boxes is None or boxes.nelement() == 0:
-          writer.save(None, None, None, None, None, orig_img, im_name.split('/')[-1])
+          writer.save(None, None, None, None, None, orig_img, im_name.split(os.sep)[-1])
           continue
 
         ckpt_time, det_time = getTime(start_time)
@@ -292,7 +292,7 @@ def TestWecam(stream):
         hm = torch.cat(hm)
 
         hm = hm.cpu().data
-        writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split('/')[-1])
+        writer.save(boxes, scores, hm, pt1, pt2, orig_img, im_name.split(os.sep)[-1])
 
         ckpt_time, post_time = getTime(ckpt_time)
         runtime_profile['pn'].append(post_time)
@@ -350,7 +350,7 @@ def main():
   if len(inputlist):
     im_names = open(inputlist, 'r').readlines()
     isTestImage = True
-  elif len(inputpath) and inputpath != '/':
+  elif len(inputpath) and inputpath != os.sep:
     for root, dirs, files in os.walk(inputpath):
       im_names = files
     isTestImage = True
