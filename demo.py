@@ -13,6 +13,7 @@ from yolo.util import write_results, dynamic_write_results
 from SPPE.src.main_fast_inference import *
 
 import os, sys, ntpath
+import platform
 from tqdm import tqdm
 import time
 from fn import getTime
@@ -22,9 +23,15 @@ from pPose_nms import pose_nms, write_json
 
 args = opt
 args.dataset = 'coco'
+
+curPlatform = platform.system()
+
+if curPlatform == 'Windows':
+  args.sp = True
+
 if not args.sp:
-    torch.multiprocessing.set_start_method('forkserver', force=True)
-    torch.multiprocessing.set_sharing_strategy('file_system')
+  torch.multiprocessing.set_start_method('forkserver', force=True)
+  torch.multiprocessing.set_sharing_strategy('file_system')
 
 deviceSupportCUDA = torch.cuda.is_available()
 
