@@ -241,6 +241,7 @@ def transformBoxInvert_batch(pt, ul, br, inpH, inpW, resH, resW):
 
 
 def cropBox(img, ul, br, resH, resW):
+    img = img.clone()
     ul = ul.int()
     br = (br - 1).int()
     # br = br.int()
