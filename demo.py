@@ -40,12 +40,12 @@ if not deviceSupportCUDA and opt.useCUDA:
   opt.useCUDA = False
 
 device = torch.device("cuda" if opt.useCUDA else "cpu")
-print("The Test using device is {}.".format(device), end=' ')
+print("The Test using device is {}.".format(device))
 if opt.useCUDA:
-  print("Device: {}".format(torch.cuda.get_device_name(torch.cuda.current_device())))
+  print("\tDevice: {}".format(torch.cuda.get_device_name(torch.cuda.current_device())))
 
 print("Pytorch Version {}".format(torch.__version__))
-sys.exit(-1)
+
 def TestImage(im_names):
     #inputpath = args.inputpath
     #inputlist = args.inputlist
