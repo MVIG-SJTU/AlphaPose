@@ -4,7 +4,7 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torch.nn.functional as F
 import numpy as np
-from SPPE.src.utils.img import flip_v, shuffleLR
+from SPPE.src.utils.img import flip, shuffleLR
 from SPPE.src.utils.eval import getPrediction
 from SPPE.src.models.FastPose import createModel
 
@@ -41,10 +41,10 @@ class InferenNet(nn.Module):
         out = self.pyranet(x)
         out = out.narrow(1, 0, 17)
 
-        flip_out = self.pyranet(flip_v(x))
+        flip_out = self.pyranet(flip(x))
         flip_out = flip_out.narrow(1, 0, 17)
 
-        flip_out = flip_v(shuffleLR(
+        flip_out = flip(shuffleLR(
             flip_out, self.dataset))
 
         out = (flip_out + out) / 2

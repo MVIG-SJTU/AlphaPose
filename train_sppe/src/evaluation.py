@@ -11,7 +11,7 @@ from predict.p_poseNMS import pose_nms, write_json
 import numpy as np
 from predict.opt import opt
 from tqdm import tqdm
-from utils.img import flip_v, shuffleLR_v, vis_frame
+from utils.img import flip, shuffleLR, vis_frame
 from utils.eval import getPrediction
 from utils.eval import getmap
 import os

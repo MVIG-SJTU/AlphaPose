@@ -10,7 +10,7 @@ from opt import opt
 from tqdm import tqdm
 from models.FastPose import createModel
 from utils.eval import DataLogger, accuracy
-from utils.img import flip_v, shuffleLR_v
+from utils.img import flip, shuffleLR
 from evaluation import prediction
 
 from tensorboardX import SummaryWriter
@@ -77,8 +77,8 @@ def valid(val_loader, m, criterion, optimizer, writer):
 
             loss = criterion(out.mul(setMask), labels)
 
-            flip_out = m(flip_v(inps, cuda=True))
-            flip_out = flip_v(shuffleLR_v(
+            flip_out = m(flip(inps, cuda=True))
+            flip_out = flip(shuffleLR(
                 flip_out, val_loader.dataset, cuda=True), cuda=True)
 
             out = (flip_out + out) / 2
