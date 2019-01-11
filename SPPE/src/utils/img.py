@@ -11,6 +11,7 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
+
 def im_to_torch(img):
     img = np.transpose(img, (2, 0, 1))  # C*H*W
     img = to_torch(img).float()
@@ -252,12 +253,14 @@ def cropBox(img, ul, br, resH, resW):
     box_shape = [(br[1] - ul[1]).item(), (br[0] - ul[0]).item()]
     pad_size = [(lenH - box_shape[0]) // 2, (lenW - box_shape[1]) // 2]
     # Padding Zeros
-    if ul[1] != 0:
+    if ul[1] > 0:
         img[:, :ul[1], :] = 0
-    if ul[0] != 0:
+    if ul[0] > 0:
         img[:, :, :ul[0]] = 0
-
-    img[:, br[1] + 1:, :], img[:, :, br[0] + 1:] = 0, 0
+    if br[1] < img.shape[1] - 1:
+        img[:, br[1] + 1:, :] = 0
+    if br[0] < img.shape[2] - 1:
+        img[:, :, br[0] + 1:] = 0
 
     src = np.zeros((3, 2), dtype=np.float32)
     dst = np.zeros((3, 2), dtype=np.float32)
@@ -306,30 +309,31 @@ def cv_rotate(img, rot, resW, resH):
     return im_to_torch(torch.Tensor(dst_img))
 
 
-
-def flip_v(x, cuda=True, volatile=True):
-    x = flip(x.cpu().data)
-    if cuda:
-        x = x.cuda(async=True)
-    x = torch.autograd.Variable(x, volatile=volatile)
-    return x
-
-
 def flip(x):
     assert (x.dim() == 3 or x.dim() == 4)
-    # dim = x.dim() - 1
-    x = x.numpy().copy()
-    if x.ndim == 3:
-        x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
-    elif x.ndim == 4:
-        for i in range(x.shape[0]):
-            x[i] = np.transpose(
-                np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
-    # x = x.swapaxes(dim, 0)
-    # x = x[::-1, ...]
-    # x = x.swapaxes(0, dim)
+    dim = x.dim() - 1
+    if '0.4.1' in torch.__version__ or '1.0' in torch.__version__:
+        return x.flip(dims=(dim,))
+    else:
+        is_cuda = False
+        if x.is_cuda:
+            is_cuda = True
+            x = x.cpu()
+        x = x.numpy().copy()
+        if x.ndim == 3:
+            x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
+        elif x.ndim == 4:
+            for i in range(x.shape[0]):
+                x[i] = np.transpose(
+                    np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
+        # x = x.swapaxes(dim, 0)
+        # x = x[::-1, ...]
+        # x = x.swapaxes(0, dim)
 
-    return torch.from_numpy(x.copy())
+        x = torch.from_numpy(x.copy())
+        if is_cuda:
+            x = x.cuda()
+        return x
 
 
 def shuffleLR(x, dataset):
@@ -349,14 +353,6 @@ def shuffleLR(x, dataset):
             x[dim1] = x[dim0].clone()
             x[dim0] = tmp.clone()
             #x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
-    return x
-
-
-def shuffleLR_v(x, dataset, cuda=False):
-    x = shuffleLR(x.cpu().data, dataset)
-    if cuda:
-        x = x.cuda(async=True)
-    x = torch.autograd.Variable(x)
     return x
 
 

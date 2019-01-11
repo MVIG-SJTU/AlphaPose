@@ -188,15 +188,6 @@ def cv_rotate(img, rot, resW, resH):
     return im_to_torch(torch.Tensor(dst_img))
 
 
-
-def flip_v(x, cuda=False):
-    x = flip(x.cpu().data)
-    if cuda:
-        x = x.cuda()
-    x = torch.autograd.Variable(x)
-    return x
-
-
 def flip(x):
     assert (x.dim() == 3 or x.dim() == 4)
     # dim = x.dim() - 1
@@ -231,14 +222,6 @@ def shuffleLR(x, dataset):
             x[dim1] = x[dim0].clone()
             x[dim0] = tmp.clone()
             #x[dim0], x[dim1] = deepcopy((x[dim1], x[dim0]))
-    return x
-
-
-def shuffleLR_v(x, dataset, cuda=False):
-    x = shuffleLR(x.cpu().data, dataset)
-    if cuda:
-        x = x.cuda()
-    x = torch.autograd.Variable(x)
     return x
 
 

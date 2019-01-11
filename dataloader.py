@@ -761,7 +761,7 @@ def crop_from_dets(img, boxes, inps, pt1, pt2):
             min(imght - 1, bottomRight[1] + ht * scaleRate / 2), upLeft[1] + 5)
 
         try:
-            inps[i] = cropBox(tmp_img, upLeft, bottomRight, opt.inputResH, opt.inputResW)
+            inps[i] = cropBox(tmp_img.clone(), upLeft, bottomRight, opt.inputResH, opt.inputResW)
         except IndexError:
             print(tmp_img.shape)
             print(upLeft)
