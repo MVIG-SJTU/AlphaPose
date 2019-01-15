@@ -7,6 +7,9 @@ PoseFlow/alpha-pose-results-test.json
 PoseFlow/alpha-pose-results-val.json
 PoseFlow/test-predict
 PoseFlow/val-predict
+train_sppe/coco-minival500_images.txt
+train_sppe/person_keypoints_val2014.json
+
 ssd/examples
 images
 
@@ -15,6 +18,8 @@ images
 *.pyc
 .ipynb_checkpoints
 */.ipynb_checkpoints/
+*/.tensorboard
+*/exp
 
 *.pth
 *.h5
