@@ -190,19 +190,26 @@ def cv_rotate(img, rot, resW, resH):
 
 def flip(x):
     assert (x.dim() == 3 or x.dim() == 4)
-    # dim = x.dim() - 1
-    x = x.numpy().copy()
-    if x.ndim == 3:
-        x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
-    elif x.ndim == 4:
-        for i in range(x.shape[0]):
-            x[i] = np.transpose(
-                np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
-    # x = x.swapaxes(dim, 0)
-    # x = x[::-1, ...]
-    # x = x.swapaxes(0, dim)
+    if '0.4.1' in torch.__version__:
+        dim = x.dim() - 1
 
-    return torch.from_numpy(x.copy())
+        return x.flip(dims=(dim,))
+    else:
+        is_cuda = False
+        if x.is_cuda:
+            x = x.cpu()
+            is_cuda = True
+        x = x.numpy().copy()
+        if x.ndim == 3:
+            x = np.transpose(np.fliplr(np.transpose(x, (0, 2, 1))), (0, 2, 1))
+        elif x.ndim == 4:
+            for i in range(x.shape[0]):
+                x[i] = np.transpose(
+                    np.fliplr(np.transpose(x[i], (0, 2, 1))), (0, 2, 1))
+        x = torch.from_numpy(x.copy())
+        if is_cuda:
+            x = x.cuda()
+    return x
 
 
 def shuffleLR(x, dataset):

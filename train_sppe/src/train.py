@@ -77,9 +77,8 @@ def valid(val_loader, m, criterion, optimizer, writer):
 
             loss = criterion(out.mul(setMask), labels)
 
-            flip_out = m(flip(inps, cuda=True))
-            flip_out = flip(shuffleLR(
-                flip_out, val_loader.dataset, cuda=True), cuda=True)
+            flip_out = m(flip(inps))
+            flip_out = flip(shuffleLR(flip_out, val_loader.dataset))
 
             out = (flip_out + out) / 2
 
