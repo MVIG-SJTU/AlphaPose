@@ -18,7 +18,7 @@ images
 *.pyc
 .ipynb_checkpoints
 */.ipynb_checkpoints/
-*/.tensorboard
+*/.tensorboard/*
 */exp
 
 *.pth

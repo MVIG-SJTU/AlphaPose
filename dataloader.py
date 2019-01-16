@@ -8,7 +8,8 @@ from SPPE.src.utils.img import load_image, cropBox, im_to_torch
 from opt import opt
 from yolo.preprocess import prep_image, prep_frame, inp_to_image
 from pPose_nms import pose_nms, write_json
-from SPPE.src.utils.eval import getPrediction
+from matching import candidate_reselect as matching
+from SPPE.src.utils.eval import getPrediction, getMultiPeakPrediction
 from yolo.util import write_results, dynamic_write_results
 from yolo.darknet import Darknet
 from tqdm import tqdm
@@ -656,11 +657,15 @@ class DataWriter:
                             self.stream.write(img)
                 else:
                     # location prediction (n, kp, 2) | score prediction (n, kp, 1)
-                    
-                    preds_hm, preds_img, preds_scores = getPrediction(
-                        hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
-
-                    result = pose_nms(boxes, scores, preds_img, preds_scores)
+                    if opt.matching:
+                        preds = getMultiPeakPrediction(
+                            hm_data, pt1.numpy(), pt2.numpy(), opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
+                        result = matching(boxes, scores.numpy(), preds)
+                    else:
+                        preds_hm, preds_img, preds_scores = getPrediction(
+                            hm_data, pt1, pt2, opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
+                        result = pose_nms(
+                            boxes, scores, preds_img, preds_scores)
                     result = {
                         'imgname': im_name,
                         'result': result

@@ -125,6 +125,8 @@ parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
+parser.add_argument('--matching', default=False, action='store_true',
+                    help='use best matching')
 parser.add_argument('--format', type=str,
                     help='save in the format of cmu or coco or openpose, option: coco/cmu/open')
 parser.add_argument('--detbatch', type=int, default=1,

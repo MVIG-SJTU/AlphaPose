@@ -1,8 +1,8 @@
 from opt import opt
 try:
-    from utils.img import transformBoxInvert, transformBoxInvert_batch
+    from utils.img import transformBoxInvert, transformBoxInvert_batch, findPeak, processPeaks
 except ImportError:
-    from SPPE.src.utils.img import transformBoxInvert, transformBoxInvert_batch
+    from SPPE.src.utils.img import transformBoxInvert, transformBoxInvert_batch, findPeak, processPeaks
 import torch
 
 
@@ -145,6 +145,28 @@ def getPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
     preds_tf = transformBoxInvert_batch(preds, pt1, pt2, inpH, inpW, resH, resW)
 
     return preds, preds_tf, maxval
+
+
+def getMultiPeakPrediction(hms, pt1, pt2, inpH, inpW, resH, resW):
+
+    assert hms.dim() == 4, 'Score maps should be 4-dim'
+
+    preds_img = {}
+    hms = hms.numpy()
+    for n in range(hms.shape[0]):        # Number of samples
+        preds_img[n] = {}           # Result of sample: n
+        for k in range(hms.shape[1]):    # Number of keypoints
+            preds_img[n][k] = []    # Result of keypoint: k
+            hm = hms[n][k]
+
+            candidate_points = findPeak(hm)
+
+            res_pt = processPeaks(candidate_points, hm,
+                                  pt1[n], pt2[n], inpH, inpW, resH, resW)
+
+            preds_img[n][k] = res_pt
+
+    return preds_img
 
 
 def getPrediction_batch(hms, pt1, pt2, inpH, inpW, resH, resW):

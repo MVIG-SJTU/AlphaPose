@@ -4,6 +4,7 @@ import torch
 import scipy.misc
 from torchvision import transforms
 import torch.nn.functional as F
+from scipy.ndimage import maximum_filter
 
 from PIL import Image
 from copy import deepcopy
@@ -198,7 +199,7 @@ def transformBox(pt, ul, br, inpH, inpW, resH, resW):
 
 
 def transformBoxInvert(pt, ul, br, inpH, inpW, resH, resW):
-    center = torch.zeros(2)
+    center = np.zeros(2)
     center[0] = (br[0] - 1 - ul[0]) / 2
     center[1] = (br[1] - 1 - ul[1]) / 2
 
@@ -209,7 +210,7 @@ def transformBoxInvert(pt, ul, br, inpH, inpW, resH, resW):
     _pt[0] = _pt[0] - max(0, (lenW - 1) / 2 - center[0])
     _pt[1] = _pt[1] - max(0, (lenH - 1) / 2 - center[1])
 
-    new_point = torch.zeros(2)
+    new_point = np.zeros(2)
     new_point[0] = _pt[0] + ul[0]
     new_point[1] = _pt[1] + ul[1]
     return new_point
@@ -430,3 +431,67 @@ def get_dir(src_point, rot_rad):
     src_result[1] = src_point[0] * sn + src_point[1] * cs
 
     return src_result
+
+
+def findPeak(hm):
+    mx = maximum_filter(hm, size=5)
+    idx = zip(*np.where((mx == hm) * (hm > 0.1)))
+    candidate_points = []
+    for (y, x) in idx:
+        candidate_points.append([x, y, hm[y][x]])
+    if len(candidate_points) == 0:
+        return torch.zeros(0)
+    candidate_points = np.array(candidate_points)
+    candidate_points = candidate_points[np.lexsort(-candidate_points.T)]
+    return torch.Tensor(candidate_points)
+
+
+def processPeaks(candidate_points, hm, pt1, pt2, inpH, inpW, resH, resW):
+    # type: (Tensor, Tensor, Tensor, Tensor, float, float, float, float) -> List[Tensor]
+
+    if candidate_points.shape[0] == 0:  # Low Response
+        maxval = np.max(hm.reshape(1, -1), 1)
+        idx = np.argmax(hm.reshape(1, -1), 1)
+
+        x = idx % resW
+        y = int(idx / resW)
+
+        candidate_points = np.zeros((1, 3))
+        candidate_points[0, 0:1] = x
+        candidate_points[0, 1:2] = y
+        candidate_points[0, 2:3] = maxval
+
+    res_pts = []
+    for i in range(candidate_points.shape[0]):
+        x, y, maxval = candidate_points[i][0], candidate_points[i][1], candidate_points[i][2]
+
+        if bool(maxval < 0.05) and len(res_pts) > 0:
+            pass
+        else:
+            if bool(x > 0) and bool(x < resW - 2):
+                if bool(hm[int(y)][int(x) + 1] - hm[int(y)][int(x) - 1] > 0):
+                    x += 0.25
+                elif bool(hm[int(y)][int(x) + 1] - hm[int(y)][int(x) - 1] < 0):
+                    x -= 0.25
+            if bool(y > 0) and bool(y < resH - 2):
+                if bool(hm[int(y) + 1][int(x)] - hm[int(y) - 1][int(x)] > 0):
+                    y += (0.25 * inpH / inpW)
+                elif bool(hm[int(y) + 1][int(x)] - hm[int(y) - 1][int(x)] < 0):
+                    y -= (0.25 * inpH / inpW)
+
+            #pt = torch.zeros(2)
+            pt = np.zeros(2)
+            pt[0] = x + 0.2
+            pt[1] = y + 0.2
+
+            pt = transformBoxInvert(pt, pt1, pt2, inpH, inpW, resH, resW)
+
+            res_pt = np.zeros(3)
+            res_pt[:2] = pt
+            res_pt[2] = maxval
+
+            res_pts.append(res_pt)
+
+            if maxval < 0.05:
+                break
+    return res_pts
