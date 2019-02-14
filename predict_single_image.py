@@ -120,7 +120,7 @@ def predict_single_image(im_name, det_model, pose_model):
         return result, orig_img
 
 
-imagePath = "mustafa/2.jpg"
+imagePath = "your image path"
 
 det_model, pose_model = load_models()
 result, orig_img = predict_single_image(imagePath, det_model, pose_model)
