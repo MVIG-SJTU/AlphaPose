@@ -6,6 +6,7 @@
 
 ## News!
 
+- Feb 2019: [CrowdPose](https://github.com/MVIG-SJTU/AlphaPose/blob/pytorch/doc/CrowdPose.md) is integrated into AlphaPose Now!
 - Dec 2018: [General version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch/PoseFlow) of PoseFlow is released! 3X Faster and support pose tracking results visualization!
 - Sep 2018: [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! It runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 mAP!
 
@@ -73,6 +74,13 @@ python3 demo.py --indir ${img_directory} --outdir examples/res --fast_inference 
 </p>
 
 Please read [PoseFlow/README.md](PoseFlow/) for details.
+
+### CrowdPose
+<p align='center'>
+    <img src="doc/crowdpose.gif", width="360">
+</p>
+
+Please read [doc/CrowdPose.md](doc/CrowdPose.md) for details.
 
 
 ## FAQ
