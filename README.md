@@ -120,7 +120,8 @@ Results on PoseTrack Challenge validation set:
 | Detectron (Mask R-CNN) | 69.4 | 57.9 | 45.8 | 2.9 |
 | **Ours** | **75.5** | **66.3** | **57.4** | **10.1** |
 
-*Note: Please read [doc/CrowdPose.md]([doc/CrowdPose.md](https://github.com/MVIG-SJTU/AlphaPose/blob/pytorch/doc/CrowdPose.md)) for details.*
+*Note: Please read [doc/CrowdPose.md](https://github.com/MVIG-SJTU/AlphaPose/blob/pytorch/doc/CrowdPose.md) for details.*
+
 ## Installation
 1. Get the code and build related modules.
   ```Shell
