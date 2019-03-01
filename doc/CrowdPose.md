@@ -59,3 +59,6 @@ python3 demo.py --indir ${img_directory} --outdir examples/res --matching
 | **AlphaPose** | **70.9** | **76.4** |
 
 </center>
+
+## Contributors
+ CrowdPose is authored by [Jiefeng Li](http://jeff-leaf.site/), [Can Wang](https://github.com/Canwang-sjtu), [Hao Zhu](https://github.com/BernieZhu), [Yihuan Mao](), [Hao-Shu Fang](https://fang-haoshu.github.io/), and [Cewu Lu](http://www.mvig.org/). 
