@@ -123,7 +123,7 @@ Results on PoseTrack Challenge validation set:
 *Note: Please read [doc/CrowdPose.md](https://github.com/MVIG-SJTU/AlphaPose/blob/pytorch/doc/CrowdPose.md) for details.*
 
 ## Installation
-*Note: For new users or users that are not familiar with TensorFlow or Torch, we suggest using the [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) since it's more user-friendly and runs faster.*
+***Note: For new users or users that are not familiar with TensorFlow or Torch, we suggest using the [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) since it's more user-friendly and runs faster.***
 
 1. Get the code and build related modules.
   ```Shell
