@@ -118,7 +118,7 @@ Results on PoseTrack Challenge validation set:
 |:-------|:-----:|:-------:|:-------:|:-------:|
 | OpenPose (CMU-Pose) | 62.7 | 48.7 | 32.3 | 5.3 |
 | Detectron (Mask R-CNN) | 69.4 | 57.9 | 45.8 | 2.9 |
-| **Ours** | **75.5** | **66.3** | **57.4** | **10.1** |
+| **Ours ** [**PyTorch** branch](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) | **75.5** | **66.3** | **57.4** | **10.1** |
 
 *Note: Please read [doc/CrowdPose.md](https://github.com/MVIG-SJTU/AlphaPose/blob/pytorch/doc/CrowdPose.md) for details.*
 
