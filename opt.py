@@ -61,11 +61,11 @@ parser.add_argument('--try_loadModel', default=None, type=str,
                     help='Provide full path to a previously trained model')
 parser.add_argument('--nClasses', default=17, type=int,
                     help='Number of output channel')
-parser.add_argument('--pre_resnet', default=False, dest='pre_resnet',
+parser.add_argument('--pre_resnet', default=True, dest='pre_resnet',
                     help='Use pretrained resnet', action='store_true')
 parser.add_argument('--dtype', default='float32', type=str,
                     help='Model dtype')
-parser.add_argument('--use_pretrained_base', default=False, dest='use_pretrained_base',
+parser.add_argument('--use_pretrained_base', default=True, dest='use_pretrained_base',
                     help='Use pretrained base', action='store_true')
 parser.add_argument('--det_model', default='frcnn', type=str,
                     help='Det model name')
