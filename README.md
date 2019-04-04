@@ -22,6 +22,33 @@ Gluon implementation of AlphaPose, faster and more accurate.
 ## Usage
 Download model weights from [Google Drive](https://drive.google.com/open?id=1TTf8Ox-ECGXRAeX4cHYkEMBDVJEZgBL6) and put it into [sppe/params](sppe/params).
 
+## Data Preparation
+Please download [annot_coco.h5](https://drive.google.com/open?id=1OviCQgzKO2t0gh4Me0MXfi6xgXyTWC5T) and `person_keypoints_val2014.json` from `cocodataset`(http://cocodataset.org/#download).
+```
+${TRAIN_ROOT}
+|-- src
+|-- exp
+|-- data
+`-- |-- coco
+    `-- |-- annot_coco.h5
+        |-- person_keypoints_val2014.json
+        `-- images
+            |-- trainval2017
+            |   |-- 000000000001.jpg
+            |   |-- 000000000002.jpg
+            |   |-- 000000000003.jpg
+            |   |-- ... 
+```
+
+## Train on COCO
+```bash
+# Train without DPG first
+python train.py --expID exp1 --dataset coco --gpu_id=0123 --LR 1e-3 --lr_decay_epoch 30,80 --syncbn
+
+# Then train with DPG
+pythonn train.py --expID exp1_dpg --dataset coco --gpu_id=0123 --LR 1e-4 --lr_decay_epoch 20,50 --nEpochs 50 --syncbn --addDPG --loadModel /path/to/your/pretrained/model
+```
+
 ### Image Demo
 ```bash
 MXNET_CPU_WORKER_NTHREADS=2 python demo.py

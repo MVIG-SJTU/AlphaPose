@@ -2,6 +2,7 @@
 __pycache__/
 sppe/params/*.params
 sppe/.tensorboard/
+.tensorboard/
 .vscode
 val
 exp

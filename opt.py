@@ -35,7 +35,7 @@ parser.add_argument('--optMethod', default='rmsprop', type=str,
                     help='Optimization method: rmsprop | sgd | nag | adadelta')
 parser.add_argument('--nEpochs', default=100, type=int,
                     help='Number of hourglasses to stack')
-parser.add_argument('--trainBatch', default=36, type=int,
+parser.add_argument('--trainBatch', default=28, type=int,
                     help='Train-batch size')
 parser.add_argument('--validBatch', default=24, type=int,
                     help='Valid-batch size')
@@ -59,7 +59,7 @@ parser.add_argument('--loadModel', default=None, type=str,
                     help='Provide full path to a previously trained model')
 parser.add_argument('--try_loadModel', default=None, type=str,
                     help='Provide full path to a previously trained model')
-parser.add_argument('--nClasses', default=33, type=int,
+parser.add_argument('--nClasses', default=17, type=int,
                     help='Number of output channel')
 parser.add_argument('--pre_resnet', default=False, dest='pre_resnet',
                     help='Use pretrained resnet', action='store_true')
@@ -67,8 +67,6 @@ parser.add_argument('--dtype', default='float32', type=str,
                     help='Model dtype')
 parser.add_argument('--use_pretrained_base', default=False, dest='use_pretrained_base',
                     help='Use pretrained base', action='store_true')
-parser.add_argument('--base_name', default='resnet50_v1b', type=str,
-                    help='Model base name')
 parser.add_argument('--det_model', default='frcnn', type=str,
                     help='Det model name')
 parser.add_argument('--syncbn', default=False, dest='syncbn',
