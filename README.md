@@ -51,12 +51,12 @@ pythonn train.py --expID exp1_dpg --dataset coco --gpu_id=0123 --LR 1e-4 --lr_de
 
 ### Image Demo
 ```bash
-MXNET_CPU_WORKER_NTHREADS=2 python demo.py
+MXNET_CPU_WORKER_NTHREADS=2 python demo.py --nClasses 33
 ```
 
 ### Video Demo
 ```bash
-MXNET_CPU_WORKER_NTHREADS=2 python video_demo.py
+MXNET_CPU_WORKER_NTHREADS=2 python video_demo.py --nClasses 33
 ```
 
 ## Contributors
