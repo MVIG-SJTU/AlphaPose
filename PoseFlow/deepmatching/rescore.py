@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, Image
 from numpy import *
 import scipy.ndimage
@@ -25,7 +26,7 @@ def score_from_autocorr(img0, img1, corres):
   tmp = scipy.ndimage.filters.gaussian_filter1d(dxy, sigma_matrix, axis=0, order=0, mode='nearest')
   dxy_smooth = scipy.ndimage.filters.gaussian_filter1d(tmp, sigma_matrix, axis=1, order=0, mode='nearest')
   tmp = scipy.ndimage.filters.gaussian_filter1d(dy2, sigma_matrix, axis=0, order=0, mode='nearest')
-  dy2_smooth = scipy.ndimage.filters.gaussian_filter1d(tmp, sigma_matrix, axis=1, order=0, mode='nearest')  
+  dy2_smooth = scipy.ndimage.filters.gaussian_filter1d(tmp, sigma_matrix, axis=1, order=0, mode='nearest')
   # compute minimal eigenvalues: it is done by computing (dx2+dy2)/2 - sqrt( ((dx2+dy2)/2)^2 + (dxy)^2 - dx^2*dy^2)
   tmp = 0.5*(dx2_smooth+dy2_smooth)
   small_eigen = tmp - sqrt( maximum(0,tmp*tmp + dxy_smooth*dxy_smooth - dx2_smooth*dy2_smooth)) # the numbers can be negative in practice due to rounding errors
@@ -61,11 +62,11 @@ if __name__=='__main__':
   img0 = array(Image.open(args[0]).convert('RGB'))
   img1 = array(Image.open(args[1]).convert('RGB'))
   out = open(args[2]) if len(args)>=3 else sys.stdout
-  
+
   ty0, tx0 = img0.shape[:2]
   ty1, tx1 = img1.shape[:2]
   rint = lambda s:  int(0.5+float(s))
-  
+
   retained_matches = []
   for line in sys.stdin:
     line = line.split()
@@ -73,44 +74,8 @@ if __name__=='__main__':
     x0, y0, x1, y1, score, index = line
     retained_matches.append(((min(tx0-1,rint(x0)),min(ty0-1,rint(y0))),
                              (min(tx1-1,rint(x1)),min(ty1-1,rint(y1))),0))
-  
+
   assert retained_matches, 'error: no matches piped to this program'
-  
+
   for p0, p1, score in score_from_autocorr(img0, img1, retained_matches):
-    print >>out, '%d %d %d %d %f' %(p0[0],p0[1],p1[0],p1[1],score)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print('%d %d %d %d %f' %(p0[0],p0[1],p1[0],p1[1],score), file=out)
