@@ -71,7 +71,7 @@ def display_pose(imgdir, visdir, tracked, cmap):
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         if not os.path.exists(visdir): 
             os.mkdir(visdir)
-        fig.savefig(os.path.join(visdir,imgname.split()[0]+".png"), pad_inches = 0.0, bbox_inches=extent, dpi=13)
+        fig.savefig(os.path.join(visdir,imgname[: imgname.rfind('.')]+".png"), pad_inches = 0.0, bbox_inches=extent, dpi=13)
         plt.close()
 
 
