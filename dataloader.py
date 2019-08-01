@@ -181,13 +181,16 @@ class VideoLoader:
         # initialize the file video stream along with the boolean
         # used to indicate if the thread should be stopped or not
         self.path = path
-        self.stream = cv2.VideoCapture(path)
-        assert self.stream.isOpened(), 'Cannot capture source'
+        stream = cv2.VideoCapture(path)
+        assert stream.isOpened(), 'Cannot capture source'
+        self.fourcc=int(stream.get(cv2.CAP_PROP_FOURCC))
+        self.fps=stream.get(cv2.CAP_PROP_FPS)
+        self.frameSize=(int(stream.get(cv2.CAP_PROP_FRAME_WIDTH)),int(stream.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         self.stopped = False
         
 
         self.batchSize = batchSize
-        self.datalen = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.datalen = int(stream.get(cv2.CAP_PROP_FRAME_COUNT))
         leftover = 0
         if (self.datalen) % batchSize:
             leftover = 1
@@ -256,10 +259,7 @@ class VideoLoader:
 
     def videoinfo(self):
         # indicate the video info
-        fourcc=int(self.stream.get(cv2.CAP_PROP_FOURCC))
-        fps=self.stream.get(cv2.CAP_PROP_FPS)
-        frameSize=(int(self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)),int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        return (fourcc,fps,frameSize)
+        return (self.fourcc,self.fps,self.frameSize)
 
     def getitem(self):
         # return next frame in the queue
