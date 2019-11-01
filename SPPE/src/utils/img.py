@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 
 def im_to_torch(img):
+    img=np.array(img)
     img = np.transpose(img, (2, 0, 1))  # C*H*W
     img = to_torch(img).float()
     if img.max() > 1:
