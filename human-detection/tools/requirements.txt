@@ -1,7 +1,7 @@
 h5py==2.7.1
 numpy==1.12.0
 tqdm==4.19.4
-tensorflow_gpu==1.4.0
+tensorflow_gpu==1.15.0
 matplotlib==2.0.0
 datasets==0.0.9
 model==0.6.0
