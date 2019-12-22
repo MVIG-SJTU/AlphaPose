@@ -3,8 +3,8 @@
 ### Requirements
 * Python 3.5+
 * Cython
-* PyTorch 1.2+
-* torchvision 0.4.0+
+* PyTorch 1.1+
+* torchvision 0.3.0+
 * Linux, [Windows user check here](#Windows)
 
 ### Code installation
@@ -18,7 +18,7 @@ conda create -n alphapose python=3.6 -y
 conda activate alphapose
 
 # 2. Install PyTorch
-conda install pytorch==1.2.0 torchvision==0.4.0
+conda install pytorch==1.1.0 torchvision==0.3.0
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
@@ -35,7 +35,7 @@ python setup.py develop
 #### Install with pip
 ```shell
 # 1. Install PyTorch
-pip3 install pytorch==1.2.0 torchvision==0.4.0
+pip3 install pytorch==1.1.0 torchvision==0.3.0
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
