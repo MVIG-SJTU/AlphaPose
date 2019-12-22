@@ -1,0 +1,682 @@
+******************************
+Namespace(board=True, cfg='configs/coco/resnet152/256x192_adam_lr1e-3-aug.yaml', debug=False, dist_backend='nccl', dist_url='tcp://192.168.1.214:23345', exp_id='res152_fast_res_aug', launcher='none', map=True, nThreads=60, rank=-1, snapshot=2, sync=False, work_dir='./exp/coco/256x192_adam_lr1e-3-aug.yaml-res152_fast_res_aug/', world_size=4)
+******************************
+{'DATASET': {'DATASET': 'coco', 'ROOT': './data/coco/', 'TEST_SET': 'val2017', 'TRAIN_SET': 'train2017', 'FLIP': True, 'ROT_FACTOR': 45, 'SCALE_FACTOR': 0.35, 'NUM_JOINTS_HALF_BODY': 8, 'PROB_HALF_BODY': 0.3}, 'MODEL': {'NAME': 'fast_duc_pose', 'PRETRAINED': '', 'TRY_LOAD': '', 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48], 'NUM_JOINTS': 17, 'NUM_LAYERS': 152, 'EXTRA': {'BACKBONE': 'resnet', 'SIGMA': 2, 'CROP': 'fix', 'PRESET': 'simple', 'FINAL_CONV_KERNEL': 1, 'STAGE1': {'NUM_CONV': 4}, 'STAGE2': {'NUM_CONV': 2}, 'STAGE3': {'NUM_CONV': 1}}}, 'TRAIN': {'WORLD_SIZE': 4, 'BATCH_SIZE': 32, 'BEGIN_EPOCH': 0, 'END_EPOCH': 270, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [170, 200], 'DPG_MILESTONE': 210, 'DPG_STEP': [20, 40]}, 'FILE_NAME': '256x192_adam_lr1e-3-aug.yaml'}
+******************************
+Create new model
+=> init weights
+############# Starting Epoch 0 | LR: 0.001 #############
+Train-0 epoch | loss:0.00114031 | acc:0.1073
+############# Starting Epoch 1 | LR: 0.001 #############
+Train-1 epoch | loss:0.00083499 | acc:0.3802
+##### Epoch 1 | gt mAP: 0.29570870114794284 | rcnn mAP: 0.2913860190661662 #####
+############# Starting Epoch 2 | LR: 0.001 #############
+Train-2 epoch | loss:0.00065568 | acc:0.5651
+############# Starting Epoch 3 | LR: 0.001 #############
+Train-3 epoch | loss:0.00059529 | acc:0.6195
+##### Epoch 3 | gt mAP: 0.44275513140683004 | rcnn mAP: 0.4319964120870148 #####
+############# Starting Epoch 4 | LR: 0.001 #############
+Train-4 epoch | loss:0.00057301 | acc:0.6379
+############# Starting Epoch 5 | LR: 0.001 #############
+Train-5 epoch | loss:0.00055773 | acc:0.6508
+##### Epoch 5 | gt mAP: 0.4779690925192183 | rcnn mAP: 0.4661741218749696 #####
+############# Starting Epoch 6 | LR: 0.001 #############
+Train-6 epoch | loss:0.00053586 | acc:0.6691
+############# Starting Epoch 7 | LR: 0.001 #############
+Train-7 epoch | loss:0.00051611 | acc:0.6859
+##### Epoch 7 | gt mAP: 0.5329159332135874 | rcnn mAP: 0.5224938931035344 #####
+############# Starting Epoch 8 | LR: 0.001 #############
+Train-8 epoch | loss:0.00051127 | acc:0.6895
+############# Starting Epoch 9 | LR: 0.001 #############
+Train-9 epoch | loss:0.00050700 | acc:0.6928
+##### Epoch 9 | gt mAP: 0.5534140507787466 | rcnn mAP: 0.5422786560468948 #####
+############# Starting Epoch 10 | LR: 0.001 #############
+Train-10 epoch | loss:0.00048004 | acc:0.7151
+############# Starting Epoch 11 | LR: 0.001 #############
+Train-11 epoch | loss:0.00046992 | acc:0.7240
+##### Epoch 11 | gt mAP: 0.009279088513167747 | rcnn mAP: 0.007755635161852342 #####
+############# Starting Epoch 12 | LR: 0.001 #############
+Train-12 epoch | loss:0.00046763 | acc:0.7252
+############# Starting Epoch 13 | LR: 0.001 #############
+Train-13 epoch | loss:0.00045447 | acc:0.7362
+##### Epoch 13 | gt mAP: 0.5894681851123066 | rcnn mAP: 0.5772228117621535 #####
+############# Starting Epoch 14 | LR: 0.001 #############
+Train-14 epoch | loss:0.00044816 | acc:0.7411
+############# Starting Epoch 15 | LR: 0.001 #############
+Train-15 epoch | loss:0.00044055 | acc:0.7478
+##### Epoch 15 | gt mAP: 0.5983721134077922 | rcnn mAP: 0.5840839094300514 #####
+############# Starting Epoch 16 | LR: 0.001 #############
+Train-16 epoch | loss:0.00043439 | acc:0.7522
+############# Starting Epoch 17 | LR: 0.001 #############
+Train-17 epoch | loss:0.00042803 | acc:0.7569
+##### Epoch 17 | gt mAP: 0.6101721200025829 | rcnn mAP: 0.5933201457377811 #####
+############# Starting Epoch 18 | LR: 0.001 #############
+Train-18 epoch | loss:0.00042514 | acc:0.7598
+############# Starting Epoch 19 | LR: 0.001 #############
+Train-19 epoch | loss:0.00041864 | acc:0.7652
+##### Epoch 19 | gt mAP: 0.6356184370691367 | rcnn mAP: 0.6168685420898521 #####
+############# Starting Epoch 20 | LR: 0.001 #############
+Train-20 epoch | loss:0.00041515 | acc:0.7681
+############# Starting Epoch 21 | LR: 0.001 #############
+Train-21 epoch | loss:0.00041510 | acc:0.7680
+##### Epoch 21 | gt mAP: 0.6314921034338459 | rcnn mAP: 0.6157435820852896 #####
+############# Starting Epoch 22 | LR: 0.001 #############
+Train-22 epoch | loss:0.00040773 | acc:0.7742
+############# Starting Epoch 23 | LR: 0.001 #############
+Train-23 epoch | loss:0.00040398 | acc:0.7772
+##### Epoch 23 | gt mAP: 0.650177932391748 | rcnn mAP: 0.6328305562398959 #####
+############# Starting Epoch 24 | LR: 0.001 #############
+Train-24 epoch | loss:0.00039907 | acc:0.7810
+############# Starting Epoch 25 | LR: 0.001 #############
+Train-25 epoch | loss:0.00039756 | acc:0.7818
+##### Epoch 25 | gt mAP: 0.6501318643586812 | rcnn mAP: 0.6321719305322174 #####
+############# Starting Epoch 26 | LR: 0.001 #############
+Train-26 epoch | loss:0.00039398 | acc:0.7851
+############# Starting Epoch 27 | LR: 0.001 #############
+Train-27 epoch | loss:0.00039018 | acc:0.7879
+##### Epoch 27 | gt mAP: 0.6617701268755855 | rcnn mAP: 0.6430131838669304 #####
+############# Starting Epoch 28 | LR: 0.001 #############
+Train-28 epoch | loss:0.00038896 | acc:0.7883
+############# Starting Epoch 29 | LR: 0.001 #############
+Train-29 epoch | loss:0.00038652 | acc:0.7907
+##### Epoch 29 | gt mAP: 0.6621064266258428 | rcnn mAP: 0.6409823697475705 #####
+############# Starting Epoch 30 | LR: 0.001 #############
+Train-30 epoch | loss:0.00038320 | acc:0.7934
+############# Starting Epoch 31 | LR: 0.001 #############
+Train-31 epoch | loss:0.00038147 | acc:0.7950
+##### Epoch 31 | gt mAP: 0.650855691478401 | rcnn mAP: 0.631942321583668 #####
+############# Starting Epoch 32 | LR: 0.001 #############
+Train-32 epoch | loss:0.00038019 | acc:0.7958
+############# Starting Epoch 33 | LR: 0.001 #############
+Train-33 epoch | loss:0.00037723 | acc:0.7981
+##### Epoch 33 | gt mAP: 0.6740826284994187 | rcnn mAP: 0.6556857053376081 #####
+############# Starting Epoch 34 | LR: 0.001 #############
+Train-34 epoch | loss:0.00037508 | acc:0.7997
+############# Starting Epoch 35 | LR: 0.001 #############
+Train-35 epoch | loss:0.00037452 | acc:0.8010
+##### Epoch 35 | gt mAP: 0.6725703932147736 | rcnn mAP: 0.6568174087066452 #####
+############# Starting Epoch 36 | LR: 0.001 #############
+Train-36 epoch | loss:0.00037153 | acc:0.8029
+############# Starting Epoch 37 | LR: 0.001 #############
+Train-37 epoch | loss:0.00037061 | acc:0.8035
+##### Epoch 37 | gt mAP: 0.6842105143780935 | rcnn mAP: 0.6638832101693236 #####
+############# Starting Epoch 38 | LR: 0.001 #############
+Train-38 epoch | loss:0.00036840 | acc:0.8056
+############# Starting Epoch 39 | LR: 0.001 #############
+Train-39 epoch | loss:0.00036712 | acc:0.8061
+##### Epoch 39 | gt mAP: 0.6827165925002677 | rcnn mAP: 0.664125365522505 #####
+############# Starting Epoch 40 | LR: 0.001 #############
+Train-40 epoch | loss:0.00036475 | acc:0.8082
+############# Starting Epoch 41 | LR: 0.001 #############
+Train-41 epoch | loss:0.00036337 | acc:0.8094
+##### Epoch 41 | gt mAP: 0.6814352141015294 | rcnn mAP: 0.6608832294124443 #####
+############# Starting Epoch 42 | LR: 0.001 #############
+Train-42 epoch | loss:0.00036165 | acc:0.8107
+############# Starting Epoch 43 | LR: 0.001 #############
+Train-43 epoch | loss:0.00036073 | acc:0.8115
+##### Epoch 43 | gt mAP: 0.6750570309690386 | rcnn mAP: 0.6579869791908322 #####
+############# Starting Epoch 44 | LR: 0.001 #############
+Train-44 epoch | loss:0.00035981 | acc:0.8126
+############# Starting Epoch 45 | LR: 0.001 #############
+Train-45 epoch | loss:0.00035823 | acc:0.8137
+##### Epoch 45 | gt mAP: 0.6879870821905426 | rcnn mAP: 0.6697032267574075 #####
+############# Starting Epoch 46 | LR: 0.001 #############
+Train-46 epoch | loss:0.00035620 | acc:0.8149
+############# Starting Epoch 47 | LR: 0.001 #############
+Train-47 epoch | loss:0.00035532 | acc:0.8162
+##### Epoch 47 | gt mAP: 0.6922121251300745 | rcnn mAP: 0.6662778283370193 #####
+############# Starting Epoch 48 | LR: 0.001 #############
+Train-48 epoch | loss:0.00035445 | acc:0.8167
+############# Starting Epoch 49 | LR: 0.001 #############
+Train-49 epoch | loss:0.00035289 | acc:0.8181
+##### Epoch 49 | gt mAP: 0.6946034184604439 | rcnn mAP: 0.6743645428269638 #####
+############# Starting Epoch 50 | LR: 0.001 #############
+Train-50 epoch | loss:0.00035051 | acc:0.8196
+############# Starting Epoch 51 | LR: 0.001 #############
+Train-51 epoch | loss:0.00035036 | acc:0.8201
+##### Epoch 51 | gt mAP: 0.696468535387221 | rcnn mAP: 0.6752881266913507 #####
+############# Starting Epoch 52 | LR: 0.001 #############
+Train-52 epoch | loss:0.00034952 | acc:0.8205
+############# Starting Epoch 53 | LR: 0.001 #############
+Train-53 epoch | loss:0.00034884 | acc:0.8211
+##### Epoch 53 | gt mAP: 0.6967333195584631 | rcnn mAP: 0.679784828757681 #####
+############# Starting Epoch 54 | LR: 0.001 #############
+Train-54 epoch | loss:0.00034754 | acc:0.8225
+############# Starting Epoch 55 | LR: 0.001 #############
+Train-55 epoch | loss:0.00034693 | acc:0.8227
+##### Epoch 55 | gt mAP: 0.6954582725936931 | rcnn mAP: 0.6796859576695541 #####
+############# Starting Epoch 56 | LR: 0.001 #############
+Train-56 epoch | loss:0.00034606 | acc:0.8231
+############# Starting Epoch 57 | LR: 0.001 #############
+Train-57 epoch | loss:0.00034387 | acc:0.8248
+##### Epoch 57 | gt mAP: 0.6893999849907234 | rcnn mAP: 0.6713349527086758 #####
+############# Starting Epoch 58 | LR: 0.001 #############
+Train-58 epoch | loss:0.00034354 | acc:0.8256
+############# Starting Epoch 59 | LR: 0.001 #############
+Train-59 epoch | loss:0.00034139 | acc:0.8268
+##### Epoch 59 | gt mAP: 0.6965954407890181 | rcnn mAP: 0.6791903619358985 #####
+############# Starting Epoch 60 | LR: 0.001 #############
+Train-60 epoch | loss:0.00034117 | acc:0.8270
+############# Starting Epoch 61 | LR: 0.001 #############
+Train-61 epoch | loss:0.00034112 | acc:0.8271
+##### Epoch 61 | gt mAP: 0.7005026233957129 | rcnn mAP: 0.678427803714549 #####
+############# Starting Epoch 62 | LR: 0.001 #############
+Train-62 epoch | loss:0.00033915 | acc:0.8289
+############# Starting Epoch 63 | LR: 0.001 #############
+Train-63 epoch | loss:0.00033924 | acc:0.8287
+##### Epoch 63 | gt mAP: 0.6985796778166599 | rcnn mAP: 0.6788910205976361 #####
+############# Starting Epoch 64 | LR: 0.001 #############
+Train-64 epoch | loss:0.00033858 | acc:0.8296
+############# Starting Epoch 65 | LR: 0.001 #############
+Train-65 epoch | loss:0.00033712 | acc:0.8302
+##### Epoch 65 | gt mAP: 0.7060941235740146 | rcnn mAP: 0.6831616484090218 #####
+############# Starting Epoch 66 | LR: 0.001 #############
+Train-66 epoch | loss:0.00033799 | acc:0.8296
+############# Starting Epoch 67 | LR: 0.001 #############
+Train-67 epoch | loss:0.00033614 | acc:0.8313
+##### Epoch 67 | gt mAP: 0.7058438932024826 | rcnn mAP: 0.6844067713197889 #####
+############# Starting Epoch 68 | LR: 0.001 #############
+Train-68 epoch | loss:0.00033521 | acc:0.8322
+############# Starting Epoch 69 | LR: 0.001 #############
+Train-69 epoch | loss:0.00033406 | acc:0.8325
+##### Epoch 69 | gt mAP: 0.7055137108964967 | rcnn mAP: 0.6870613258111763 #####
+############# Starting Epoch 70 | LR: 0.001 #############
+Train-70 epoch | loss:0.00033386 | acc:0.8330
+############# Starting Epoch 71 | LR: 0.001 #############
+Train-71 epoch | loss:0.00033271 | acc:0.8338
+##### Epoch 71 | gt mAP: 0.7086065664908039 | rcnn mAP: 0.6875704776388857 #####
+############# Starting Epoch 72 | LR: 0.001 #############
+Train-72 epoch | loss:0.00033276 | acc:0.8333
+############# Starting Epoch 73 | LR: 0.001 #############
+Train-73 epoch | loss:0.00033157 | acc:0.8350
+##### Epoch 73 | gt mAP: 0.7087706578732856 | rcnn mAP: 0.6883382113920238 #####
+############# Starting Epoch 74 | LR: 0.001 #############
+Train-74 epoch | loss:0.00032977 | acc:0.8365
+############# Starting Epoch 75 | LR: 0.001 #############
+Train-75 epoch | loss:0.00032958 | acc:0.8365
+##### Epoch 75 | gt mAP: 0.7099686205932944 | rcnn mAP: 0.6871800508659168 #####
+############# Starting Epoch 76 | LR: 0.001 #############
+Train-76 epoch | loss:0.00032926 | acc:0.8366
+############# Starting Epoch 77 | LR: 0.001 #############
+Train-77 epoch | loss:0.00032816 | acc:0.8374
+##### Epoch 77 | gt mAP: 0.7051074261977937 | rcnn mAP: 0.6836980649483186 #####
+############# Starting Epoch 78 | LR: 0.001 #############
+Train-78 epoch | loss:0.00032774 | acc:0.8380
+############# Starting Epoch 79 | LR: 0.001 #############
+Train-79 epoch | loss:0.00032754 | acc:0.8381
+##### Epoch 79 | gt mAP: 0.710915244850149 | rcnn mAP: 0.6906972817211813 #####
+############# Starting Epoch 80 | LR: 0.001 #############
+Train-80 epoch | loss:0.00032633 | acc:0.8393
+############# Starting Epoch 81 | LR: 0.001 #############
+Train-81 epoch | loss:0.00032523 | acc:0.8399
+##### Epoch 81 | gt mAP: 0.7140696513774156 | rcnn mAP: 0.69330877568959 #####
+############# Starting Epoch 82 | LR: 0.001 #############
+Train-82 epoch | loss:0.00032532 | acc:0.8398
+############# Starting Epoch 83 | LR: 0.001 #############
+Train-83 epoch | loss:0.00032458 | acc:0.8404
+##### Epoch 83 | gt mAP: 0.710720212997993 | rcnn mAP: 0.6889927684879461 #####
+############# Starting Epoch 84 | LR: 0.001 #############
+Train-84 epoch | loss:0.00032395 | acc:0.8407
+############# Starting Epoch 85 | LR: 0.001 #############
+Train-85 epoch | loss:0.00032322 | acc:0.8418
+##### Epoch 85 | gt mAP: 0.710779843889992 | rcnn mAP: 0.6888727132684992 #####
+############# Starting Epoch 86 | LR: 0.001 #############
+Train-86 epoch | loss:0.00032344 | acc:0.8415
+############# Starting Epoch 87 | LR: 0.001 #############
+Train-87 epoch | loss:0.00032115 | acc:0.8432
+##### Epoch 87 | gt mAP: 0.711324447076655 | rcnn mAP: 0.6889010370149888 #####
+############# Starting Epoch 88 | LR: 0.001 #############
+Train-88 epoch | loss:0.00032318 | acc:0.8417
+############# Starting Epoch 89 | LR: 0.001 #############
+Train-89 epoch | loss:0.00032095 | acc:0.8433
+##### Epoch 89 | gt mAP: 0.7135429562694294 | rcnn mAP: 0.6890491972025542 #####
+############# Starting Epoch 90 | LR: 0.001 #############
+Train-90 epoch | loss:0.00031990 | acc:0.8443
+############# Starting Epoch 91 | LR: 0.001 #############
+Train-91 epoch | loss:0.00031957 | acc:0.8446
+##### Epoch 91 | gt mAP: 0.716145779969055 | rcnn mAP: 0.6952219604268879 #####
+############# Starting Epoch 92 | LR: 0.001 #############
+Train-92 epoch | loss:0.00031865 | acc:0.8451
+############# Starting Epoch 93 | LR: 0.001 #############
+Train-93 epoch | loss:0.00031909 | acc:0.8448
+##### Epoch 93 | gt mAP: 0.7105445626686326 | rcnn mAP: 0.6891124326898642 #####
+############# Starting Epoch 94 | LR: 0.001 #############
+Train-94 epoch | loss:0.00031751 | acc:0.8463
+############# Starting Epoch 95 | LR: 0.001 #############
+Train-95 epoch | loss:0.00031602 | acc:0.8471
+##### Epoch 95 | gt mAP: 0.7170648730401286 | rcnn mAP: 0.6988689053461777 #####
+############# Starting Epoch 96 | LR: 0.001 #############
+Train-96 epoch | loss:0.00031747 | acc:0.8463
+############# Starting Epoch 97 | LR: 0.001 #############
+Train-97 epoch | loss:0.00031628 | acc:0.8470
+##### Epoch 97 | gt mAP: 0.7170547603414884 | rcnn mAP: 0.6957821076595808 #####
+############# Starting Epoch 98 | LR: 0.001 #############
+Train-98 epoch | loss:0.00101105 | acc:0.2787
+############# Starting Epoch 99 | LR: 0.001 #############
+Train-99 epoch | loss:0.00047687 | acc:0.7173
+##### Epoch 99 | gt mAP: 0.6480447018123906 | rcnn mAP: 0.6313387903192533 #####
+############# Starting Epoch 100 | LR: 0.001 #############
+Train-100 epoch | loss:0.00037917 | acc:0.7972
+############# Starting Epoch 101 | LR: 0.001 #############
+Train-101 epoch | loss:0.00034936 | acc:0.8213
+##### Epoch 101 | gt mAP: 0.7012194822836993 | rcnn mAP: 0.6831767957370286 #####
+############# Starting Epoch 102 | LR: 0.001 #############
+Train-102 epoch | loss:0.00033430 | acc:0.8327
+############# Starting Epoch 103 | LR: 0.001 #############
+Train-103 epoch | loss:0.00032544 | acc:0.8399
+##### Epoch 103 | gt mAP: 0.7113953324336905 | rcnn mAP: 0.6898008104835989 #####
+############# Starting Epoch 104 | LR: 0.001 #############
+Train-104 epoch | loss:0.00032172 | acc:0.8427
+############# Starting Epoch 105 | LR: 0.001 #############
+Train-105 epoch | loss:0.00031991 | acc:0.8448
+##### Epoch 105 | gt mAP: 0.7022998917054901 | rcnn mAP: 0.6796182902577873 #####
+############# Starting Epoch 106 | LR: 0.001 #############
+Train-106 epoch | loss:0.00037646 | acc:0.7988
+############# Starting Epoch 107 | LR: 0.001 #############
+Train-107 epoch | loss:0.00032994 | acc:0.8358
+##### Epoch 107 | gt mAP: 0.7144539896843951 | rcnn mAP: 0.6890613305075906 #####
+############# Starting Epoch 108 | LR: 0.001 #############
+Train-108 epoch | loss:0.00032268 | acc:0.8417
+############# Starting Epoch 109 | LR: 0.001 #############
+Train-109 epoch | loss:0.00032063 | acc:0.8433
+##### Epoch 109 | gt mAP: 0.7195156263657998 | rcnn mAP: 0.6957285182931799 #####
+############# Starting Epoch 110 | LR: 0.001 #############
+Train-110 epoch | loss:0.00031992 | acc:0.8446
+############# Starting Epoch 111 | LR: 0.001 #############
+Train-111 epoch | loss:0.00032001 | acc:0.8442
+##### Epoch 111 | gt mAP: 0.7166711710828445 | rcnn mAP: 0.6953323225902005 #####
+############# Starting Epoch 112 | LR: 0.001 #############
+Train-112 epoch | loss:0.00031850 | acc:0.8451
+############# Starting Epoch 113 | LR: 0.001 #############
+Train-113 epoch | loss:0.00031804 | acc:0.8455
+##### Epoch 113 | gt mAP: 0.7177700111473699 | rcnn mAP: 0.6945720147817405 #####
+############# Starting Epoch 114 | LR: 0.001 #############
+Train-114 epoch | loss:0.00031668 | acc:0.8466
+############# Starting Epoch 115 | LR: 0.001 #############
+Train-115 epoch | loss:0.00031607 | acc:0.8471
+##### Epoch 115 | gt mAP: 0.7171017235039893 | rcnn mAP: 0.6943921247410806 #####
+############# Starting Epoch 116 | LR: 0.001 #############
+Train-116 epoch | loss:0.00031563 | acc:0.8473
+############# Starting Epoch 117 | LR: 0.001 #############
+Train-117 epoch | loss:0.00031521 | acc:0.8477
+##### Epoch 117 | gt mAP: 0.7157671460985336 | rcnn mAP: 0.6953559012613254 #####
+############# Starting Epoch 118 | LR: 0.001 #############
+Train-118 epoch | loss:0.00031294 | acc:0.8497
+############# Starting Epoch 119 | LR: 0.001 #############
+Train-119 epoch | loss:0.00031256 | acc:0.8502
+##### Epoch 119 | gt mAP: 0.7216142426072241 | rcnn mAP: 0.6957416529073349 #####
+############# Starting Epoch 120 | LR: 0.001 #############
+Train-120 epoch | loss:0.00031209 | acc:0.8504
+############# Starting Epoch 121 | LR: 0.001 #############
+Train-121 epoch | loss:0.00031111 | acc:0.8512
+##### Epoch 121 | gt mAP: 0.7227332678853793 | rcnn mAP: 0.6991999155827684 #####
+############# Starting Epoch 122 | LR: 0.001 #############
+Train-122 epoch | loss:0.00031165 | acc:0.8509
+############# Starting Epoch 123 | LR: 0.001 #############
+Train-123 epoch | loss:0.00031509 | acc:0.8479
+##### Epoch 123 | gt mAP: 0.678622780426444 | rcnn mAP: 0.658746694146583 #####
+############# Starting Epoch 124 | LR: 0.001 #############
+Train-124 epoch | loss:0.00031948 | acc:0.8440
+############# Starting Epoch 125 | LR: 0.001 #############
+Train-125 epoch | loss:0.00030943 | acc:0.8520
+##### Epoch 125 | gt mAP: 0.7234603015332844 | rcnn mAP: 0.6996306161393517 #####
+############# Starting Epoch 126 | LR: 0.001 #############
+Train-126 epoch | loss:0.00030940 | acc:0.8526
+############# Starting Epoch 127 | LR: 0.001 #############
+Train-127 epoch | loss:0.00030866 | acc:0.8537
+##### Epoch 127 | gt mAP: 0.7209807619951982 | rcnn mAP: 0.7011954501257976 #####
+############# Starting Epoch 128 | LR: 0.001 #############
+Train-128 epoch | loss:0.00030888 | acc:0.8527
+############# Starting Epoch 129 | LR: 0.001 #############
+Train-129 epoch | loss:0.00030905 | acc:0.8532
+##### Epoch 129 | gt mAP: 0.7244608847198302 | rcnn mAP: 0.6980061218284576 #####
+############# Starting Epoch 130 | LR: 0.001 #############
+Train-130 epoch | loss:0.00030775 | acc:0.8535
+############# Starting Epoch 131 | LR: 0.001 #############
+Train-131 epoch | loss:0.00030673 | acc:0.8545
+##### Epoch 131 | gt mAP: 0.7252964002575227 | rcnn mAP: 0.6990916205626961 #####
+############# Starting Epoch 132 | LR: 0.001 #############
+Train-132 epoch | loss:0.00030686 | acc:0.8544
+############# Starting Epoch 133 | LR: 0.001 #############
+Train-133 epoch | loss:0.00030598 | acc:0.8554
+##### Epoch 133 | gt mAP: 0.7223798301964741 | rcnn mAP: 0.701233221873389 #####
+############# Starting Epoch 134 | LR: 0.001 #############
+Train-134 epoch | loss:0.00030537 | acc:0.8554
+############# Starting Epoch 135 | LR: 0.001 #############
+Train-135 epoch | loss:0.00030495 | acc:0.8563
+##### Epoch 135 | gt mAP: 0.7246268704883362 | rcnn mAP: 0.7035710399525728 #####
+############# Starting Epoch 136 | LR: 0.001 #############
+Train-136 epoch | loss:0.00030483 | acc:0.8565
+############# Starting Epoch 137 | LR: 0.001 #############
+Train-137 epoch | loss:0.00030363 | acc:0.8570
+##### Epoch 137 | gt mAP: 0.7245857217372855 | rcnn mAP: 0.7012721296062631 #####
+############# Starting Epoch 138 | LR: 0.001 #############
+Train-138 epoch | loss:0.00030340 | acc:0.8573
+############# Starting Epoch 139 | LR: 0.001 #############
+Train-139 epoch | loss:0.00030266 | acc:0.8580
+##### Epoch 139 | gt mAP: 0.7240567397981509 | rcnn mAP: 0.7027418360465344 #####
+############# Starting Epoch 140 | LR: 0.001 #############
+Train-140 epoch | loss:0.00030294 | acc:0.8574
+############# Starting Epoch 141 | LR: 0.001 #############
+Train-141 epoch | loss:0.00030238 | acc:0.8582
+##### Epoch 141 | gt mAP: 0.729123603872614 | rcnn mAP: 0.705264379778369 #####
+############# Starting Epoch 142 | LR: 0.001 #############
+Train-142 epoch | loss:0.00030181 | acc:0.8584
+############# Starting Epoch 143 | LR: 0.001 #############
+Train-143 epoch | loss:0.00030052 | acc:0.8595
+##### Epoch 143 | gt mAP: 0.7270715030743138 | rcnn mAP: 0.7028353080007584 #####
+############# Starting Epoch 144 | LR: 0.001 #############
+Train-144 epoch | loss:0.00030029 | acc:0.8600
+############# Starting Epoch 145 | LR: 0.001 #############
+Train-145 epoch | loss:0.00030015 | acc:0.8599
+##### Epoch 145 | gt mAP: 0.7215945218255139 | rcnn mAP: 0.6979317338538689 #####
+############# Starting Epoch 146 | LR: 0.001 #############
+Train-146 epoch | loss:0.00030080 | acc:0.8593
+############# Starting Epoch 147 | LR: 0.001 #############
+Train-147 epoch | loss:0.00029969 | acc:0.8604
+##### Epoch 147 | gt mAP: 0.7224667864114049 | rcnn mAP: 0.6991716061324594 #####
+############# Starting Epoch 148 | LR: 0.001 #############
+Train-148 epoch | loss:0.00029907 | acc:0.8605
+############# Starting Epoch 149 | LR: 0.001 #############
+Train-149 epoch | loss:0.00029866 | acc:0.8613
+##### Epoch 149 | gt mAP: 0.7260273478606923 | rcnn mAP: 0.7054917690535166 #####
+############# Starting Epoch 150 | LR: 0.001 #############
+Train-150 epoch | loss:0.00029808 | acc:0.8612
+############# Starting Epoch 151 | LR: 0.001 #############
+Train-151 epoch | loss:0.00029889 | acc:0.8610
+##### Epoch 151 | gt mAP: 0.7251758250511834 | rcnn mAP: 0.7003993755133772 #####
+############# Starting Epoch 152 | LR: 0.001 #############
+Train-152 epoch | loss:0.00029799 | acc:0.8614
+############# Starting Epoch 153 | LR: 0.001 #############
+Train-153 epoch | loss:0.00029777 | acc:0.8617
+##### Epoch 153 | gt mAP: 0.7280480695343148 | rcnn mAP: 0.7067082605903964 #####
+############# Starting Epoch 154 | LR: 0.001 #############
+Train-154 epoch | loss:0.00029713 | acc:0.8628
+############# Starting Epoch 155 | LR: 0.001 #############
+Train-155 epoch | loss:0.00029655 | acc:0.8627
+##### Epoch 155 | gt mAP: 0.7301181683368393 | rcnn mAP: 0.7064082720137612 #####
+############# Starting Epoch 156 | LR: 0.001 #############
+Train-156 epoch | loss:0.00029610 | acc:0.8632
+############# Starting Epoch 157 | LR: 0.001 #############
+Train-157 epoch | loss:0.00029590 | acc:0.8632
+##### Epoch 157 | gt mAP: 0.7198735905706407 | rcnn mAP: 0.70063864451066 #####
+############# Starting Epoch 158 | LR: 0.001 #############
+Train-158 epoch | loss:0.00029557 | acc:0.8635
+############# Starting Epoch 159 | LR: 0.001 #############
+Train-159 epoch | loss:0.00029470 | acc:0.8640
+##### Epoch 159 | gt mAP: 0.7287920721494305 | rcnn mAP: 0.7063195515855885 #####
+############# Starting Epoch 160 | LR: 0.001 #############
+Train-160 epoch | loss:0.00029542 | acc:0.8638
+############# Starting Epoch 161 | LR: 0.001 #############
+Train-161 epoch | loss:0.00029461 | acc:0.8648
+##### Epoch 161 | gt mAP: 0.7303524335292614 | rcnn mAP: 0.7044780008711656 #####
+############# Starting Epoch 162 | LR: 0.001 #############
+Train-162 epoch | loss:0.00029513 | acc:0.8642
+############# Starting Epoch 163 | LR: 0.001 #############
+Train-163 epoch | loss:0.00029430 | acc:0.8647
+##### Epoch 163 | gt mAP: 0.7282859511186244 | rcnn mAP: 0.7036866813984921 #####
+############# Starting Epoch 164 | LR: 0.001 #############
+Train-164 epoch | loss:0.00040163 | acc:0.7992
+############# Starting Epoch 165 | LR: 0.001 #############
+Train-165 epoch | loss:0.00031159 | acc:0.8510
+##### Epoch 165 | gt mAP: 0.7272262849002893 | rcnn mAP: 0.7019372758247496 #####
+############# Starting Epoch 166 | LR: 0.001 #############
+Train-166 epoch | loss:0.00030132 | acc:0.8590
+############# Starting Epoch 167 | LR: 0.001 #############
+Train-167 epoch | loss:0.00029644 | acc:0.8628
+##### Epoch 167 | gt mAP: 0.7286618664024044 | rcnn mAP: 0.7073317113009429 #####
+############# Starting Epoch 168 | LR: 0.001 #############
+Train-168 epoch | loss:0.00029509 | acc:0.8640
+############# Starting Epoch 169 | LR: 0.001 #############
+Train-169 epoch | loss:0.00029622 | acc:0.8627
+##### Epoch 169 | gt mAP: 0.723039739699153 | rcnn mAP: 0.7029033713205812 #####
+############# Starting Epoch 170 | LR: 0.0001 #############
+Train-170 epoch | loss:0.00028910 | acc:0.8686
+############# Starting Epoch 171 | LR: 0.0001 #############
+Train-171 epoch | loss:0.00028440 | acc:0.8720
+##### Epoch 171 | gt mAP: 0.7356926088195536 | rcnn mAP: 0.7159930344362772 #####
+############# Starting Epoch 172 | LR: 0.0001 #############
+Train-172 epoch | loss:0.00028237 | acc:0.8734
+############# Starting Epoch 173 | LR: 0.0001 #############
+Train-173 epoch | loss:0.00028095 | acc:0.8746
+##### Epoch 173 | gt mAP: 0.7388379070406643 | rcnn mAP: 0.7172652632954125 #####
+############# Starting Epoch 174 | LR: 0.0001 #############
+Train-174 epoch | loss:0.00027920 | acc:0.8762
+############# Starting Epoch 175 | LR: 0.0001 #############
+Train-175 epoch | loss:0.00027919 | acc:0.8761
+##### Epoch 175 | gt mAP: 0.7402715565042199 | rcnn mAP: 0.7173409779118527 #####
+############# Starting Epoch 176 | LR: 0.0001 #############
+Train-176 epoch | loss:0.00027858 | acc:0.8765
+############# Starting Epoch 177 | LR: 0.0001 #############
+Train-177 epoch | loss:0.00027785 | acc:0.8769
+##### Epoch 177 | gt mAP: 0.741585872051602 | rcnn mAP: 0.7172894908343139 #####
+############# Starting Epoch 178 | LR: 0.0001 #############
+Train-178 epoch | loss:0.00027717 | acc:0.8775
+############# Starting Epoch 179 | LR: 0.0001 #############
+Train-179 epoch | loss:0.00027649 | acc:0.8784
+##### Epoch 179 | gt mAP: 0.7414276885519854 | rcnn mAP: 0.7195705970025982 #####
+############# Starting Epoch 180 | LR: 0.0001 #############
+Train-180 epoch | loss:0.00027584 | acc:0.8785
+############# Starting Epoch 181 | LR: 0.0001 #############
+Train-181 epoch | loss:0.00027548 | acc:0.8787
+##### Epoch 181 | gt mAP: 0.7424734855075692 | rcnn mAP: 0.719709143195057 #####
+############# Starting Epoch 182 | LR: 0.0001 #############
+Train-182 epoch | loss:0.00027495 | acc:0.8792
+############# Starting Epoch 183 | LR: 0.0001 #############
+Train-183 epoch | loss:0.00027422 | acc:0.8796
+##### Epoch 183 | gt mAP: 0.7405715743046364 | rcnn mAP: 0.7205218003216393 #####
+############# Starting Epoch 184 | LR: 0.0001 #############
+Train-184 epoch | loss:0.00027450 | acc:0.8795
+############# Starting Epoch 185 | LR: 0.0001 #############
+Train-185 epoch | loss:0.00027470 | acc:0.8796
+##### Epoch 185 | gt mAP: 0.7418717959418437 | rcnn mAP: 0.7190356284342895 #####
+############# Starting Epoch 186 | LR: 0.0001 #############
+Train-186 epoch | loss:0.00027372 | acc:0.8800
+############# Starting Epoch 187 | LR: 0.0001 #############
+Train-187 epoch | loss:0.00027336 | acc:0.8808
+##### Epoch 187 | gt mAP: 0.7439961064187162 | rcnn mAP: 0.7197876991616395 #####
+############# Starting Epoch 188 | LR: 0.0001 #############
+Train-188 epoch | loss:0.00027383 | acc:0.8803
+############# Starting Epoch 189 | LR: 0.0001 #############
+Train-189 epoch | loss:0.00027246 | acc:0.8809
+##### Epoch 189 | gt mAP: 0.7440043292591364 | rcnn mAP: 0.7209080222863288 #####
+############# Starting Epoch 190 | LR: 0.0001 #############
+Train-190 epoch | loss:0.00027218 | acc:0.8813
+############# Starting Epoch 191 | LR: 0.0001 #############
+Train-191 epoch | loss:0.00027237 | acc:0.8816
+##### Epoch 191 | gt mAP: 0.7444812477111437 | rcnn mAP: 0.7204648832225435 #####
+############# Starting Epoch 192 | LR: 0.0001 #############
+Train-192 epoch | loss:0.00027210 | acc:0.8815
+############# Starting Epoch 193 | LR: 0.0001 #############
+Train-193 epoch | loss:0.00027124 | acc:0.8822
+##### Epoch 193 | gt mAP: 0.7451319674395224 | rcnn mAP: 0.7203106062955572 #####
+############# Starting Epoch 194 | LR: 0.0001 #############
+Train-194 epoch | loss:0.00027134 | acc:0.8819
+############# Starting Epoch 195 | LR: 0.0001 #############
+Train-195 epoch | loss:0.00027141 | acc:0.8821
+##### Epoch 195 | gt mAP: 0.7431690946265764 | rcnn mAP: 0.718487620549435 #####
+############# Starting Epoch 196 | LR: 0.0001 #############
+Train-196 epoch | loss:0.00027106 | acc:0.8824
+############# Starting Epoch 197 | LR: 0.0001 #############
+Train-197 epoch | loss:0.00027059 | acc:0.8828
+##### Epoch 197 | gt mAP: 0.7418338742853784 | rcnn mAP: 0.7188254131803322 #####
+############# Starting Epoch 198 | LR: 0.0001 #############
+Train-198 epoch | loss:0.00027046 | acc:0.8831
+############# Starting Epoch 199 | LR: 0.0001 #############
+Train-199 epoch | loss:0.00027008 | acc:0.8834
+##### Epoch 199 | gt mAP: 0.7441319208200254 | rcnn mAP: 0.7202371759811709 #####
+############# Starting Epoch 200 | LR: 1e-05 #############
+Train-200 epoch | loss:0.00026949 | acc:0.8838
+############# Starting Epoch 201 | LR: 1e-05 #############
+Train-201 epoch | loss:0.00026907 | acc:0.8838
+##### Epoch 201 | gt mAP: 0.7448404883689755 | rcnn mAP: 0.7202166872607451 #####
+############# Starting Epoch 202 | LR: 1e-05 #############
+Train-202 epoch | loss:0.00026925 | acc:0.8837
+############# Starting Epoch 203 | LR: 1e-05 #############
+Train-203 epoch | loss:0.00026855 | acc:0.8838
+##### Epoch 203 | gt mAP: 0.7443200136226188 | rcnn mAP: 0.7209274375578445 #####
+############# Starting Epoch 204 | LR: 1e-05 #############
+Train-204 epoch | loss:0.00026887 | acc:0.8838
+############# Starting Epoch 205 | LR: 1e-05 #############
+Train-205 epoch | loss:0.00026891 | acc:0.8839
+##### Epoch 205 | gt mAP: 0.7451550638461777 | rcnn mAP: 0.7202500899332187 #####
+############# Starting Epoch 206 | LR: 1e-05 #############
+Train-206 epoch | loss:0.00026896 | acc:0.8839
+############# Starting Epoch 207 | LR: 1e-05 #############
+Train-207 epoch | loss:0.00026889 | acc:0.8840
+##### Epoch 207 | gt mAP: 0.7440669347252542 | rcnn mAP: 0.7205611266826739 #####
+############# Starting Epoch 208 | LR: 1e-05 #############
+Train-208 epoch | loss:0.00026857 | acc:0.8843
+############# Starting Epoch 209 | LR: 1e-05 #############
+Train-209 epoch | loss:0.00026868 | acc:0.8844
+##### Epoch 209 | gt mAP: 0.7457452432163296 | rcnn mAP: 0.7207482833455754 #####
+############# Starting Epoch 210 | LR: 1e-05 #############
+Train-210 epoch | loss:0.00026830 | acc:0.8842
+############# Starting Epoch 211 | LR: 0.001 #############
+Train-211 epoch | loss:0.00030307 | acc:0.8559
+##### Epoch 211 | gt mAP: 0.7267985786853829 | rcnn mAP: 0.7052996487588862 #####
+############# Starting Epoch 212 | LR: 0.001 #############
+Train-212 epoch | loss:0.00030531 | acc:0.8537
+############# Starting Epoch 213 | LR: 0.001 #############
+Train-213 epoch | loss:0.00030627 | acc:0.8531
+##### Epoch 213 | gt mAP: 0.7266341933717598 | rcnn mAP: 0.7053635210870739 #####
+############# Starting Epoch 214 | LR: 0.001 #############
+Train-214 epoch | loss:0.00030592 | acc:0.8538
+############# Starting Epoch 215 | LR: 0.001 #############
+Train-215 epoch | loss:0.00030734 | acc:0.8526
+##### Epoch 215 | gt mAP: 0.7259952673809251 | rcnn mAP: 0.7032133936237557 #####
+############# Starting Epoch 216 | LR: 0.001 #############
+Train-216 epoch | loss:0.00030549 | acc:0.8536
+############# Starting Epoch 217 | LR: 0.001 #############
+Train-217 epoch | loss:0.00030448 | acc:0.8544
+##### Epoch 217 | gt mAP: 0.7312982497946171 | rcnn mAP: 0.7102545267782879 #####
+############# Starting Epoch 218 | LR: 0.001 #############
+Train-218 epoch | loss:0.00030460 | acc:0.8545
+############# Starting Epoch 219 | LR: 0.001 #############
+Train-219 epoch | loss:0.00030435 | acc:0.8547
+##### Epoch 219 | gt mAP: 0.728409855574157 | rcnn mAP: 0.7069511607368838 #####
+############# Starting Epoch 220 | LR: 0.001 #############
+Train-220 epoch | loss:0.00030417 | acc:0.8551
+############# Starting Epoch 221 | LR: 0.001 #############
+Train-221 epoch | loss:0.00030372 | acc:0.8557
+##### Epoch 221 | gt mAP: 0.7287982996731824 | rcnn mAP: 0.7102469831609326 #####
+############# Starting Epoch 222 | LR: 0.001 #############
+Train-222 epoch | loss:0.00030360 | acc:0.8552
+############# Starting Epoch 223 | LR: 0.001 #############
+Train-223 epoch | loss:0.00030318 | acc:0.8556
+##### Epoch 223 | gt mAP: 0.7304017759709673 | rcnn mAP: 0.7062188374516892 #####
+############# Starting Epoch 224 | LR: 0.001 #############
+Train-224 epoch | loss:0.00030357 | acc:0.8556
+############# Starting Epoch 225 | LR: 0.001 #############
+Train-225 epoch | loss:0.00030223 | acc:0.8568
+##### Epoch 225 | gt mAP: 0.7287052558043944 | rcnn mAP: 0.7063208412050904 #####
+############# Starting Epoch 226 | LR: 0.001 #############
+Train-226 epoch | loss:0.00030248 | acc:0.8567
+############# Starting Epoch 227 | LR: 0.001 #############
+Train-227 epoch | loss:0.00030194 | acc:0.8566
+##### Epoch 227 | gt mAP: 0.7273952748310804 | rcnn mAP: 0.7067652264949141 #####
+############# Starting Epoch 228 | LR: 0.001 #############
+Train-228 epoch | loss:0.00030068 | acc:0.8581
+############# Starting Epoch 229 | LR: 0.001 #############
+Train-229 epoch | loss:0.00030019 | acc:0.8582
+##### Epoch 229 | gt mAP: 0.73312337705828 | rcnn mAP: 0.7111011886561407 #####
+############# Starting Epoch 230 | LR: 0.001 #############
+Train-230 epoch | loss:0.00030074 | acc:0.8573
+############# Starting Epoch 231 | LR: 0.0001 #############
+Train-231 epoch | loss:0.00029215 | acc:0.8643
+##### Epoch 231 | gt mAP: 0.7426691225309482 | rcnn mAP: 0.7178238227950395 #####
+############# Starting Epoch 232 | LR: 0.0001 #############
+Train-232 epoch | loss:0.00028740 | acc:0.8677
+############# Starting Epoch 233 | LR: 0.0001 #############
+Train-233 epoch | loss:0.00028573 | acc:0.8686
+##### Epoch 233 | gt mAP: 0.7452583645859702 | rcnn mAP: 0.7199762696752602 #####
+############# Starting Epoch 234 | LR: 0.0001 #############
+Train-234 epoch | loss:0.00028457 | acc:0.8699
+############# Starting Epoch 235 | LR: 0.0001 #############
+Train-235 epoch | loss:0.00028408 | acc:0.8703
+##### Epoch 235 | gt mAP: 0.745321082330752 | rcnn mAP: 0.7193923398684053 #####
+############# Starting Epoch 236 | LR: 0.0001 #############
+Train-236 epoch | loss:0.00028322 | acc:0.8708
+############# Starting Epoch 237 | LR: 0.0001 #############
+Train-237 epoch | loss:0.00028246 | acc:0.8713
+##### Epoch 237 | gt mAP: 0.7467270711158148 | rcnn mAP: 0.7223164600339811 #####
+############# Starting Epoch 238 | LR: 0.0001 #############
+Train-238 epoch | loss:0.00028198 | acc:0.8720
+############# Starting Epoch 239 | LR: 0.0001 #############
+Train-239 epoch | loss:0.00028129 | acc:0.8724
+##### Epoch 239 | gt mAP: 0.7453511935437372 | rcnn mAP: 0.7215808607061374 #####
+############# Starting Epoch 240 | LR: 0.0001 #############
+Train-240 epoch | loss:0.00028044 | acc:0.8728
+############# Starting Epoch 241 | LR: 0.0001 #############
+Train-241 epoch | loss:0.00028041 | acc:0.8734
+##### Epoch 241 | gt mAP: 0.7466806576726198 | rcnn mAP: 0.7225347310069916 #####
+############# Starting Epoch 242 | LR: 0.0001 #############
+Train-242 epoch | loss:0.00027990 | acc:0.8738
+############# Starting Epoch 243 | LR: 0.0001 #############
+Train-243 epoch | loss:0.00027917 | acc:0.8741
+##### Epoch 243 | gt mAP: 0.7468740861457963 | rcnn mAP: 0.7216627642303223 #####
+############# Starting Epoch 244 | LR: 0.0001 #############
+Train-244 epoch | loss:0.00027960 | acc:0.8732
+############# Starting Epoch 245 | LR: 0.0001 #############
+Train-245 epoch | loss:0.00027887 | acc:0.8747
+##### Epoch 245 | gt mAP: 0.7469432672922739 | rcnn mAP: 0.7226339628438229 #####
+############# Starting Epoch 246 | LR: 0.0001 #############
+Train-246 epoch | loss:0.00027849 | acc:0.8747
+############# Starting Epoch 247 | LR: 0.0001 #############
+Train-247 epoch | loss:0.00027817 | acc:0.8752
+##### Epoch 247 | gt mAP: 0.7470641844636907 | rcnn mAP: 0.722926485399352 #####
+############# Starting Epoch 248 | LR: 0.0001 #############
+Train-248 epoch | loss:0.00027789 | acc:0.8754
+############# Starting Epoch 249 | LR: 0.0001 #############
+Train-249 epoch | loss:0.00027730 | acc:0.8758
+##### Epoch 249 | gt mAP: 0.7468995307081734 | rcnn mAP: 0.7246740168894534 #####
+############# Starting Epoch 250 | LR: 0.0001 #############
+Train-250 epoch | loss:0.00027672 | acc:0.8760
+############# Starting Epoch 251 | LR: 1e-05 #############
+Train-251 epoch | loss:0.00027655 | acc:0.8767
+##### Epoch 251 | gt mAP: 0.7464812191966703 | rcnn mAP: 0.725475029836075 #####
+############# Starting Epoch 252 | LR: 1e-05 #############
+Train-252 epoch | loss:0.00027621 | acc:0.8763
+############# Starting Epoch 253 | LR: 1e-05 #############
+Train-253 epoch | loss:0.00027582 | acc:0.8769
+##### Epoch 253 | gt mAP: 0.7463107484400087 | rcnn mAP: 0.7246206956677524 #####
+############# Starting Epoch 254 | LR: 1e-05 #############
+Train-254 epoch | loss:0.00027609 | acc:0.8769
+############# Starting Epoch 255 | LR: 1e-05 #############
+Train-255 epoch | loss:0.00027597 | acc:0.8770
+##### Epoch 255 | gt mAP: 0.7474018101044018 | rcnn mAP: 0.7252898083076637 #####
+############# Starting Epoch 256 | LR: 1e-05 #############
+Train-256 epoch | loss:0.00027612 | acc:0.8767
+############# Starting Epoch 257 | LR: 1e-05 #############
+Train-257 epoch | loss:0.00027540 | acc:0.8773
+##### Epoch 257 | gt mAP: 0.7475124332824639 | rcnn mAP: 0.7249046247822901 #####
+############# Starting Epoch 258 | LR: 1e-05 #############
+Train-258 epoch | loss:0.00027553 | acc:0.8769
+############# Starting Epoch 259 | LR: 1e-05 #############
+Train-259 epoch | loss:0.00027547 | acc:0.8771
+##### Epoch 259 | gt mAP: 0.7463484326861585 | rcnn mAP: 0.7254958795795629 #####
+############# Starting Epoch 260 | LR: 1e-05 #############
+Train-260 epoch | loss:0.00027574 | acc:0.8769
+############# Starting Epoch 261 | LR: 1e-05 #############
+Train-261 epoch | loss:0.00027605 | acc:0.8768
+##### Epoch 261 | gt mAP: 0.7467051839341927 | rcnn mAP: 0.7254525927646331 #####
+############# Starting Epoch 262 | LR: 1e-05 #############
+Train-262 epoch | loss:0.00027538 | acc:0.8770
+############# Starting Epoch 263 | LR: 1e-05 #############
+Train-263 epoch | loss:0.00027597 | acc:0.8769
+##### Epoch 263 | gt mAP: 0.7468935941875886 | rcnn mAP: 0.7247594697809352 #####
+############# Starting Epoch 264 | LR: 1e-05 #############
+Train-264 epoch | loss:0.00027544 | acc:0.8770
+############# Starting Epoch 265 | LR: 1e-05 #############
+Train-265 epoch | loss:0.00027568 | acc:0.8769
+##### Epoch 265 | gt mAP: 0.7484834584096812 | rcnn mAP: 0.7254567751674178 #####
+############# Starting Epoch 266 | LR: 1e-05 #############
+Train-266 epoch | loss:0.00027516 | acc:0.8776
+############# Starting Epoch 267 | LR: 1e-05 #############
+Train-267 epoch | loss:0.00027586 | acc:0.8769
+##### Epoch 267 | gt mAP: 0.7470911786512314 | rcnn mAP: 0.7256035560084516 #####
+############# Starting Epoch 268 | LR: 1e-05 #############
+Train-268 epoch | loss:0.00027532 | acc:0.8773
+############# Starting Epoch 269 | LR: 1e-05 #############
+Train-269 epoch | loss:0.00027540 | acc:0.8770
+##### Epoch 269 | gt mAP: 0.7478809785410714 | rcnn mAP: 0.7256498497049763 #####
