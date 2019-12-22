@@ -24,15 +24,13 @@ class Mscoco(data.Dataset):
 
     Parameters
     ----------
-    ann_file: str,
-        Path to the annotation json file.
-    root: str, default './data/coco'
-        Path to the ms coco dataset.
     train: bool, default is True
         If true, will set as training mode.
     skip_empty: bool, default is False
         Whether skip entire image if no valid label is found. Use `False` if this dataset is
         for validation to avoid COCO metric error.
+    dpg: bool, default is False
+        If true, will activate `dpg` for data augmentation.
     """
     CLASSES = ['person']
     num_joints = 17
