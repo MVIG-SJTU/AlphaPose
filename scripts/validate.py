@@ -44,7 +44,7 @@ opt.device = torch.device("cuda:" + str(opt.gpus[0]) if opt.gpus[0] >= 0 else "c
 
 
 def validate(m, heatmap_to_coord, batch_size=20):
-    det_dataset = builder.build_dataset(cfg.DATASET.TEST, preset_cfg=cfg.DATA_PRESET, train=False)
+    det_dataset = builder.build_dataset(cfg.DATASET.TEST, preset_cfg=cfg.DATA_PRESET, train=False, opt=opt)
 
     det_loader = torch.utils.data.DataLoader(
         det_dataset, batch_size=batch_size, shuffle=False, num_workers=20, drop_last=False)
@@ -147,6 +147,6 @@ if __name__ == "__main__":
     heatmap_to_coord = get_func_heatmap_to_coord(cfg)
 
     with torch.no_grad():
-        detbox_AP = validate(m, heatmap_to_coord, opt.batch)
         gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
+        detbox_AP = validate(m, heatmap_to_coord, opt.batch)
     print('##### gt box: {} mAP | det box: {} mAP #####'.format(gt_AP, detbox_AP))

@@ -4,22 +4,18 @@
 # -----------------------------------------------------
 
 """MS COCO Human keypoint dataset."""
-import copy
 import os
-import pickle as pk
 
 import numpy as np
-import scipy.misc
-import torch.utils.data as data
-from pycocotools.coco import COCO
 
-from alphapose.utils.bbox import bbox_clip_xyxy, bbox_xywh_to_xyxy
-from alphapose.utils.presets import SimpleTransform
 from alphapose.models.builder import DATASET
+from alphapose.utils.bbox import bbox_clip_xyxy, bbox_xywh_to_xyxy
+
+from .custom import CustomDataset
 
 
 @DATASET.register_module
-class Mscoco(data.Dataset):
+class Mscoco(CustomDataset):
     """ COCO Person dataset.
 
     Parameters
@@ -33,100 +29,14 @@ class Mscoco(data.Dataset):
         If true, will activate `dpg` for data augmentation.
     """
     CLASSES = ['person']
-    num_joints = 17
     EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
-    def __init__(self,
-                 train=True,
-                 skip_empty=True,
-                 dpg=False,
-                 lazy_import=True,
-                 **cfg):
-
-        self._cfg = cfg
-        self._preset_cfg = cfg['PRESET']
-        self._root = cfg['ROOT']
-        self._img_prefix = cfg['IMG_PREFIX']
-        self._ann_file = os.path.join(self._root, cfg['ANN'])
-
-        self._lazy_import = lazy_import
-        self._skip_empty = skip_empty
-        self._train = train
-        self._dpg = dpg
-
-        if 'AUG' in cfg.keys():
-            self._scale_factor = cfg['AUG']['SCALE_FACTOR']
-            self._rot = cfg['AUG']['ROT_FACTOR']
-            self.num_joints_half_body = cfg['AUG']['NUM_JOINTS_HALF_BODY']
-            self.prob_half_body = cfg['AUG']['PROB_HALF_BODY']
-        else:
-            self._scale_factor = 0
-            self._rot = 0
-            self.num_joints_half_body = -1
-            self.prob_half_body = -1
-
-        self._input_size = self._preset_cfg['IMAGE_SIZE']
-        self._output_size = self._preset_cfg['HEATMAP_SIZE']
-
-        self._sigma = self._preset_cfg['SIGMA']
-
-        self._check_centers = False
-
-        self.num_class = len(self.CLASSES)
-        self.num_joints = self._preset_cfg['NUM_JOINTS']
-
-        self.upper_body_ids = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-        self.lower_body_ids = (11, 12, 13, 14, 15, 16)
-
-        if self._preset_cfg['TYPE'] == 'simple':
-            self.transformation = SimpleTransform(
-                self, scale_factor=self._scale_factor,
-                input_size=self._input_size,
-                output_size=self._output_size,
-                rot=self._rot, sigma=self._sigma,
-                train=self._train, add_dpg=self._dpg)
-
-        self._items, self._labels = self._lazy_load_json()
-
-    def __getitem__(self, idx):
-        # get image id
-        img_path = self._items[idx]
-        img_id = int(os.path.splitext(os.path.basename(img_path))[0])
-
-        # load ground truth, including bbox, keypoints, image size
-        label = copy.deepcopy(self._labels[idx])
-        # img = load_image(img_path)
-        img = scipy.misc.imread(img_path, mode='RGB')
-
-        # transform ground truth into training label and apply data augmentation
-        img, label, label_mask, bbox = self.transformation(img, label)
-        return img, label, label_mask, img_id, bbox
-
-    def __len__(self):
-        return len(self._items)
-
-    def _lazy_load_ann_file(self):
-        if os.path.exists(self._ann_file + '.pkl') and self._lazy_import:
-            print('Lazy load json...')
-            with open(self._ann_file + '.pkl', 'rb') as fid:
-                return pk.load(fid)
-        else:
-            _coco = COCO(self._ann_file)
-            with open(self._ann_file + '.pkl', 'wb') as fid:
-                pk.dump(_coco, fid, pk.HIGHEST_PROTOCOL)
-            return _coco
-
-    def _lazy_load_json(self):
-        if os.path.exists(self._ann_file + '_annot_keypoint.pkl') and self._lazy_import:
-            print('Lazy load annot...')
-            with open(self._ann_file + '_annot_keypoint.pkl', 'rb') as fid:
-                items, labels = pk.load(fid)
-        else:
-            items, labels = self._load_jsons()
-            with open(self._ann_file + '_annot_keypoint.pkl', 'wb') as fid:
-                pk.dump((items, labels), fid, pk.HIGHEST_PROTOCOL)
-
-        return items, labels
+    @property
+    def joint_pairs(self):
+        """Joint pairs which defines the pairs of joint to be swapped
+        when the image is flipped horizontally."""
+        return [[1, 2], [3, 4], [5, 6], [7, 8],
+                [9, 10], [11, 12], [13, 14], [15, 16]]
 
     def _load_jsons(self):
         """Load all image paths and labels from JSON annotation files into buffer."""
@@ -219,13 +129,6 @@ class Mscoco(data.Dataset):
                     'joints_3d': np.zeros((self.num_joints, 2, 2), dtype=np.float32)
                 })
         return valid_objs
-
-    @property
-    def joint_pairs(self):
-        """Joint pairs which defines the pairs of joint to be swapped
-        when the image is flipped horizontally."""
-        return [[1, 2], [3, 4], [5, 6], [7, 8],
-                [9, 10], [11, 12], [13, 14], [15, 16]]
 
     def _get_box_center_area(self, bbox):
         """Get bbox center"""

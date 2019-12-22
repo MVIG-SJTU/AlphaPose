@@ -84,16 +84,19 @@ class Mscoco_det(data.Dataset):
 
     def write_coco_json(self, det_file):
         from pycocotools.coco import COCO
+        import pathlib
+
         _coco = COCO(self._ann_file)
         image_ids = sorted(_coco.getImgIds())
         det_model = get_detector(self._opt)
         dets = []
         for entry in tqdm(_coco.loadImgs(image_ids)):
             abs_path = os.path.join(
-                self._root, self._cfg.DATASET.TEST_SET, entry['file_name'])
+                self._root, self._img_prefix, entry['file_name'])
             det = det_model.detect_one_img(abs_path)
             if det:
                 dets += det
+        pathlib.Path(os.path.split(det_file)[0]).mkdir(parents=True, exist_ok=True)
         json.dump(dets, open(det_file, 'w'))
 
     @property
