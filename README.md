@@ -3,12 +3,15 @@
     <img src="doc/logo.jpg", width="400">
 </div>
 
+## Notice
+### This branch is developed on PyTorch 0.4.0. We have released a new version of AlphaPose based on PyTorch 1.1+ and is stronger than this branch. Please checkout our [master](https://github.com/MVIG-SJTU/AlphaPose) branch for more details. This branch will not be actively updated.
 
 ## News!
+- Dec 2019: [**v0.3.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Smaller model, higher accuracy!
 - Apr 2019: [**MXNet** version](https://github.com/MVIG-SJTU/AlphaPose/tree/mxnet) of AlphaPose is released! It runs at **23 fps** on COCO validation set.
 - Feb 2019: [CrowdPose](https://github.com/MVIG-SJTU/AlphaPose/blob/pytorch/doc/CrowdPose.md) is integrated into AlphaPose Now!
 - Dec 2018: [General version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch/PoseFlow) of PoseFlow is released! 3X Faster and support pose tracking results visualization!
-- Sep 2018: [**PyTorch** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! It runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 mAP!
+- Sep 2018: [**v0.2.0** version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch) of AlphaPose is released! It runs at **20 fps** on COCO validation set (4.6 people per image on average) and achieves 71 mAP!
 
 ## AlphaPose
 [Alpha Pose](http://www.mvig.org/research/alphapose.html) is an accurate multi-person pose estimator, which is the **first open-source system that achieves 70+ mAP (72.3 mAP) on COCO dataset and 80+ mAP (82.1 mAP) on MPII dataset.** 
