@@ -1,0 +1,13 @@
+scipy==1.0.0
+tensorflow_gpu==1.4.0
+nms.egg==info
+tqdm==4.19.4
+numpy==1.12.0
+Cython==0.27.3
+setuptools==36.6.0
+matplotlib==2.0.0
+h5py==2.7.1
+ipython==6.2.1
+Pillow==5.0.0
+easydict==1.7
+PyYAML==3.12

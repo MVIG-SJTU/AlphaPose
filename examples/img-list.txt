@@ -1,0 +1,2 @@
+ABSOLUTE_PATH_TO/AlphaPose/examples/demo/1.jpg
+ABSOLUTE_PATH_TO/AlphaPose/examples/demo/2.jpg
