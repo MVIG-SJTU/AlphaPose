@@ -46,6 +46,8 @@ Results on MPII full test set:
 
 </center>
 
+More results and models are available in the [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md).
+
 ### Pose Tracking
 
 <p align='center'>
