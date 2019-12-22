@@ -1,2 +1,0 @@
-cpu_nms
-gpu_nms
