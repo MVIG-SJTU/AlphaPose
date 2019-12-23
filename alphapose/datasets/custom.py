@@ -109,8 +109,9 @@ class CustomDataset(data.Dataset):
                 return pk.load(fid)
         else:
             _database = COCO(self._ann_file)
-            with open(self._ann_file + '.pkl', 'wb') as fid:
-                pk.dump(_database, fid, pk.HIGHEST_PROTOCOL)
+            if os.access(self._ann_file + '.pkl', os.W_OK):
+                with open(self._ann_file + '.pkl', 'wb') as fid:
+                    pk.dump(_database, fid, pk.HIGHEST_PROTOCOL)
             return _database
 
     def _lazy_load_json(self):
@@ -120,8 +121,9 @@ class CustomDataset(data.Dataset):
                 items, labels = pk.load(fid)
         else:
             items, labels = self._load_jsons()
-            with open(self._ann_file + '_annot_keypoint.pkl', 'wb') as fid:
-                pk.dump((items, labels), fid, pk.HIGHEST_PROTOCOL)
+            if os.access(self._ann_file + '_annot_keypoint.pkl', os.W_OK):
+                with open(self._ann_file + '_annot_keypoint.pkl', 'wb') as fid:
+                    pk.dump((items, labels), fid, pk.HIGHEST_PROTOCOL)
 
         return items, labels
 
