@@ -4,7 +4,7 @@
 </div>
 
 ## Notice
-### This branch is developed on PyTorch 0.4.0. We have released a new version of AlphaPose based on PyTorch 1.1+ and is stronger than this branch. Please checkout our [master](https://github.com/MVIG-SJTU/AlphaPose) branch for more details. This branch will not be actively updated.
+### This branch is developed on PyTorch 0.4.0. We have released a new version of AlphaPose based on PyTorch 1.1+. Please checkout our [master](https://github.com/MVIG-SJTU/AlphaPose) branch for more details. 
 
 ## News!
 - Dec 2019: [**v0.3.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Smaller model, higher accuracy!
