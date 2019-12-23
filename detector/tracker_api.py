@@ -229,6 +229,9 @@ class Tracker(BaseDetector):
                     res = torch.tensor([image_i, tlbr[0], tlbr[1], tlbr[2], tlbr[3], ts, tid])
                 output_stracks.append(res)
 
+        if len(output_stracks) == 0:
+            return 0
+            
         return torch.stack(output_stracks)
 
     def detect_one_img(self, img_name):
