@@ -87,6 +87,13 @@ Please check out [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md)
 ./scripts/validate.sh ${CONFIG} ${CHECKPOINT}
 ```
 
+Examples:
+
+Train `FastPose` on mscoco dataset.
+``` bash
+./scripts/train.sh ./configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml exp_fastpose
+```
+
 More detailed inference options, please refer to [GETTING_STARTED.md](docs/GETTING_STARTED.md)
 
 
