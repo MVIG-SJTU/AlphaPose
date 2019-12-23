@@ -45,6 +45,7 @@ opt.device = torch.device("cuda:" + str(opt.gpus[0]) if opt.gpus[0] >= 0 else "c
 
 def validate(m, heatmap_to_coord, batch_size=20):
     det_dataset = builder.build_dataset(cfg.DATASET.TEST, preset_cfg=cfg.DATA_PRESET, train=False, opt=opt)
+    eval_joints = det_dataset.EVAL_JOINTS
 
     det_loader = torch.utils.data.DataLoader(
         det_dataset, batch_size=batch_size, shuffle=False, num_workers=20, drop_last=False)
@@ -67,6 +68,7 @@ def validate(m, heatmap_to_coord, batch_size=20):
 
         pred = output.cpu().data.numpy()
         assert pred.ndim == 4
+        pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
             bbox = crop_bboxes[i].tolist()
@@ -92,6 +94,7 @@ def validate(m, heatmap_to_coord, batch_size=20):
 
 def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
     gt_val_dataset = builder.build_dataset(cfg.DATASET.VAL, preset_cfg=cfg.DATA_PRESET, train=False)
+    eval_joints = gt_val_dataset.EVAL_JOINTS
 
     gt_val_loader = torch.utils.data.DataLoader(
         gt_val_dataset, batch_size=batch_size, shuffle=False, num_workers=20, drop_last=False)
@@ -114,6 +117,7 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
 
         pred = output.cpu().data.numpy()
         assert pred.ndim == 4
+        pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
             bbox = bboxes[i].tolist()

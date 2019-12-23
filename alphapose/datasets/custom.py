@@ -28,6 +28,7 @@ class CustomDataset(data.Dataset):
         If true, will activate `dpg` for data augmentation.
     skip_empty: bool, default is False
         Whether skip entire image if no valid label is found.
+    cfg: dict, dataset configuration.
     """
 
     CLASSES = None
@@ -69,7 +70,6 @@ class CustomDataset(data.Dataset):
         self._check_centers = False
 
         self.num_class = len(self.CLASSES)
-        self.num_joints = self._preset_cfg['NUM_JOINTS']
 
         self.upper_body_ids = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         self.lower_body_ids = (11, 12, 13, 14, 15, 16)
@@ -131,6 +131,10 @@ class CustomDataset(data.Dataset):
 
     @abstractproperty
     def CLASSES(self):
+        return None
+
+    @abstractproperty
+    def num_joints(self):
         return None
 
     @abstractproperty

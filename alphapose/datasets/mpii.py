@@ -3,7 +3,7 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
-"""MS COCO Human keypoint dataset."""
+"""MPII Human Pose Dataset."""
 import os
 
 import numpy as np
@@ -15,50 +15,46 @@ from .custom import CustomDataset
 
 
 @DATASET.register_module
-class Mscoco(CustomDataset):
-    """ COCO Person dataset.
+class Mpii(CustomDataset):
+    """ MPII Human Pose Dataset.
 
     Parameters
     ----------
+    root: str, default './data/mpii'
+        Path to the mpii dataset.
     train: bool, default is True
         If true, will set as training mode.
-    skip_empty: bool, default is False
-        Whether skip entire image if no valid label is found. Use `False` if this dataset is
-        for validation to avoid COCO metric error.
     dpg: bool, default is False
         If true, will activate `dpg` for data augmentation.
     """
+
     CLASSES = ['person']
-    EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-    num_joints = 17
+    num_joints = 16
 
     @property
     def joint_pairs(self):
         """Joint pairs which defines the pairs of joint to be swapped
         when the image is flipped horizontally."""
-        return [[1, 2], [3, 4], [5, 6], [7, 8],
-                [9, 10], [11, 12], [13, 14], [15, 16]]
+        return [[0, 5], [1, 4], [2, 3],
+                [10, 15], [11, 14], [12, 13]]
 
     def _load_jsons(self):
-        """Load all image paths and labels from JSON annotation files into buffer."""
+        """Load all image paths and labels from annotation files into buffer."""
         items = []
         labels = []
 
-        _coco = self._lazy_load_ann_file()
-        classes = [c['name'] for c in _coco.loadCats(_coco.getCatIds())]
-        assert classes == self.CLASSES, "Incompatible category names with COCO. "
-
-        self.json_id_to_contiguous = {
-            v: k for k, v in enumerate(_coco.getCatIds())}
+        _mpii = self._lazy_load_ann_file()
+        classes = [c['name'] for c in _mpii.loadCats(_mpii.getCatIds())]
+        assert classes == self.CLASSES, "Incompatible category names with MPII. "
 
         # iterate through the annotations
-        image_ids = sorted(_coco.getImgIds())
-        for entry in _coco.loadImgs(image_ids):
-            dirname, filename = entry['coco_url'].split('/')[-2:]
-            abs_path = os.path.join(self._root, dirname, filename)
+        image_ids = sorted(_mpii.getImgIds())
+        for entry in _mpii.loadImgs(image_ids):
+            filename = entry['file_name']
+            abs_path = os.path.join(self._root, self._img_prefix, filename)
             if not os.path.exists(abs_path):
                 raise IOError('Image: {} not exists.'.format(abs_path))
-            label = self._check_load_keypoints(_coco, entry)
+            label = self._check_load_keypoints(_mpii, entry)
             if not label:
                 continue
 
@@ -69,26 +65,22 @@ class Mscoco(CustomDataset):
 
         return items, labels
 
-    def _check_load_keypoints(self, coco, entry):
+    def _check_load_keypoints(self, _mpii, entry):
         """Check and load ground-truth keypoints"""
-        ann_ids = coco.getAnnIds(imgIds=entry['id'], iscrowd=False)
-        objs = coco.loadAnns(ann_ids)
+        ann_ids = _mpii.getAnnIds(imgIds=entry['id'], iscrowd=False)
+        objs = _mpii.loadAnns(ann_ids)
         # check valid bboxes
         valid_objs = []
         width = entry['width']
         height = entry['height']
 
         for obj in objs:
-            contiguous_cid = self.json_id_to_contiguous[obj['category_id']]
-            if contiguous_cid >= self.num_class:
-                # not class of interest
-                continue
             if max(obj['keypoints']) == 0:
                 continue
             # convert from (x, y, w, h) to (xmin, ymin, xmax, ymax) and clip bound
             xmin, ymin, xmax, ymax = bbox_clip_xyxy(bbox_xywh_to_xyxy(obj['bbox']), width, height)
             # require non-zero box area
-            if obj['area'] <= 0 or xmax <= xmin or ymax <= ymin:
+            if xmax <= xmin or ymax <= ymin:
                 continue
             if obj['num_keypoints'] == 0:
                 continue
@@ -130,16 +122,3 @@ class Mscoco(CustomDataset):
                     'joints_3d': np.zeros((self.num_joints, 2, 2), dtype=np.float32)
                 })
         return valid_objs
-
-    def _get_box_center_area(self, bbox):
-        """Get bbox center"""
-        c = np.array([(bbox[0] + bbox[2]) / 2.0, (bbox[1] + bbox[3]) / 2.0])
-        area = (bbox[3] - bbox[1]) * (bbox[2] - bbox[0])
-        return c, area
-
-    def _get_keypoints_center_count(self, keypoints):
-        """Get geometric center of all keypoints"""
-        keypoint_x = np.sum(keypoints[:, 0, 0] * (keypoints[:, 0, 1] > 0))
-        keypoint_y = np.sum(keypoints[:, 1, 0] * (keypoints[:, 1, 1] > 0))
-        num = float(np.sum(keypoints[:, 0, 1]))
-        return np.array([keypoint_x / num, keypoint_y / num]), num
