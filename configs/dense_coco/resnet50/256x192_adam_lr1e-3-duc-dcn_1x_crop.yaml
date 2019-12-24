@@ -1,0 +1,80 @@
+DATASET:
+  TRAIN:
+    TYPE: 'densecoco'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'train2017'
+    ANN: 'annotations/person_keypoints_train2017_dense.json'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 40
+      SCALE_FACTOR: 0.3
+      NUM_JOINTS_HALF_BODY: 16
+      PROB_HALF_BODY: -1  
+  VAL:
+    TYPE: 'densecoco'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'val2017'
+    ANN: 'annotations/person_keypoints_val2017_dense.json'
+  TEST:
+    TYPE: 'densecoco'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'test2017'
+    ANN: 'annotations/person_keypoints_val2017_dense.json'
+DATA_PRESET:
+  TYPE: 'simple'
+  SIGMA: 2
+  NUM_JOINTS: 17
+  NUM_JOINTS_DENSE: 49
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+MODEL:  
+  TYPE: 'FastPose_DUC_Dense'
+  BACKBONE: 'se-resnet'  
+  PRETRAINED: ''
+  TRY_LOAD: ''
+  NUM_DECONV_FILTERS:
+  - 256
+  - 256
+  - 256
+  NUM_LAYERS: 50
+  FINAL_CONV_KERNEL: 1
+  STAGE1:
+    NUM_CONV: 4
+  STAGE2:
+    NUM_CONV: 2
+  STAGE3:
+    NUM_CONV: 1 
+  DCN:
+    MODULATED: false
+    DEFORM_GROUP: 1
+    FALLBACK_ON_STRIDE: false
+  STAGE_WITH_DCN:
+  - false
+  - true
+  - true
+  - true
+DETECTOR:
+  NAME: 'yolo'
+  CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
+  WEIGHTS: 'detector/yolo/data/yolov3-spp.weights'
+  NMS_THRES: 0.6
+  CONFIDENCE: 0.05
+TRAIN:
+  WORLD_SIZE: 4
+  BATCH_SIZE: 32
+  BEGIN_EPOCH: 0
+  END_EPOCH: 200
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 90
+  - 120
+  DPG_MILESTONE: 140
+  DPG_STEP:
+  - 160
+  - 190
