@@ -51,11 +51,11 @@ parser.add_argument('--detbatch', type=int, default=5,
                     help='detection batch size PER GPU')
 parser.add_argument('--posebatch', type=int, default=80,
                     help='pose estimation maximum batch size PER GPU')
-parser.add_argument('--eval', dest='eval', default=False, action='store_true', 
+parser.add_argument('--eval', dest='eval', default=False, action='store_true',
                     help='save the result json as coco format, using image index(int) instead of image name(str)')
-parser.add_argument('--gpus', type=str, dest='gpus', default="0", 
+parser.add_argument('--gpus', type=str, dest='gpus', default="0",
                     help='choose which cuda device to use by index and input comma to use multi gpus, e.g. 0,1,2,3. (input -1 for cpu only)')
-parser.add_argument('--qsize', type=int, dest='qsize', default=1024, 
+parser.add_argument('--qsize', type=int, dest='qsize', default=1024,
                     help='the length of result buffer, where reducing it will lower requirement of cpu memory')
 parser.add_argument('--flip', default=False, action='store_true',
                     help='enable flip testing')
@@ -219,7 +219,7 @@ if __name__ == "__main__":
                         inps_j = torch.cat((inps_j, flip(inps_j)))
                     hm_j = pose_model(inps_j)
                     if args.flip:
-                        hm_j_flip = flip_heatmap(hm_j[int(len(hm_j) / 2):], [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16]], shift=True)
+                        hm_j_flip = flip_heatmap(hm_j[int(len(hm_j) / 2):], det_loader.joint_pairs, shift=True)
                         hm_j = (hm_j[0:int(len(hm_j) / 2)] + hm_j_flip) / 2
                     hm.append(hm_j)
                 hm = torch.cat(hm)

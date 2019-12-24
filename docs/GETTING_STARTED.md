@@ -14,7 +14,7 @@ python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model}
 ```
 - **Webcam**:  Run AlphaPose using default webcam and visualize the results with:
 ``` bash
-python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --outdir examples/res --vis
+python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --outdir examples/res --vis --webcam 0
 ```
 - **Input list**:  Run AlphaPose for images in a list and save the rendered images with:
 ``` bash
@@ -47,5 +47,3 @@ python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model}
 
 ## Output format
 Checkout the [output.md](./output.md) for more details.
-
-
