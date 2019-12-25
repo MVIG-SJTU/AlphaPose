@@ -32,7 +32,6 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
 
     pose_scores[pose_scores == 0] = 1e-5
     kp_nums = pose_preds.size()[1]
-    print(kp_nums)
     final_result = []
 
     ori_bbox_scores = bbox_scores.clone()
