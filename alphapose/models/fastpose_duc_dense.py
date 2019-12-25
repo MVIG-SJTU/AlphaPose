@@ -3,6 +3,7 @@
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
+import torch
 import torch.nn as nn
 from .builder import SPPE
 from .layers.Resnet import ResNet
@@ -99,7 +100,8 @@ class FastPose_DUC_Dense(nn.Module):
         out_dense = self.duc_dense(bk_out)
         out = self.conv_out(out)
         out_dense = self.conv_out_dense(out_dense)
-        return out,out_dense
+        out = torch.cat((out,out_dense),1)
+        return out
 
     def _make_duc_stage(self, layer_config, inplanes, outplanes):
         layers = []

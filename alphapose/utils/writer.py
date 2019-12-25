@@ -29,6 +29,7 @@ class DataWriter():
         self.opt = opt
         self.video_save_opt = video_save_opt
 
+        self.eval_joints = EVAL_JOINTS
         self.save_video = save_video
         self.final_result = []
         self.heatmap_to_coord = get_func_heatmap_to_coord(cfg)
@@ -95,11 +96,13 @@ class DataWriter():
                 pred = hm_data.cpu().data.numpy()
                 assert pred.ndim == 4
 
+                if hm_data.size()[1] == 49:
+                    self.eval_joints = [*range(0,49)]
                 pose_coords = []
                 pose_scores = []
                 for i in range(hm_data.shape[0]):
                     bbox = cropped_boxes[i].tolist()
-                    pose_coord, pose_score = self.heatmap_to_coord(pred[i][EVAL_JOINTS], bbox)
+                    pose_coord, pose_score = self.heatmap_to_coord(pred[i][self.eval_joints], bbox)
                     pose_coords.append(torch.from_numpy(pose_coord).unsqueeze(0))
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)
@@ -115,7 +118,9 @@ class DataWriter():
                         result['result'][i]['idx'] = poseflow_result[i]['idx']
                 self.wait_and_put(self.final_result_queue, result)
                 if self.opt.save_img or self.save_video or self.opt.vis:
-                    if self.opt.vis_fast:
+                    if hm_data.size()[1] == 49:
+                        from alphapose.utils.vis import vis_frame_dense as vis_frame
+                    elif self.opt.vis_fast:
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame

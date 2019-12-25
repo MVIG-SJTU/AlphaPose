@@ -25,13 +25,14 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
     bboxes:         bbox locations list (n, 4)
     bbox_scores:    bbox scores list (n, 1)
     bbox_ids:       bbox tracking ids list (n, 1)
-    pose_preds:     pose locations list (n, 17, 2)
-    pose_scores:    pose scores list    (n, 17, 1)
+    pose_preds:     pose locations list (n, kp_num, 2)
+    pose_scores:    pose scores list    (n, kp_num, 1)
     '''
     #global ori_pose_preds, ori_pose_scores, ref_dists
 
     pose_scores[pose_scores == 0] = 1e-5
-
+    kp_nums = pose_preds.size()[1]
+    print(kp_nums)
     final_result = []
 
     ori_bbox_scores = bbox_scores.clone()
@@ -91,7 +92,7 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
     #final_result = [item for item in final_result if item is not None]
 
     for j in range(len(pick)):
-        ids = np.arange(17)
+        ids = np.arange(kp_nums)
         max_score = torch.max(scores_pick[j, ids, 0])
 
         if max_score < scoreThreds:
@@ -127,7 +128,8 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
 def filter_result(args):
     score_pick, merge_id, pred_pick, pick, bbox_score_pick = args
     global ori_pose_preds, ori_pose_scores, ref_dists
-    ids = np.arange(17)
+    kp_nums = ori_pose_preds.size()[1]
+    ids = np.arange(kp_nums)
     max_score = torch.max(score_pick[ids, 0])
 
     if max_score < scoreThreds:
@@ -160,20 +162,20 @@ def p_merge(ref_pose, cluster_preds, cluster_scores, ref_dist):
     '''
     Score-weighted pose merging
     INPUT:
-        ref_pose:       reference pose          -- [17, 2]
-        cluster_preds:  redundant poses         -- [n, 17, 2]
-        cluster_scores: redundant poses score   -- [n, 17, 1]
+        ref_pose:       reference pose          -- [kp_num, 2]
+        cluster_preds:  redundant poses         -- [n, kp_num, 2]
+        cluster_scores: redundant poses score   -- [n, kp_num, 1]
         ref_dist:       reference scale         -- Constant
     OUTPUT:
-        final_pose:     merged pose             -- [17, 2]
-        final_score:    merged score            -- [17]
+        final_pose:     merged pose             -- [kp_num, 2]
+        final_score:    merged score            -- [kp_num]
     '''
     dist = torch.sqrt(torch.sum(
         torch.pow(ref_pose[np.newaxis, :] - cluster_preds, 2),
         dim=2
-    ))  # [n, 17]
+    ))  # [n, kp_num]
 
-    kp_num = 17
+    kp_num = ref_pose.size()[0]
     ref_dist = min(ref_dist, 15)
 
     mask = (dist <= ref_dist)
@@ -207,20 +209,20 @@ def p_merge_fast(ref_pose, cluster_preds, cluster_scores, ref_dist):
     '''
     Score-weighted pose merging
     INPUT:
-        ref_pose:       reference pose          -- [17, 2]
-        cluster_preds:  redundant poses         -- [n, 17, 2]
-        cluster_scores: redundant poses score   -- [n, 17, 1]
+        ref_pose:       reference pose          -- [kp_num, 2]
+        cluster_preds:  redundant poses         -- [n, kp_num, 2]
+        cluster_scores: redundant poses score   -- [n, kp_num, 1]
         ref_dist:       reference scale         -- Constant
     OUTPUT:
-        final_pose:     merged pose             -- [17, 2]
-        final_score:    merged score            -- [17]
+        final_pose:     merged pose             -- [kp_num, 2]
+        final_score:    merged score            -- [kp_num]
     '''
     dist = torch.sqrt(torch.sum(
         torch.pow(ref_pose[np.newaxis, :] - cluster_preds, 2),
         dim=2
     ))
 
-    kp_num = 17
+    kp_num = ref_pose.size()[0]
     ref_dist = min(ref_dist, 15)
 
     mask = (dist <= ref_dist)
@@ -251,8 +253,9 @@ def get_parametric_distance(i, all_preds, keypoint_scores, ref_dist):
     ))
     mask = (dist <= 1)
 
+    kp_nums = all_preds.size()[1]
     # Define a keypoints distance
-    score_dists = torch.zeros(all_preds.shape[0], 17)
+    score_dists = torch.zeros(all_preds.shape[0], kp_nums)
     keypoint_scores.squeeze_()
     if keypoint_scores.dim() == 1:
         keypoint_scores.unsqueeze_(0)
@@ -317,7 +320,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
             if form == 'cmu': # the form of CMU-Pose
                 if result['image_id'] not in json_results_cmu.keys():
                     json_results_cmu[result['image_id']]={}
-                    json_results_cmu[result['image_id']]['version']="AlphaPose v0.2"
+                    json_results_cmu[result['image_id']]['version']="AlphaPose v0.3"
                     json_results_cmu[result['image_id']]['bodies']=[]
                 tmp={'joints':[]}
                 result['keypoints'].append((result['keypoints'][15]+result['keypoints'][18])/2)
@@ -332,7 +335,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
             elif form == 'open': # the form of OpenPose
                 if result['image_id'] not in json_results_cmu.keys():
                     json_results_cmu[result['image_id']]={}
-                    json_results_cmu[result['image_id']]['version']="AlphaPose v0.2"
+                    json_results_cmu[result['image_id']]['version']="AlphaPose v0.3"
                     json_results_cmu[result['image_id']]['people']=[]
                 tmp={'pose_keypoints_2d':[]}
                 result['keypoints'].append((result['keypoints'][15]+result['keypoints'][18])/2)

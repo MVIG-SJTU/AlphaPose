@@ -28,7 +28,7 @@ parser.add_argument('--checkpoint', type=str, required=True,
 parser.add_argument('--sp', default=False, action='store_true',
                     help='Use single process for pytorch')
 parser.add_argument('--detector', dest='detector',
-                    help='detector name', default="tracker")
+                    help='detector name', default="yolo")
 parser.add_argument('--indir', dest='inputpath',
                     help='image-directory', default="")
 parser.add_argument('--list', dest='inputlist',
