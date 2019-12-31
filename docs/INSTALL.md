@@ -29,13 +29,13 @@ export PATH=/usr/local/cuda/bin/:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
 pip install cython
 sudo apt-get install libyaml-dev
-python setup.py develop
+python setup.py build develop
 ```
 
 #### Install with pip
 ```shell
 # 1. Install PyTorch
-pip3 install pytorch==1.1.0 torchvision==0.3.0
+pip3 install torch==1.1.0 torchvision==0.3.0
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
@@ -46,7 +46,7 @@ export PATH=/usr/local/cuda/bin/:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
 pip install cython
 sudo apt-get install libyaml-dev
-python setup.py develop --user
+python setup.py build develop --user
 ```
 
 #### Windows

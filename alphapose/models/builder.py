@@ -32,6 +32,7 @@ def build_loss(cfg):
 
 
 def build_dataset(cfg, preset_cfg, **kwargs):
+    exec(f'from ..datasets import {cfg.TYPE}')
     default_args = {
         'PRESET': preset_cfg,
     }
