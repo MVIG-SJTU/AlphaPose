@@ -62,6 +62,7 @@ If your OS platform is `Windows`, make sure that Windows C++ build tool like vis
 
 ### Prepare dataset (optional)
 
+#### MSCOCO
 If you want to train the model by yourself, please download data from [MSCOCO](http://cocodataset.org/#download) (train2017 and val2017). Download and extract them under `./data`, and make them look like this:
 ```
 |-- json
@@ -83,5 +84,19 @@ If you want to train the model by yourself, please download data from [MSCOCO](h
             |-- 000000000139.jpg
             |-- 000000000285.jpg
             |-- 000000000632.jpg
+            |-- ... 
+```
+
+#### MPII
+Please download images from [MPII](http://human-pose.mpi-inf.mpg.de/#download). We also provide the annotations in json format [[annot_mpii.zip](https://drive.google.com/open?id=1HC6znReBeg-TMPZbmoldtYrMGlrEFamh)]. 
+Download and extract them under `./data`, and make them look like this:
+```
+|-- data
+`-- |-- mpii
+    `-- |-- annot_mpii.json
+        `-- images
+            |-- 027457270.jpg
+            |-- 036645665.jpg
+            |-- 045572740.jpg
             |-- ... 
 ```
