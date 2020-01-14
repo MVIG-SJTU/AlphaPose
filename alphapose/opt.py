@@ -2,12 +2,14 @@
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
 # Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
-import os
 import argparse
 import logging
-from .utils.config import update_config
+import os
 from types import MethodType
 
+import torch
+
+from .utils.config import update_config
 
 parser = argparse.ArgumentParser(description='AlphaPose Training')
 
@@ -37,6 +39,8 @@ parser.add_argument('--launcher', choices=['none', 'pytorch', 'slurm', 'mpi'], d
 "----------------------------- Training options -----------------------------"
 parser.add_argument('--sync', default=False, dest='sync',
                     help='Use Sync Batchnorm', action='store_true')
+parser.add_argument('--detector', dest='detector',
+                    help='detector name', default="yolo")
 
 "----------------------------- Log options -----------------------------"
 parser.add_argument('--board', default=True, dest='board',
@@ -55,7 +59,8 @@ cfg['FILE_NAME'] = cfg_file_name
 cfg.TRAIN.DPG_STEP = [i - cfg.TRAIN.DPG_MILESTONE for i in cfg.TRAIN.DPG_STEP]
 opt.world_size = cfg.TRAIN.WORLD_SIZE
 opt.work_dir = './exp/{}-{}/'.format(opt.exp_id, cfg_file_name)
-
+opt.gpus = [i for i in range(torch.cuda.device_count())]
+opt.device = torch.device("cuda:" + str(opt.gpus[0]) if opt.gpus[0] >= 0 else "cpu")
 
 if not os.path.exists("./exp/{}-{}".format(opt.exp_id, cfg_file_name)):
     os.makedirs("./exp/{}-{}".format(opt.exp_id, cfg_file_name))
