@@ -77,11 +77,6 @@ def display_pose(imgdir, visdir, tracked, cmap):
         plt.close()
 
 
-
-
-
-
-
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='FoseFlow Tracker')
@@ -198,7 +193,6 @@ if __name__ == '__main__':
                     track[frame_name][pid]['new_pid'] = pid
                     track[frame_name][pid]['match_score'] = 0
 
-
         max_pid_id = max(max_pid_id, track[frame_name]['num_boxes'])
         cor_file = os.path.join(image_dir, "".join([frame_id, '_', next_frame_id, '_orb.txt']))
         all_cors = np.loadtxt(cor_file)
@@ -242,8 +236,6 @@ if __name__ == '__main__':
 
     with open(tracked_json,'w') as json_file:
         json_file.write(json.dumps(notrack))
-
-
 
     if len(args.visdir)>0:
         cmap = plt.cm.get_cmap("hsv", num_persons)
