@@ -17,7 +17,6 @@ import os
 import json
 import copy
 import heapq
-import time
 from munkres import Munkres, print_matrix
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -25,8 +24,6 @@ from tqdm import tqdm
 from utils import *
 from matching import orb_matching
 import argparse
-from functools import partial
-from itertools import repeat
 import multiprocessing
 from parallel_process import parallel_process
 
@@ -122,8 +119,6 @@ if __name__ == '__main__':
     tracked_json = args.out_json
     image_dir = args.imgdir
     vis_dir = args.visdir
-
-    start_time = time.time()
 
     # if json format is differnt from "alphapose-forvis.json" (pytorch version)
     if "forvis" not in notrack_json:
@@ -238,8 +233,6 @@ if __name__ == '__main__':
         for pid in range(1, track[frame_name]['num_boxes']+1):
             num_persons = max(num_persons, track[frame_name][pid]['new_pid'])
     print("This video contains %d people."%(num_persons))
-
-    print("Tracking took: ", time.time() - start_time, " seconds" )
 
     # export tracking result into notrack json files
     print("Export tracking results to json...\n")
