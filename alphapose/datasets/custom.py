@@ -72,7 +72,7 @@ class CustomDataset(data.Dataset):
         self.num_class = len(self.CLASSES)
 
         self.upper_body_ids = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-        self.lower_body_ids = (11, 12, 13, 14, 15, 16)
+        self.lower_body_ids = (11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
 
         if self._preset_cfg['TYPE'] == 'simple':
             self.transformation = SimpleTransform(

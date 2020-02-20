@@ -29,15 +29,16 @@ class Mscoco(CustomDataset):
         If true, will activate `dpg` for data augmentation.
     """
     CLASSES = ['person']
-    EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-    num_joints = 17
+    EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    num_joints = 23
 
     @property
     def joint_pairs(self):
         """Joint pairs which defines the pairs of joint to be swapped
         when the image is flipped horizontally."""
         return [[1, 2], [3, 4], [5, 6], [7, 8],
-                [9, 10], [11, 12], [13, 14], [15, 16]]
+                [9, 10], [11, 12], [13, 14], [15, 16],
+                [17, 20], [18, 21], [19, 22]]
 
     def _load_jsons(self):
         """Load all image paths and labels from JSON annotation files into buffer."""
