@@ -12,11 +12,11 @@ import torch.multiprocessing as mp
 from alphapose.utils.transforms import get_func_heatmap_to_coord
 from alphapose.utils.pPose_nms import pose_nms
 
-from alphapose.centerface.centerface import CenterFace
-from alphapose.centerface.prnet import PRN
-from alphapose.centerface.utils.cv_plot import plot_kpt, plot_pose_box, plot_vertices
-from alphapose.centerface.utils.render_app import get_visibility, get_uv_mask, get_depth_image
-from alphapose.centerface.utils.estimate_pose import estimate_pose
+from alphapose.face.centerface import CenterFace
+from alphapose.face.prnet import PRN
+from alphapose.face.utils.cv_plot import plot_kpt, plot_pose_box, plot_vertices
+from alphapose.face.utils.render_app import get_visibility, get_uv_mask, get_depth_image
+from alphapose.face.utils.estimate_pose import estimate_pose
 
 
 DEFAULT_VIDEO_SAVE_OPT = {
@@ -30,13 +30,15 @@ EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
 current_path = os.path.dirname(__file__)
 
-face_model_path = '../centerface/models/onnx/centerface.onnx'
+
+#useless path, enter anything
+face_model_path = '../face/models/onnx/centerface.onnx'
 face_engine = CenterFace(model_path=face_model_path, landmarks=True)
 
 #useless path, enter anything
-face_3d_model_path = '../centerface/models/prnet.pth'
+face_3d_model_path = '../face/models/prnet.pth'
 
-face_3d_model = PRN(face_3d_model_path, '../centerface')
+face_3d_model = PRN(face_3d_model_path, '../face')
 
 colors = [tuple(np.random.choice(np.arange(256).astype(np.int32), size=3)) for i in range(100)]
 
@@ -99,11 +101,7 @@ def add_coco_bbox(image, bbox, cat, conf=1, color=None):
 
 
 def add_coco_hp(image, points, color):
-    print(points)
     for j in range(17):
-        print(points[j, 0])
-        print(points[j, 1])
-        print(type(image))
         cv2.circle(image, (points[j, 0], points[j, 1]), 2, (int(color[0]), int(color[1]), int(color[2])), -1)
 
     stickwidth = 2
@@ -215,9 +213,9 @@ class DataWriter():
                 result = pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
 
                 ### jiasong update 2.20
-                if self.opt.show_face:
+                if self.opt.face:
                     boxes = boxes.numpy()
-                    
+                    #print(scores)
                     i = 0
                     face_engine.transform(orig_img.shape[0], orig_img.shape[1])
                     face_dets, lms = face_engine(orig_img, threshold=0.35)
@@ -230,6 +228,7 @@ class DataWriter():
                     for person in result:
 
                         keypoints = person['keypoints']
+                        
                         keypoints = keypoints.numpy()
 
                         bbox = boxes[i]
@@ -247,6 +246,12 @@ class DataWriter():
 
                         image = orig_img
 
+                        # bgr_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                        # bgr_image = add_coco_hp(bgr_image, keypoints, color)
+
+                        # orig_img = cv2.imread(orig_img)
+                        # cv2.circle(orig_img,(point[0,0],point[0,1]),2,(int(color[0]),int(color[1]),int(color[2])),-1)
+                        # cv2.imwrite('/home/jiasong/centerface/prj-python/orig_img.jpg', orig_img)
                         if len(face_dets) != 0:
                             face_min_dis = np.argmin(
                                 np.sum(((face_dets[:, 2:4] + face_dets[:, :2]) / 2. - center_of_the_face) ** 2, axis=1))
@@ -271,7 +276,9 @@ class DataWriter():
                             save_vertices[:, 1] = h - 1 - save_vertices[:, 1]
 
                             kpt = face_3d_model.get_landmarks(pos)
-                            person['facepoint'] = kpt
+                            
+                            # person['facepoint'] = kpt
+
                             camera_matrix, pose = estimate_pose(vertices)
 
                             bgr_face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
@@ -282,19 +289,53 @@ class DataWriter():
                             image[int(face_bbox[1]): int(face_bbox[3]), int(face_bbox[0]): int(face_bbox[2])] = cv2.resize(
                                 sparse_face, (w, h))
 
+                            
+                            for kpt_elem in kpt:
+                                kpt_elem[0] +=face_bbox[0]
+                                kpt_elem[1] +=face_bbox[1]
 
+                            # face_keypoints = kpt
+                            face_keypoints = kpt[:,:2]
+                            # print(kpt[:,:2])
+                            print(face_keypoints)
+                            # print(kpt.shape)
+                            person['FaceKeypoint'] = face_keypoints 
+
+                            
+
+
+                            # for testing keypoints on face:
+                            # kpt = np.round(kpt).astype(np.int32)
+                            bgr_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                                # for item in range(kpt.shape[0]):
+                                #     st = kpt[item, :2]
+
+                            #image = plot_kpt(bgr_image, kpt)
+
+                            # test order:
+                            # font = cv2.FONT_HERSHEY_SIMPLEX
+                            # for t in range(1):
+                            #     imgzi = cv2.putText(bgr_image, '000', (int(face_keypoints[t][0]), int(face_keypoints[t][1])), font, 0.2, (255, 255, 255), 2)
+                                
+                                
+                                # image[int(face_bbox[1]): int(face_bbox[3]), int(face_bbox[0]): int(face_bbox[2])] = cv2.resize(
+                                # sparse_face, (w, h))
+
+                                
                         #image_save_path = os.path.join(save_image_dir, str(image_count) + '.png')
-                        #cv2.imwrite('/home/jiasong/centerface/prj-python/good.jpg', image)
+                        #cv2.imwrite('/home/jiasong/AlphaPose/examples/good.jpg', image)
+                        
 
 
 
 
                         i += 1
-
+                        # print(result)
+                        ###
                     result = {
                         'imgname': im_name,
                         'result': result,
-                        'facebox': face_dets
+                        #'facebox': face_dets
                     }
                #     print(result)
                 else:
