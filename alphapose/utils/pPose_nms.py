@@ -285,18 +285,18 @@ def PCK_match(pick_pred, all_preds, ref_dist):
     return num_match_keypoints
 
 
-def write_json(all_results, outputpath, form=None, for_eval=False):
+def write_json(face, all_results, outputpath, form=None, for_eval=False):
     '''
     all_result: result dict of predictions
     outputpath: output directory
     '''
     json_results = []
     json_results_cmu = {}
-   # print(all_results)
+
     for im_res in all_results:
         im_name = im_res['imgname']
         #facebox = im_res['facebox']
-        #facebox = torch.from_numpy(facebox)
+
         for human in im_res['result']:
             
             keypoints = []
@@ -308,8 +308,8 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
             else:
                 result['image_id'] = os.path.basename(im_name)
             result['category_id'] = 1
-            fc_preds = human['facepoint']
-            fc_preds = torch.from_numpy(fc_preds)
+            
+            
             kp_preds = human['keypoints']
             kp_scores = human['kp_score']
             pro_scores = human['proposal_score']
@@ -317,11 +317,21 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 keypoints.append(float(kp_preds[n, 0]))
                 keypoints.append(float(kp_preds[n, 1]))
                 keypoints.append(float(kp_scores[n]))
-                facepoints.append(fc_preds)
+
+            if face:
+                fc_preds = human['FaceKeypoint']
+
+                for n in range(fc_preds.shape[0]):
+                    facepoints.append(float(fc_preds[n, 0]))
+                    facepoints.append(float(fc_preds[n, 1]))
+                    # facepoints.append(float(fc_preds[n, 2]))
+                result['FaceKeypoint'] = facepoints
+                
             result['keypoints'] = keypoints
-            #print(type(result))
+
             result['score'] = float(pro_scores)
-            #result['facepoints'] = facepoints
+            
+                
             #pose track results by PoseFlow
             if 'idx' in human.keys():
                 result['idx'] = human['idx']
