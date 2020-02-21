@@ -76,7 +76,7 @@ parser.add_argument('--pose_track', dest='pose_track',
 
 
 """----------------------------- Face options -----------------------------"""
-parser.add_argument('--show_face', dest='show_face', default=False, help='show face detection or not')
+parser.add_argument('--face', dest='face', default=False, help='show face detection or not')
 
 args = parser.parse_args()
 cfg = update_config(args.cfg)
@@ -265,9 +265,11 @@ if __name__ == "__main__":
             writer.clear_queues()
             # det_loader.clear_queues()
     final_result = writer.results()
-    write_json(final_result, args.outputpath, form=args.format, for_eval=args.eval)
+    if args.face:
+        write_json(1, final_result, args.outputpath, form=args.format, for_eval=args.eval)
+        print("Faces have been written!")
+    
+    else:
+        write_json(0, final_result, args.outputpath, form=args.format, for_eval=args.eval)
     print("Results have been written to json.")
-    if args.show_face:
-        write_face(final_result,args.outputpath)
-        print("Face have been written")
 
