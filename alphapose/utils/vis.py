@@ -96,7 +96,7 @@ def vis_frame_dense(frame, im_res, add_bbox=False, format='coco'):
             cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), BLUE, 2)
             # Draw indexes of humans
             if 'idx' in human.keys():
-                cv2.putText(img, ''.join(str(e) for e in human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
+                cv2.putText(img, ''.join(str(human['idx'])), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.35:
@@ -167,7 +167,7 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
             cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), BLUE, 2)
             # Draw indexes of humans
             if 'idx' in human.keys():
-                cv2.putText(img, ''.join(str(e) for e in human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
+                cv2.putText(img, ''.join(str(human['idx'])), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.35:
@@ -245,7 +245,7 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
             # Draw indexes of humans
             if 'idx' in human.keys():
                 bg = img.copy()
-                cv2.putText(bg, ''.join(str(e) for e in human['idx']), (int(bbox[0] / 2), int((bbox[2] + 26) / 2)), DEFAULT_FONT, 0.5, BLACK, 1)
+                cv2.putText(bg, ''.join(str(human['idx'])), (int(bbox[0] / 2), int((bbox[2] + 26) / 2)), DEFAULT_FONT, 0.5, BLACK, 1)
                 transparency = 0.8
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
         # Draw keypoints
