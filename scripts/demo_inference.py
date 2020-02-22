@@ -14,7 +14,6 @@ from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
 from alphapose.utils.pPose_nms import write_json
-from alphapose.utils.pPose_nms import write_face
 from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader
