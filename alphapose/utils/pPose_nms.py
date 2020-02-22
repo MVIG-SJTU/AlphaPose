@@ -389,8 +389,3 @@ def write_json(face, all_results, outputpath, form=None, for_eval=False):
         with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
             json_file.write(json.dumps(json_results))
 
-
-
-def write_face(result,outputpath):
-    with open(os.path.join(outputpath,'face.txt'), 'w') as txt_file:
-        txt_file.write(str(result))
