@@ -96,7 +96,7 @@ def vis_frame_dense(frame, im_res, add_bbox=False, format='coco'):
             cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), BLUE, 2)
             # Draw indexes of humans
             if 'idx' in human.keys():
-                cv2.putText(img, ''.join(str(human['idx'])), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
+                cv2.putText(img, ''.join(str(e) for e in human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.35:
@@ -167,7 +167,7 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
             cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), BLUE, 2)
             # Draw indexes of humans
             if 'idx' in human.keys():
-                cv2.putText(img, ''.join(str(human['idx'])), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
+                cv2.putText(img, ''.join(str(e) for e in human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.35:
@@ -196,18 +196,20 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
         l_pair = [
             (0, 1), (0, 2), (1, 3), (2, 4),  # Head
             (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
+            (23, 11), (23, 12),  # Body
             (11, 13), (12, 14), (13, 15), (14, 16),
             (17, 19), (18, 19), (20, 22), (21, 22), # Foot
             (15, 19), (16, 22)] # Foot
         p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),  # Nose, LEye, REye, LEar, REar
                    (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),  # LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
                    (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255),  # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
-                   (0, 255, 255), (0, 255, 255), (0, 255, 255), (0, 255, 255), (0, 255, 255), (255, 255, 255)] # Foot
+                   (0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0), (77, 255, 255)] # Foot
         line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
                       (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
                       (77, 222, 255), (255, 156, 127),
                       (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36), 
-                      (255, 77, 36), (255, 77, 36), (255, 77, 36), (255, 77, 36), (255, 77, 36), (255, 77, 36)] # Foot
+                      (0, 77, 255), (0, 77, 255), (0, 77, 255), (0, 77, 255),
+                      (255, 156, 127), (255, 156, 127)] # Foot
 
     elif format == 'mpii':
         l_pair = [
@@ -247,7 +249,7 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
             # Draw indexes of humans
             if 'idx' in human.keys():
                 bg = img.copy()
-                cv2.putText(bg, ''.join(str(human['idx'])), (int(bbox[0] / 2), int((bbox[2] + 26) / 2)), DEFAULT_FONT, 0.5, BLACK, 1)
+                cv2.putText(bg, ''.join(str(e) for e in human['idx']), (int(bbox[0] / 2), int((bbox[2] + 26) / 2)), DEFAULT_FONT, 0.5, BLACK, 1)
                 transparency = 0.8
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
         # Draw keypoints
