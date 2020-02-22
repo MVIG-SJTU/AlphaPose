@@ -1,6 +1,6 @@
 DATASET:
   TRAIN:
-    TYPE: 'Mscoco'
+    TYPE: 'Mscoco_with_foot'
     ROOT: './data/coco/'
     IMG_PREFIX: 'train2017'
     ANN: 'annotations/person_keypoints_train2017_foot.json'
@@ -11,12 +11,12 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 11
       PROB_HALF_BODY: -1
   VAL:
-    TYPE: 'Mscoco'
+    TYPE: 'Mscoco_with_foot'
     ROOT: './data/coco/'
     IMG_PREFIX: 'val2017'
     ANN: 'annotations/person_keypoints_val2017_foot.json'
   TEST:
-    TYPE: 'Mscoco_det'
+    TYPE: 'Mscoco_det_with_foot'
     ROOT: './data/coco/'
     IMG_PREFIX: 'val2017'
     DET_FILE: './exp/json/test_det_yolo.json'

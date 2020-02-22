@@ -22,7 +22,7 @@ class Mscoco_det(data.Dataset):
     """ COCO human detection box dataset.
 
     """
-    EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
     def __init__(self,
                  det_file=None,
@@ -102,7 +102,6 @@ class Mscoco_det(data.Dataset):
     @property
     def joint_pairs(self):
         """Joint pairs which defines the pairs of joint to be swapped
-        when the image is flipped horizontally."""        
+        when the image is flipped horizontally."""
         return [[1, 2], [3, 4], [5, 6], [7, 8],
-                [9, 10], [11, 12], [13, 14], [15, 16],
-                [17, 20], [18, 21], [19, 22]]
+                [9, 10], [11, 12], [13, 14], [15, 16]]

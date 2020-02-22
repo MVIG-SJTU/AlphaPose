@@ -66,7 +66,7 @@ def mask_cross_entropy(pred, target):
         pred, target, reduction='mean')[None]
 
 
-def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017_foot.json', silence=True):
+def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017.json', silence=True):
     """Evaluate mAP result for coco dataset.
 
     Parameters
