@@ -325,7 +325,7 @@ def write_json(face, all_results, outputpath, form=None, for_eval=False):
                     facepoints.append(float(fc_preds[n, 0]))
                     facepoints.append(float(fc_preds[n, 1]))
                     # facepoints.append(float(fc_preds[n, 2]))
-                result['FaceKeypoint'] = facepoints
+                result['face'] = facepoints
                 
             result['keypoints'] = keypoints
 
