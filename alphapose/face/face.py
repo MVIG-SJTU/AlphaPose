@@ -76,12 +76,10 @@ _kp_connections = kp_connections(get_keypoints())
 
 def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores):
     boxes = boxes.numpy()
-    #print(scores)
+
     i = 0
     face_engine.transform(orig_img.shape[0], orig_img.shape[1])
     face_dets, lms = face_engine(orig_img, threshold=0.35)
-    #face_dic={}
-    #face_dic['facebox']=face_dets
 
     bbox_xywh = []
     cls_conf = []
@@ -89,8 +87,7 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
     for person in result:
 
         keypoints = person['keypoints']
-        #print(keypoints)
-        
+      
         keypoints = keypoints.numpy()
 
         bbox = boxes[i]
@@ -108,12 +105,6 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
 
         image = orig_img
 
-        # bgr_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        # bgr_image = add_coco_hp(bgr_image, keypoints, color)
-
-        # orig_img = cv2.imread(orig_img)
-        # cv2.circle(orig_img,(point[0,0],point[0,1]),2,(int(color[0]),int(color[1]),int(color[2])),-1)
-        # cv2.imwrite('/home/jiasong/centerface/prj-python/orig_img.jpg', orig_img)
         if len(face_dets) != 0:
             face_min_dis = np.argmin(
                 np.sum(((face_dets[:, 2:4] + face_dets[:, :2]) / 2. - center_of_the_face) ** 2, axis=1))
@@ -138,14 +129,8 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
             save_vertices[:, 1] = h - 1 - save_vertices[:, 1]
 
             kpt = face_3d_model.get_landmarks(pos)
-            
-            
-            # print(type(kpt))
-
-            
+          
             # person['facepoint'] = kpt
-            # print(kpt[:,:2])
-            # print(kpt.shape[0])
             camera_matrix, pose = estimate_pose(vertices)
 
             bgr_face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
@@ -163,9 +148,7 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
 
             # face_keypoints = kpt
             face_keypoints = kpt[:,:2]
-            # print(kpt[:,:2])
-            # print(face_keypoints)
-            # print(kpt.shape)
+
             person['FaceKeypoint'] = face_keypoints 
 
             
@@ -187,16 +170,8 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
                 
                 # image[int(face_bbox[1]): int(face_bbox[3]), int(face_bbox[0]): int(face_bbox[2])] = cv2.resize(
                 # sparse_face, (w, h))
-
                 
-        #image_save_path = os.path.join(save_image_dir, str(image_count) + '.png')
         #cv2.imwrite('/home/jiasong/AlphaPose/examples/good.jpg', image)
-        
-
-
-
 
         i += 1
-        # print(result)
-        ###
     return result
