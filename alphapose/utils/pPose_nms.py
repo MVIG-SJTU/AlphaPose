@@ -285,7 +285,7 @@ def PCK_match(pick_pred, all_preds, ref_dist):
     return num_match_keypoints
 
 
-def write_json(face, all_results, outputpath, form=None, for_eval=False):
+def write_json(all_results, outputpath, form=None, for_eval=False):
     '''
     all_result: result dict of predictions
     outputpath: output directory
