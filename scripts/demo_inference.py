@@ -4,7 +4,6 @@ import os
 import platform
 import sys
 import time
-import json
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -14,7 +13,6 @@ from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
 from alphapose.utils.pPose_nms import write_json
-# from alphapose.utils.pPose_nms import write_face
 from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader
@@ -76,7 +74,7 @@ parser.add_argument('--pose_track', dest='pose_track',
 
 
 """----------------------------- Face options -----------------------------"""
-parser.add_argument('--face', type=int, default=False, help='show face detection or not')
+parser.add_argument('--face', dest='face', default=False, help='show face detection or not', action='store_true')
 
 args = parser.parse_args()
 cfg = update_config(args.cfg)
