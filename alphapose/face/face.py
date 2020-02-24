@@ -1,12 +1,9 @@
 import os
 import time
-# from threading import Thread
-# from queue import Queue
-import math
 
 import cv2
 import numpy as np
-# import torch
+
 
 from alphapose.face.centerface import CenterFace
 from alphapose.face.prnet import PRN
