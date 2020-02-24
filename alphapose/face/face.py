@@ -77,36 +77,6 @@ def get_keypoints():
 _kp_connections = kp_connections(get_keypoints())
 
 
-def add_coco_bbox(image, bbox, cat, conf=1, color=None):
-    cat = int(cat)
-    txt = '{}{:.1f}'.format('person', conf)
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    cat_size = cv2.getTextSize(txt, font, 0.5, 2)[0]
-    cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (int(color[0]), int(color[1]), int(color[2])), 2)
-    cv2.putText(image, txt, (bbox[0], bbox[1] - 2), font, 0.5, (0, 0, 0), thickness=1, lineType=cv2.LINE_AA)
-
-
-def add_coco_hp(image, points, color):
-    for j in range(17):
-        cv2.circle(image, (points[j, 0], points[j, 1]), 2, (int(color[0]), int(color[1]), int(color[2])), -1)
-
-    stickwidth = 2
-    cur_canvas = image.copy()
-    for j, e in enumerate(_kp_connections):
-        if points[e].min() > 0:
-            X = [points[e[0], 1], points[e[1], 1]]
-            Y = [points[e[0], 0], points[e[1], 0]]
-            mX = np.mean(X)
-            mY = np.mean(Y)
-            length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
-            angle = math.degrees(math.atan2(X[0] - X[1], Y[0] - Y[1]))
-            polygon = cv2.ellipse2Poly((int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0, 360, 1)
-            cv2.fillConvexPoly(cur_canvas, polygon, (int(color[0]), int(color[1]), int(color[2])))
-            image = cv2.addWeighted(image, 0.5, cur_canvas, 0.5, 0)
-
-    return image
-
-
 def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores):
     boxes = boxes.numpy()
     #print(scores)
