@@ -14,6 +14,7 @@ from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
 from alphapose.utils.pPose_nms import write_json
+# from alphapose.utils.pPose_nms import write_face
 from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader
@@ -75,7 +76,7 @@ parser.add_argument('--pose_track', dest='pose_track',
 
 
 """----------------------------- Face options -----------------------------"""
-parser.add_argument('--face', dest='face', default=False, help='show face detection or not')
+parser.add_argument('--face', type=int, default=False, help='show face detection or not')
 
 args = parser.parse_args()
 cfg = update_config(args.cfg)
@@ -144,7 +145,6 @@ def loop():
 
 if __name__ == "__main__":
     mode, input_source = check_input()
-#    print(args.show_face)
     if not os.path.exists(args.outputpath):
         os.makedirs(args.outputpath)
 
@@ -264,11 +264,8 @@ if __name__ == "__main__":
             writer.clear_queues()
             # det_loader.clear_queues()
     final_result = writer.results()
-    if args.face:
-        write_json(1, final_result, args.outputpath, form=args.format, for_eval=args.eval)
-        print("Faces have been written!")
-    
-    else:
-        write_json(0, final_result, args.outputpath, form=args.format, for_eval=args.eval)
+
+    write_json(final_result, args.outputpath, form=args.format, for_eval=args.eval)
+
     print("Results have been written to json.")
 
