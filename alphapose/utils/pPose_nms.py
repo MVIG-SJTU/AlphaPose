@@ -295,14 +295,12 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
 
     for im_res in all_results:
         im_name = im_res['imgname']
-        #facebox = im_res['facebox']
 
         for human in im_res['result']:
             
             keypoints = []
             facepoints = []
             result = {}
-            #result['facebox'] = facebox
             if for_eval:
                 result['image_id'] = int(os.path.basename(im_name).split('.')[0].split('_')[-1])
             else:
