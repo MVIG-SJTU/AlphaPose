@@ -130,7 +130,6 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
 
             kpt = face_3d_model.get_landmarks(pos)
           
-            # person['facepoint'] = kpt
             camera_matrix, pose = estimate_pose(vertices)
 
             bgr_face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
@@ -146,32 +145,12 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
                 kpt_elem[0] +=face_bbox[0]
                 kpt_elem[1] +=face_bbox[1]
 
-            # face_keypoints = kpt
             face_keypoints = kpt[:,:2]
 
             person['FaceKeypoint'] = face_keypoints 
 
-            
-
-
-            # for testing keypoints on face:
-            # kpt = np.round(kpt).astype(np.int32)
             bgr_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                # for item in range(kpt.shape[0]):
-                #     st = kpt[item, :2]
 
-            #image = plot_kpt(bgr_image, kpt)
-
-            # test order:
-            # font = cv2.FONT_HERSHEY_SIMPLEX
-            # for t in range(1):
-            #     imgzi = cv2.putText(bgr_image, '000', (int(face_keypoints[t][0]), int(face_keypoints[t][1])), font, 0.2, (255, 255, 255), 2)
-                
-                
-                # image[int(face_bbox[1]): int(face_bbox[3]), int(face_bbox[0]): int(face_bbox[2])] = cv2.resize(
-                # sparse_face, (w, h))
-                
-        #cv2.imwrite('/home/jiasong/AlphaPose/examples/good.jpg', image)
-
+            
         i += 1
     return result
