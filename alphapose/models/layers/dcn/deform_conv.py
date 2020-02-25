@@ -42,7 +42,7 @@ class DeformConvFunction(Function):
         ctx.bufs_ = [input.new_empty(0), input.new_empty(0)]  # columns, ones
 
         if not input.is_cuda:
-            raise NotImplementedError
+            raise NotImplementedError("DCN only supports GPU inference. Try to use other models for CPU demo.")
         else:
             cur_im2col_step = min(ctx.im2col_step, input.shape[0])
             assert (input.shape[0] %
