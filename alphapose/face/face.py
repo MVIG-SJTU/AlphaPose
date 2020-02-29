@@ -145,9 +145,6 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
             face_keypoints = kpt[:,:2]
 
             person['FaceKeypoint'] = face_keypoints 
-
-            bgr_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
             
         i += 1
     return result
