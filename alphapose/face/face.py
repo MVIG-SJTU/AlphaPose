@@ -9,7 +9,6 @@ from alphapose.face.centerface import CenterFace
 from alphapose.face.prnet import PRN
 from alphapose.face.utils.cv_plot import plot_kpt, plot_pose_box, plot_vertices
 from alphapose.face.utils.render_app import get_visibility, get_uv_mask, get_depth_image
-from alphapose.face.utils.estimate_pose import estimate_pose
 
 current_path = os.path.dirname(__file__)
 
@@ -129,11 +128,9 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
             save_vertices[:, 1] = h - 1 - save_vertices[:, 1]
 
             kpt = face_3d_model.get_landmarks(pos)
-          
-            camera_matrix, pose = estimate_pose(vertices)
 
             bgr_face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
-            image_pose = plot_pose_box(bgr_face_image, camera_matrix, kpt)
+
             sparse_face = plot_kpt(bgr_face_image, kpt)
 
             dense_face = plot_vertices(bgr_face_image, vertices)
