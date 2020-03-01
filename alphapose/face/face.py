@@ -7,11 +7,8 @@ import numpy as np
 
 from alphapose.face.centerface import CenterFace
 from alphapose.face.prnet import PRN
-from alphapose.face.utils.cv_plot import plot_kpt, plot_pose_box, plot_vertices
-from alphapose.face.utils.render_app import get_visibility, get_uv_mask, get_depth_image
 
 current_path = os.path.dirname(__file__)
-
 
 #useless path, enter anything
 face_model_path = '../face/models/onnx/centerface.onnx'
@@ -128,16 +125,7 @@ def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds
             save_vertices[:, 1] = h - 1 - save_vertices[:, 1]
 
             kpt = face_3d_model.get_landmarks(pos)
-
-            bgr_face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
-
-            sparse_face = plot_kpt(bgr_face_image, kpt)
-
-            dense_face = plot_vertices(bgr_face_image, vertices)
-            image[int(face_bbox[1]): int(face_bbox[3]), int(face_bbox[0]): int(face_bbox[2])] = cv2.resize(
-                sparse_face, (w, h))
-
-            
+           
             for kpt_elem in kpt:
                 kpt_elem[0] +=face_bbox[0]
                 kpt_elem[1] +=face_bbox[1]
