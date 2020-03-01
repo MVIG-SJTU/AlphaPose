@@ -22,54 +22,6 @@ face_3d_model = PRN(face_3d_model_path, '../face')
 colors = [tuple(np.random.choice(np.arange(256).astype(np.int32), size=3)) for i in range(100)]
 
 
-def kp_connections(keypoints):
-    kp_lines = [
-        [keypoints.index('nose'), keypoints.index('left_eye')],
-        [keypoints.index('left_eye'), keypoints.index('left_ear')],
-        [keypoints.index('nose'), keypoints.index('right_eye')],
-        [keypoints.index('right_eye'), keypoints.index('right_ear')],
-        [keypoints.index('right_shoulder'), keypoints.index('right_elbow')],
-        [keypoints.index('right_elbow'), keypoints.index('right_wrist')],
-        [keypoints.index('right_shoulder'), keypoints.index('right_hip')],
-        [keypoints.index('right_hip'), keypoints.index('right_knee')],
-        [keypoints.index('right_knee'), keypoints.index('right_ankle')],
-        [keypoints.index('left_shoulder'), keypoints.index('left_elbow')],
-        [keypoints.index('left_elbow'), keypoints.index('left_wrist')],
-        [keypoints.index('left_shoulder'), keypoints.index('left_hip')],
-        [keypoints.index('left_hip'), keypoints.index('left_knee')],
-        [keypoints.index('left_knee'), keypoints.index('left_ankle')],
-    ]
-    return kp_lines
-
-
-def get_keypoints():
-    """Get the COCO keypoints and their left/right flip coorespondence map."""
-    keypoints = [
-        'nose',  # 1
-        'left_eye',  # 2
-        'right_eye',  # 3
-        'left_ear',  # 4
-        'right_ear',  # 5
-        'left_shoulder',  # 6
-        'right_shoulder',  # 7
-        'left_elbow',  # 8
-        'right_elbow',  # 9
-        'left_wrist',  # 10
-        'right_wrist',  # 11
-        'left_hip',  # 12
-        'right_hip',  # 13
-        'left_knee',  # 14
-        'right_knee',  # 15
-        'left_ankle',  # 16
-        'right_ankle',  # 17
-    ]
-
-    return keypoints
-
-
-_kp_connections = kp_connections(get_keypoints())
-
-
 def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores):
     boxes = boxes.numpy()
 
