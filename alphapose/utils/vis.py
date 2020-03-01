@@ -13,7 +13,7 @@ def plot_kpt(image, kpt):
     for i in range(kpt.shape[0]):
         st = kpt[i, :2]
 
-        image = cv2.circle(image, (st[0], st[1]), 0, (0, 0, 255), 2)
+        image = cv2.circle(image, (st[0], st[1]), 0, (255, 255, 255), 2)
         if i in end_list:
             continue
         ed = kpt[i + 1, :2]
@@ -26,7 +26,7 @@ def fast_plot_kpt(image, kpt):
     for i in range(kpt.shape[0]):
         st = kpt[i, :2]
 
-        image = cv2.circle(image, (st[0], st[1]), 1, (0, 0, 255), 2)
+        image = cv2.circle(image, (st[0], st[1]), 1, (255, 255, 255), 2)
         if i in end_list:
             continue
         ed = kpt[i + 1, :2]
