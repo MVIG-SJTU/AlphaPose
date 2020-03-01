@@ -2,6 +2,8 @@ import os
 import time
 from threading import Thread
 from queue import Queue
+import math
+
 import cv2
 import numpy as np
 import torch
@@ -9,6 +11,7 @@ import torch.multiprocessing as mp
 
 from alphapose.utils.transforms import get_func_heatmap_to_coord
 from alphapose.utils.pPose_nms import pose_nms
+
 
 from alphapose.face.face import face_process
 
@@ -112,8 +115,8 @@ class DataWriter():
                 preds_img = torch.cat(pose_coords)
                 preds_scores = torch.cat(pose_scores)
                 result = pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
-
-                ### jiasong update 2.24
+                
+                # jiasong update 2.24
                 if self.opt.face:
                     result = face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores)
 
@@ -134,7 +137,9 @@ class DataWriter():
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame
-                    img = vis_frame(orig_img, result, add_bbox=(self.opt.pose_track | self.opt.tracking))
+                    
+                    # jiasong update 3.1
+                    img = vis_frame(orig_img, result, self.opt)
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):
@@ -205,4 +210,3 @@ class DataWriter():
         else:
             print("Unknow video format {}, will use .mp4 instead of it".format(ext))
             return cv2.VideoWriter_fourcc(*'mp4v'), '.mp4'
-
