@@ -4,4 +4,4 @@ from .custom import CustomDataset
 from .mscoco import Mscoco
 from .mpii import Mpii
 
-__all__ = ['CustomDataset', 'Mscoco', 'Mscoco_det', 'Mpii', 'ConcatDataset']
+__all__ = ['CustomDataset', 'Mscoco', 'Mscoco_det', 'Mpii', 'ConcatDataset', 'Freihand']
