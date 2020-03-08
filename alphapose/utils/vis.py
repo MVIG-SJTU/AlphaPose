@@ -36,7 +36,7 @@ def vis_frame_dense(frame, im_res, add_bbox=False, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
-    format: coco or mpii
+    format: coco or mpii or Freihand
 
     return rendered image
     '''
@@ -117,10 +117,11 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
-    format: coco or mpii
+    format: coco or mpii or Freihand
 
     return rendered image
     '''
+    print(im_res, format, flush = True)
     if format == 'coco':
         l_pair = [
             (0, 1), (0, 2), (1, 3), (2, 4),  # Head
@@ -142,6 +143,20 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
             (8, 7), (7, 6), (6, 2), (6, 3), (8, 12), (8, 13)
         ]
         p_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, PURPLE, RED, RED, BLUE, BLUE]
+    elif format == 'Freihand':
+        l_pair = [
+            (0, 1), (1, 2), (2, 3), (3, 4), (0, 5), (5, 6), (6, 7), (7, 8), (0, 9), (9, 10),
+             (10, 11), (11, 12), (0, 13), (13, 14), (14, 15), (15, 16), (0, 17), (17, 18), (18, 19), (19, 20)]
+        p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),
+                    (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77), 
+                    (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255),
+                    (0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0), (77, 255, 255)]
+        line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
+                    (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
+                    (77, 222, 255), (255, 156, 127),
+                    (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36), 
+                    (0, 77, 255), (0, 77, 255), (0, 77, 255), (0, 77, 255),
+                    (255, 156, 127)]
     else:
         NotImplementedError
 
@@ -188,10 +203,11 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
-    format: coco or mpii
+    format: coco or mpii or Freihand
 
     return rendered image
     '''
+    print(im_res, format, flush = True)
     if format == 'coco':
         l_pair = [
             (0, 1), (0, 2), (1, 3), (2, 4),  # Head
@@ -199,7 +215,6 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
             (17, 11), (17, 12),  # Body
             (11, 13), (12, 14), (13, 15), (14, 16)
         ]
-
         p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),  # Nose, LEye, REye, LEar, REar
                    (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),  # LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
                    (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255)]  # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
@@ -215,6 +230,20 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
         ]
         p_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, PURPLE, RED, RED, BLUE, BLUE]
         line_color = [PURPLE, BLUE, BLUE, RED, RED, BLUE, BLUE, RED, RED, PURPLE, PURPLE, RED, RED, BLUE, BLUE]
+    elif format == 'Freihand':
+        l_pair = [
+            (0, 1), (1, 2), (2, 3), (3, 4), (0, 5), (5, 6), (6, 7), (7, 8), (0, 9), (9, 10), \
+             (10, 11), (11, 12), (0, 13), (13, 14), (14, 15), (15, 16), (0, 17), (17, 18), (18, 19), (19, 20)]
+        p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),
+                    (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77), 
+                    (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255),
+                    (0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0), (77, 255, 255)]
+        line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
+                    (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
+                    (77, 222, 255), (255, 156, 127),
+                    (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36), 
+                    (0, 77, 255), (0, 77, 255), (0, 77, 255), (0, 77, 255),
+                    (255, 156, 127)]
     else:
         raise NotImplementedError
 
@@ -249,6 +278,7 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
                 transparency = 0.8
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
         # Draw keypoints
+        # print('number of points:', kp_scores.shape[0], flush=True) # need to be deleted
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.35:
                 continue
