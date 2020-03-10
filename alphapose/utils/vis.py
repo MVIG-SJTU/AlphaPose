@@ -253,10 +253,6 @@ def vis_frame(frame, im_res, opt, format='coco'):
         # Draw faces (jiasong updated 3.1)
         if opt.face:
             face_keypoints = human['FaceKeypoint']
-            for i in range(face_keypoints.shape[0]):
-                st = face_keypoints[i, :2]
-                st[0] = int(st[0]/2)
-                st[1] = int(st[1]/2)
             img = plot_kpt(img, face_keypoints)
 
         # Draw bboxes
