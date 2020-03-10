@@ -17,12 +17,12 @@ face_engine = CenterFace(model_path=face_model_path, landmarks=True)
 #useless path, enter anything
 face_3d_model_path = '../face/models/prnet.pth'
 
-face_3d_model = PRN(face_3d_model_path, '../face')
-
 colors = [tuple(np.random.choice(np.arange(256).astype(np.int32), size=3)) for i in range(100)]
 
 
-def face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores):
+def face_process(opt, result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores):
+    device = opt.gpus[0]
+    face_3d_model = PRN(face_3d_model_path, device, '../face')
     boxes = boxes.numpy()
 
     i = 0
