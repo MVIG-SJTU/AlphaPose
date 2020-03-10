@@ -118,7 +118,7 @@ class DataWriter():
                 
                 # jiasong update 2.24
                 if self.opt.face:
-                    result = face_process(result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores)
+                    result = face_process(self.opt, result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores)
 
                 result = {
                     'imgname': im_name,
