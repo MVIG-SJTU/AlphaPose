@@ -15,7 +15,7 @@ class PRN:
         is_dlib(bool, optional): If true, dlib is used for detecting faces.
         prefix(str, optional): If run at another folder, the absolute path is needed to load the data.
     '''
-    def __init__(self, model_path, prefix = '.'):
+    def __init__(self, model_path, device, prefix = '.'):
 
         # resolution of input and output image size.
         self.resolution_inp = 256
@@ -29,8 +29,9 @@ class PRN:
         state = torch.load(model_path)
         self.pos_predictor.load_state_dict(state)
         self.pos_predictor.eval()  # inference stage only.
-        #if torch.cuda.device_count() > 0:
-            #self.pos_predictor = self.pos_predictor.to("cuda")
+        
+        if self.device>0:
+            self.pos_predictor = self.pos_predictor.to("cuda:" + str(self.device))
 
         # uv file
         self.uv_kpt_ind = np.loadtxt(os.path.join(prefix, 'utils/uv_data/uv_kpt_ind.txt')).astype(np.int32) # 2 x 68 get kpt
@@ -104,7 +105,10 @@ class PRN:
         cropped_image = warp(image, tform.inverse, output_shape=(self.resolution_inp, self.resolution_inp))
         # run our net
         #st = time()
-        cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32))
+        if self.device>0:
+            cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32)).cuda(self.device)
+        else:
+            cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32))
         cropped_pos = self.net_forward(cropped_image)*self.resolution_inp*1.1
         #print 'net time:', time() - st
 
