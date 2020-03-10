@@ -20,19 +20,6 @@ def plot_kpt(image, kpt):
         image = cv2.line(image, (st[0], st[1]), (ed[0], ed[1]), (255, 255, 255), 1)
     return image
 
-def fast_plot_kpt(image, kpt):
-    image = image.copy()
-    kpt = np.round(kpt).astype(np.int32)
-    for i in range(kpt.shape[0]):
-        st = kpt[i, :2]
-
-        image = cv2.circle(image, (st[0], st[1]), 1, (255, 255, 255), 2)
-        if i in end_list:
-            continue
-        ed = kpt[i + 1, :2]
-        image = cv2.line(image, (st[0], st[1]), (ed[0], ed[1]), (255, 255, 255), 1)
-    return image
-
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
@@ -185,7 +172,7 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
         # Draw faces (jiasong update 3.1)
         if opt.face:
             face_keypoints = human['FaceKeypoint']
-            img = fast_plot_kpt(img, face_keypoints)
+            img = plot_kpt(img, face_keypoints)
         
         # Draw bboxes
         if opt.pose_track or opt.tracking:
@@ -254,7 +241,6 @@ def vis_frame(frame, im_res, opt, format='coco'):
 
     # im_name = os.path.basename(im_res['imgname'])
     img = frame.copy()
-    orig_img = img
     height, width = img.shape[:2]
     img = cv2.resize(img, (int(width / 2), int(height / 2)))
     for human in im_res['result']:
