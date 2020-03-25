@@ -1,0 +1,9 @@
+numpy==1.15
+scipy==1.1
+torch==1.1
+torchvision==0.3
+pillow==6.1
+pycocotools
+tqdm
+pyzmq
+requests

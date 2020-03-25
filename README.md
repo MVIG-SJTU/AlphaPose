@@ -121,6 +121,15 @@ The main contributors are listed in [doc/contributors.md](docs/contributors.md).
 We would really appreciate if you can offer any help and be the [contributor](docs/contributors.md) of AlphaPose.
 
 
+```plain
+python scripts/demo_inference.py --cfg ./configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint ./models/fast_res50_256x192.pth --indir ./data/ochuman/images
+
+```
+
+
+
+
+
 ## Citation
 Please cite these papers in your publications if it helps your research:
 
