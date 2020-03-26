@@ -93,6 +93,14 @@ def validate(m, heatmap_to_coord, batch_size=20):
 
 
 def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
+    """
+    sherk: 
+    input:
+        m: SPPE model
+        cfg: configs
+        heatmap_to_coord: heatmap_to_coord_simple function, convert keypoint heatmaps to global coordinates
+        batch_size: keypoint net batch size
+    """
     gt_val_dataset = builder.build_dataset(cfg.DATASET.VAL, preset_cfg=cfg.DATA_PRESET, train=False)
     eval_joints = gt_val_dataset.EVAL_JOINTS
 
@@ -142,6 +150,7 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
 
 
 if __name__ == "__main__":
+    # here m refers to the SPPE model
     m = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
 
     print(f'Loading model from {opt.checkpoint}...')

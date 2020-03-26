@@ -21,12 +21,9 @@ from alphapose.utils.writer import DataWriter
 
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
-parser.add_argument('--cfg', type=str, required=True,
-                    help='experiment configure file name')
-parser.add_argument('--checkpoint', type=str, required=True,
-                    help='checkpoint file name')
-parser.add_argument('--sp', default=False, action='store_true',
-                    help='Use single process for pytorch')
+parser.add_argument('--cfg', type=str, required=True)
+parser.add_argument('--checkpoint', type=str, required=True)
+parser.add_argument('--sp', default=False, action='store_true')
 parser.add_argument('--detector', dest='detector',
                     help='detector name', default="yolo")
 parser.add_argument('--indir', dest='inputpath',

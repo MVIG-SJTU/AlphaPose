@@ -583,6 +583,11 @@ def flip_joints_3d(joints_3d, width, joint_pairs):
 
 
 def heatmap_to_coord_simple(hms, bbox):
+    """
+    sherk:
+    input: body heatmap and body bbox
+    output: keypoint coordinates and scores respectively
+    """
     coords, maxvals = get_max_pred(hms)
 
     hm_h = hms.shape[1]
@@ -615,6 +620,10 @@ def heatmap_to_coord_simple(hms, bbox):
 
 
 def transform_preds(coords, center, scale, output_size):
+    """
+    sherk: transform relative coords to global coords
+    wrt output_size according to center and scale
+    """
     target_coords = np.zeros(coords.shape)
     trans = get_affine_transform(center, scale, 0, output_size, inv=1)
     target_coords[0:2] = affine_transform(coords[0:2], trans)
@@ -622,6 +631,10 @@ def transform_preds(coords, center, scale, output_size):
 
 
 def get_max_pred(heatmaps):
+    """
+    sherk: get max prediction and coresponding coordinates wrt heatmaps
+    the heatmap size here is 17*64*48
+    """
     num_joints = heatmaps.shape[0]
     width = heatmaps.shape[2]
     heatmaps_reshaped = heatmaps.reshape((num_joints, -1))

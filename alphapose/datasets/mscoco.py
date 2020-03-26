@@ -44,6 +44,7 @@ class Mscoco(CustomDataset):
         items = []
         labels = []
 
+        # _coco = COCO(self._ann_file)
         _coco = self._lazy_load_ann_file()
         classes = [c['name'] for c in _coco.loadCats(_coco.getCatIds())]
         assert classes == self.CLASSES, "Incompatible category names with COCO. "

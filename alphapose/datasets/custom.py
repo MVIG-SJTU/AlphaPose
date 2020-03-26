@@ -84,7 +84,7 @@ class CustomDataset(data.Dataset):
         else:
             raise NotImplementedError
 
-        self._items, self._labels = self._lazy_load_json()
+        self._items, self._labels = self._lazy_load_json() # equals to _load_json
 
     def __getitem__(self, idx):
         # get image id

@@ -74,6 +74,7 @@ class YOLODetector(BaseDetector):
 
         return img
 
+    # sherk: this is used for RMPE
     def images_detection(self, imgs, orig_dim_list):
         """
         Feed the img data into object detection network and 
