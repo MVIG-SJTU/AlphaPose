@@ -14,19 +14,6 @@ from alphapose.utils.vis import getTime
 from demo import get_args
 
 
-class ResDetector(BaseDetector):
-  def __init__(self):
-    pass
-
-  def image_preprocess(self, img_name):
-    pass
-
-  def images_detection(self, imgs, orig_dim_list):
-    pass
-
-  def detect_one_img(self, img_name):
-    pass
-
 
 if __name__ == '__main__':
   args, cfgs = get_args()
