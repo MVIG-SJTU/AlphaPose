@@ -7,3 +7,9 @@ pycocotools
 tqdm
 pyzmq
 requests
+easydict
+PyYAML
+matplotlib
+opencv-python
+yacs
+progress
