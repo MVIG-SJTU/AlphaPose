@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
         with open(notrack_json) as f:
             results = json.load(f)
-            for i in xrange(len(results)):
+            for i in range(len(results)):
                 imgpath = results[i]['image_id']
                 if last_image_name != imgpath:
                     results_forvis[imgpath] = []
