@@ -74,7 +74,7 @@ class ResDetector(BaseDetector):
 
     return images
 
-  def images_detection(self, images, orig_dim_list):
+  def images_detection(self, images):
     # here starts the @process part
     with torch.no_grad():
       torch.cuda.synchronize()
@@ -101,10 +101,10 @@ class ResDetector(BaseDetector):
     K = self.cfg.TEST.TOPK
     batch, cat, height, width = hm.size()
     num_joints = hps.shape[1] // 2
-    heat = _nms(hm)
+    hm = _nms(hm)
     scores, inds, clses, ys, xs = _topk(hm, K=K)
     if reg is not None:
-      reg = _transpose_and_gather_feat(wh, inds)
+      reg = _transpose_and_gather_feat(reg, inds)
       reg = reg.view(batch, K, 2)
       xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
       ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
@@ -125,7 +125,7 @@ class ResDetector(BaseDetector):
     dets = torch.cat([bboxes, scores], dim=2)
     # here starts the @multi_pose_post_process part
 
-    return dets
+    return bboxes, scores
 
   def detect_one_img(self):
     pass
@@ -146,5 +146,8 @@ imgs = imgs.to(torch.device('cuda'))
 
 bboxes, scores = detector.images_detection(imgs)
 
-print(bboxes.shape)
+
+
+print(bboxes.mean())
+print(scores.mean())
 

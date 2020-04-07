@@ -126,48 +126,59 @@ class YOLODetector(BaseDetector):
 
     def write_results(self, prediction, confidence, num_classes, nms=True, nms_conf=0.4):
         args = self.detector_opt
-        #prediction: (batchsize, num of objects, (xc,yc,w,h,box confidence, 80 class scores))
+        # prediction: (batchsize, num of objects, (xc, yc, w, h, box_confidence, 80 class scores))
+        # the confidence is 0.05 here
         conf_mask = (prediction[:, :, 4] > confidence).float().float().unsqueeze(2)
         prediction = prediction * conf_mask
 
         try:
+            # transpose: returns a tensor that gives dimensions of dim0 and dim1
+            # contiguous: returns a tensor that is memory-contiguous
+            #   narrow(), view(), expand(), transpose() does not change 
             ind_nz = torch.nonzero(prediction[:,:,4]).transpose(0,1).contiguous()
         except:
             return 0
 
-        #the 3rd channel of prediction: (xc,yc,w,h)->(x1,y1,x2,y2)
+        # the 3rd channel of prediction: (xc,yc,w,h) -> (x1,y1,x2,y2)
         box_a = prediction.new(prediction.shape)
-        box_a[:,:,0] = (prediction[:,:,0] - prediction[:,:,2]/2)
-        box_a[:,:,1] = (prediction[:,:,1] - prediction[:,:,3]/2)
-        box_a[:,:,2] = (prediction[:,:,0] + prediction[:,:,2]/2) 
-        box_a[:,:,3] = (prediction[:,:,1] + prediction[:,:,3]/2)
-        prediction[:,:,:4] = box_a[:,:,:4]
+        box_a[:, :, 0] = (prediction[:, :, 0] - prediction[:, :, 2]/2)
+        box_a[:, :, 1] = (prediction[:, :, 1] - prediction[:, :, 3]/2)
+        box_a[:, :, 2] = (prediction[:, :, 0] + prediction[:, :, 2]/2) 
+        box_a[:, :, 3] = (prediction[:, :, 1] + prediction[:, :, 3]/2)
+        prediction[:, :, :4] = box_a[:, :, :4]
 
         batch_size = prediction.size(0)
 
+        # new: create a tensor with the same datatype with prediction, while filled with 0.
+        #   in future version, new is recommanded to be replaced with torch.new_*,
+        #   these tensors locate at same memory section
+        # modified by sherk: 
         output = prediction.new(1, prediction.size(2) + 1)
+        # output = torch.tensor((), dtype=prediction.dtype)
+        # output = output.new_zeros((1, prediction.size(2)+1))
         write = False
         num = 0
         for ind in range(batch_size):
-            #select the image from the batch
+            #select the image from the batch, a 22743 * 85 size tensor
             image_pred = prediction[ind]
 
-            #Get the class having maximum score, and the index of that class
-            #Get rid of num_classes softmax scores 
-            #Add the class index and the class score of class having maximum score
-            max_conf, max_conf_score = torch.max(image_pred[:,5:5+ num_classes], 1)
+            # Get the class having maximum score, and the index of that class
+            # Get rid of num_classes softmax scores 
+            # Add the class index and the class score of class having maximum score
+            max_conf, max_conf_score = torch.max(image_pred[:,5:5+num_classes], 1)
             max_conf = max_conf.float().unsqueeze(1)
             max_conf_score = max_conf_score.float().unsqueeze(1)
             seq = (image_pred[:,:5], max_conf, max_conf_score)
-            #image_pred:(n,(x1,y1,x2,y2,c,s,idx of cls))
+            # image_pred:(n,(x1,y1,x2,y2,c,s,idx of cls))
             image_pred = torch.cat(seq, 1)
 
-            #Get rid of the zero entries
-            non_zero_ind =  (torch.nonzero(image_pred[:,4]))
+            # Get rid of the zero entries
+            non_zero_ind =  (torch.nonzero(image_pred[:, 4]))
 
+            # only pick unzero classes
             image_pred_ = image_pred[non_zero_ind.squeeze(),:].view(-1,7)
 
-            #Get the various classes detected in the image
+            # Get the various classes detected in the image
             try:
                 img_classes = unique(image_pred_[:,-1])
             except:

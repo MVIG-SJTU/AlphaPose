@@ -153,8 +153,9 @@ class DetectionLoader():
 
             with torch.no_grad():
                 # Human Detection
-                imgs = torch.cat(imgs)
-                im_dim_list = torch.FloatTensor(im_dim_list).repeat(1, 2)
+                imgs = torch.cat(imgs) # catenate img tensors together
+                # catenate img tensors together and repeat them on the second dimension
+                im_dim_list = torch.FloatTensor(im_dim_list).repeat(1, 2) 
                 # im_dim_list_ = im_dim_list
 
             self.wait_and_put(self.image_queue, (imgs, orig_imgs, im_names, im_dim_list))
@@ -213,6 +214,7 @@ class DetectionLoader():
 
     def image_detection(self):
         for i in range(self.num_batches):
+            # here, imgs is a batch tensor
             imgs, orig_imgs, im_names, im_dim_list = self.wait_and_get(self.image_queue)
             if imgs is None or self.stopped:
                 self.wait_and_put(self.det_queue, (None, None, None, None, None, None, None))
