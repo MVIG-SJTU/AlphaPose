@@ -12,6 +12,10 @@ def get_detector(opt=None):
         from detector.yolo_api import YOLODetector
         from detector.yolo_cfg import cfg
         return YOLODetector(cfg, opt)
+    elif opt.detector == 'centerpose':
+        from detector.resnet_cfg import cfg
+
+        pass
     elif opt.detector == 'tracker':
         from detector.tracker_api import Tracker
         from detector.tracker_cfg import cfg

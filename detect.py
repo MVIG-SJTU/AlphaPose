@@ -60,6 +60,7 @@ if __name__ == '__main__':
   args, cfgs = get_args()
 
   detector = YOLODetector(cfg, args)
+  detector.load_model()
 
   # used for debug, we pick pose_seg_hard/1.jpg 2.jpg as benchmark images
   img_sources = [
@@ -68,6 +69,10 @@ if __name__ == '__main__':
   ]
 
   imgs = torch.cat([detector.image_preprocess(_) for _ in img_sources])
+  for img in imgs:
+    print('mean: ', img.mean())
+    print('std: ', img.std())
+
   orig_imgs = [cv2.imread(_) for _ in img_sources]
   im_dim_list = torch.FloatTensor([(_.shape[1], _.shape[0]) for _ in orig_imgs]).repeat(1, 2)
 
@@ -86,18 +91,19 @@ if __name__ == '__main__':
   print(dets[:, 0])
   print(dets[:, 1:5])
   print(dets[:, 5:])
+  print(dets.dtype)
 
   
   """ The benchmark results should be (astype(int)):
-  batch index, box, confidence, 
- [[  0 101 208 507 723   0   0   0]
-  [  0 245   3 578 726   0   0   0]
-  [  0 249   0 575 453   0   0   0]
-  [  1 123  53 296 619   0   0   0]
-  [  1  32  14 167 583   0   0   0]
-  [  1 354  74 534 604   0   0   0]
-  [  1 256  84 509 585   0   0   0]
-  [  1 265  72 418 596   0   0   0]]
+  batch index, box, box confidence, class score, class index
+ [[  0 101 208 507 723   0.7    0.99   0]
+  [  0 245   3 578 726   0.6    0.99   0]
+  [  0 249   0 575 453   0.1    0.99   0]
+  [  1 123  53 296 619   0.9    0.98   0]
+  [  1  32  14 167 583   0.7    0.97   0]
+  [  1 354  74 534 604   0.3    0.99   0]
+  [  1 256  84 509 585   0.1    0.99   0]
+  [  1 265  72 418 596   0.09   0.99   0]]
   """
 
 

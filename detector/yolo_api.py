@@ -101,11 +101,14 @@ class YOLODetector(BaseDetector):
                 return 0
             dets = dets.cpu()
 
+            # index_select: select and ensamble selected results together
             orig_dim_list = torch.index_select(orig_dim_list, 0, dets[:, 0].long())
             scaling_factor = torch.min(self.inp_dim / orig_dim_list, 1)[0].view(-1, 1)
             dets[:, [1, 3]] -= (self.inp_dim - scaling_factor * orig_dim_list[:, 0].view(-1, 1)) / 2
             dets[:, [2, 4]] -= (self.inp_dim - scaling_factor * orig_dim_list[:, 1].view(-1, 1)) / 2
             dets[:, 1:5] /= scaling_factor
+
+            # clamp: clamps all elements in dets to be within 0.0 and orig_dim_list
             for i in range(dets.shape[0]):
                 dets[i, [1, 3]] = torch.clamp(dets[i, [1, 3]], 0.0, orig_dim_list[i, 0])
                 dets[i, [2, 4]] = torch.clamp(dets[i, [2, 4]], 0.0, orig_dim_list[i, 1])
@@ -118,6 +121,7 @@ class YOLODetector(BaseDetector):
         if isinstance(dets, int):
             return dets
 
+        # if dets are too many, degrade nms confidence and merge more
         if dets.shape[0] > 100:
             nms_conf -= 0.05
             dets = self.write_results(prediction_bak.clone(), confidence, num_classes, nms, nms_conf)
@@ -153,14 +157,12 @@ class YOLODetector(BaseDetector):
         #   in future version, new is recommanded to be replaced with torch.new_*,
         #   these tensors locate at same memory section
         # modified by sherk: 
-        output = prediction.new(1, prediction.size(2) + 1)
-        # output = torch.tensor((), dtype=prediction.dtype)
-        # output = output.new_zeros((1, prediction.size(2)+1))
+        output = prediction.new(1, prediction.size(2) + 1)  # output.shape: (1, 86), all zeros
         write = False
         num = 0
         for ind in range(batch_size):
             #select the image from the batch, a 22743 * 85 size tensor
-            image_pred = prediction[ind]
+            image_pred = prediction[ind]    # 22743 * 85
 
             # Get the class having maximum score, and the index of that class
             # Get rid of num_classes softmax scores 
@@ -169,14 +171,14 @@ class YOLODetector(BaseDetector):
             max_conf = max_conf.float().unsqueeze(1)
             max_conf_score = max_conf_score.float().unsqueeze(1)
             seq = (image_pred[:,:5], max_conf, max_conf_score)
-            # image_pred:(n,(x1,y1,x2,y2,c,s,idx of cls))
-            image_pred = torch.cat(seq, 1)
+            
+            image_pred = torch.cat(seq, 1)  # image_pred:(n,(x1,y1,x2,y2,c,s,idx of cls))
 
             # Get rid of the zero entries
             non_zero_ind =  (torch.nonzero(image_pred[:, 4]))
 
             # only pick unzero classes
-            image_pred_ = image_pred[non_zero_ind.squeeze(),:].view(-1,7)
+            image_pred_ = image_pred[non_zero_ind.squeeze(), :].view(-1,7)
 
             # Get the various classes detected in the image
             try:
@@ -187,17 +189,18 @@ class YOLODetector(BaseDetector):
             #WE will do NMS classwise
             #print(img_classes)
             for cls in img_classes:
+                # pick only people class
                 if cls != 0:
                     continue
                 #get the detections with one particular class
-                cls_mask = image_pred_*(image_pred_[:,-1] == cls).float().unsqueeze(1)
+                cls_mask = image_pred_ * (image_pred_[:,-1] == cls).float().unsqueeze(1)
                 class_mask_ind = torch.nonzero(cls_mask[:,-2]).squeeze()
 
                 image_pred_class = image_pred_[class_mask_ind].view(-1,7)
 
-                #sort the detections such that the entry with the maximum objectness
-                #confidence is at the top
-                conf_sort_index = torch.sort(image_pred_class[:,4], descending = True )[1]
+                # sort the detections such that the entry with the maximum objectness
+                # confidence is at the top, sort by bounding-box confidence
+                conf_sort_index = torch.sort(image_pred_class[:, 4], descending = True )[1]
                 image_pred_class = image_pred_class[conf_sort_index]
                 idx = image_pred_class.size(0)
 
