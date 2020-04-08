@@ -38,11 +38,18 @@ class FastPose(nn.Module):
         self.preact.load_state_dict(model_state)
 
         self.suffle1 = nn.PixelShuffle(2)
-        self.duc1 = DUC(512, 1024, upscale_factor=2, norm_layer=norm_layer)
-        self.duc2 = DUC(256, 512, upscale_factor=2, norm_layer=norm_layer)
+        if cfg['NUM_LAYERS'] != 18:
+            self.duc1 = DUC(512, 1024, upscale_factor=2, norm_layer=norm_layer)
+            self.duc2 = DUC(256, 512, upscale_factor=2, norm_layer=norm_layer)
+            self.conv_out = nn.Conv2d(
+                self.conv_dim, self._preset_cfg['NUM_JOINTS'], kernel_size=3, stride=1, padding=1)
+        elif cfg['NUM_LAYERS'] == 18:
+            self.duc1 = DUC(128, 256, upscale_factor=2, norm_layer=norm_layer)
+            self.duc2 = DUC(64, 128, upscale_factor=2, norm_layer=norm_layer)  # TODO: will be changed to 64 in future version
+            self.conv_out = nn.Conv2d(
+                32, self._preset_cfg['NUM_JOINTS'], kernel_size=3, stride=1, padding=1)
 
-        self.conv_out = nn.Conv2d(
-            self.conv_dim, self._preset_cfg['NUM_JOINTS'], kernel_size=3, stride=1, padding=1)
+        
 
     def forward(self, x):
         out = self.preact(x)

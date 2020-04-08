@@ -20,7 +20,7 @@ class BasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None,
-                 reduction=False, norm_layer=nn.BatchNorm2d):
+                 reduction=False, norm_layer=nn.BatchNorm2d, dcn=None): # sherk: add dcn key argument
         super(BasicBlock, self).__init__()
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
