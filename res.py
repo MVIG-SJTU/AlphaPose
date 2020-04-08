@@ -36,10 +36,13 @@ if __name__ == '__main__':
 
   # here starts self.images_detection function
   results = detector.images_detection(imgs, im_dim_list)
-  print(results[:, 0])
-  print(results[:, 1:5])
-  print(results[:, 5])
-  print(results.dtype)
+  # print(results[:, 0])
+  # print(results[:, 1:5])
+  # print(results[:, 5])
+  # print(results.dtype)
+
+
+  print(detector.detect_one_img(img_sources[0]))
   
   # visualization
   results = results.numpy()

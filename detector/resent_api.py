@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 import cv2
@@ -64,6 +66,9 @@ class ResDetector(BaseDetector):
     return images
 
   def images_detection(self, images, im_dim_list):
+    if self.model is None:
+      self.load_model()
+
     with torch.no_grad():
       torch.cuda.synchronize()
       images = images.cuda()
@@ -136,4 +141,38 @@ class ResDetector(BaseDetector):
     return torch.cat(dets)
 
   def detect_one_img(self, img_name):
-    pass
+    """
+    take a str-like image name and return result in a dictionary
+    """
+    assert isinstance(img_name, str)
+
+    img_sources = [img_name]
+    imgs = torch.cat([self.image_preprocess(_) for _ in img_sources])
+    orig_imgs = [cv2.imread(_) for _ in img_sources]
+    im_dim_list = torch.FloatTensor([(_.shape[1], _.shape[0]) for _ in orig_imgs]).repeat(1, 2)
+
+    im_height, im_width, _ = orig_imgs[0].shape
+
+    dets = self.images_detection(imgs, im_dim_list).numpy()
+    dets_results = []
+
+    for i in range(dets.shape[0]):
+      dets[i, [1, 3]] = np.clip(dets[i, [1, 3]], 0.0, im_width)
+      dets[i, [2, 4]] = np.clip(dets[i, [2, 4]], 0.0, im_height)
+
+      # ensamble results
+      det_dict = {}
+      x = float(dets[i, 1])
+      y = float(dets[i, 2])
+      w = float(dets[i, 3] - dets[i, 1])
+      h = float(dets[i, 4] - dets[i, 2])
+      det_dict["category_id"] = 1
+      det_dict["score"] = float(dets[i, 5])
+      det_dict["bbox"] = [x, y, w, h]
+      det_dict["image_id"] = int(os.path.basename(img_name).split('.')[0])
+      dets_results.append(det_dict)
+    
+    return dets_results
+
+
+

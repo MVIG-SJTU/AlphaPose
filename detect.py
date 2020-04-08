@@ -55,7 +55,6 @@ def benchmark_on_single_image():
   cv2.waitKey(0)
 
 
-
 if __name__ == '__main__':
   args, cfgs = get_args()
 
@@ -105,6 +104,8 @@ if __name__ == '__main__':
   [  1 256  84 509 585   0.1    0.99   0]
   [  1 265  72 418 596   0.09   0.99   0]]
   """
+
+  print(detector.detect_one_img(img_sources[0]))
 
 
 
