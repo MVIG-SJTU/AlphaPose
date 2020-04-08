@@ -194,7 +194,7 @@ def main():
         opt.epoch = i
         current_lr = optimizer.state_dict()['param_groups'][0]['lr']
 
-        logger.info(f'############# Starting Epoch {opt.epoch} | LR: {current_lr} #############')
+        logger.info(f'--------------------- Starting Epoch {opt.epoch} | LR: {current_lr} ---------------------')
 
         # Training
         loss, miou = train(opt, train_loader, m, criterion, optimizer, writer)
