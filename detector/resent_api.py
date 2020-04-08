@@ -135,6 +135,5 @@ class ResDetector(BaseDetector):
 
     return torch.cat(dets)
 
-
-  def detect_one_img(self):
+  def detect_one_img(self, img_name):
     pass
