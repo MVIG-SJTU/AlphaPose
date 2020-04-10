@@ -9,6 +9,7 @@ import torch
 import numpy as np
 
 ''' Constant Configuration '''
+# how this constants are determined
 delta1 = 1
 mu = 1.7
 delta2 = 2.65

@@ -33,7 +33,7 @@ DATA_PRESET:
   - 48
 MODEL:
   TYPE: 'FastPose'
-  PRETRAINED: ''
+  PRETRAINED: './exp/mytrain-256x192_res18_lr1e-3_1x.yaml/model_69.pth'
   TRY_LOAD: ''
   NUM_DECONV_FILTERS: # this parameter is only used in SimplePose model
   - 256
@@ -50,14 +50,14 @@ TRAIN:
   WORLD_SIZE: 4
   BATCH_SIZE: 32
   BEGIN_EPOCH: 0
-  END_EPOCH: 200
+  END_EPOCH: 130
   OPTIMIZER: 'adam'
   LR: 0.001
   LR_FACTOR: 0.1
   LR_STEP:
+  - 20
+  - 50
+  DPG_MILESTONE: 70
+  DPG_STEP:
   - 90
   - 120
-  DPG_MILESTONE: 140
-  DPG_STEP:
-  - 160
-  - 190
