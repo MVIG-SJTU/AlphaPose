@@ -68,7 +68,7 @@ class Mscoco_det(data.Dataset):
             img_id = int(img_id)
         else:
             img_id = det_res['image_id']
-        img_path = './data/coco/trainval2017/%012d.jpg' % img_id
+        img_path = './data/coco/val2017/%012d.jpg' % img_id
 
         # Load image
         image = scipy.misc.imread(img_path, mode='RGB')
