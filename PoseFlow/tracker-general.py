@@ -24,6 +24,8 @@ from tqdm import tqdm
 from utils import *
 from matching import orb_matching
 import argparse
+import multiprocessing
+from parallel_process import parallel_process
 
 # visualization
 def display_pose(imgdir, visdir, tracked, cmap):
@@ -120,7 +122,7 @@ if __name__ == '__main__':
 
         with open(notrack_json) as f:
             results = json.load(f)
-            for i in xrange(len(results)):
+            for i in range(len(results)):
                 imgpath = results[i]['image_id']
                 if last_image_name != imgpath:
                     results_forvis[imgpath] = []
@@ -136,34 +138,55 @@ if __name__ == '__main__':
     track = {}
     num_persons = 0
 
-    # load json file without tracking information
+    def load_pose_boxes(img_name):
+        out = {'num_boxes':len(notrack[img_name])}
+        for bid in range(len(notrack[img_name])):
+            out[bid+1] = {}
+            out[bid+1]['box_score'] = notrack[img_name][bid]['scores']
+            out[bid+1]['box_pos'] = get_box(notrack[img_name][bid]['keypoints'], os.path.join(image_dir,img_name))
+            out[bid+1]['box_pose_pos'] = np.array(notrack[img_name][bid]['keypoints']).reshape(-1,3)[:,0:2]
+            out[bid+1]['box_pose_score'] = np.array(notrack[img_name][bid]['keypoints']).reshape(-1,3)[:,-1]
+        return out
+
     print("Start loading json file...\n")
+    # load json file without tracking information
     with open(notrack_json,'r') as f:
         notrack = json.load(f)
-        for img_name in tqdm(sorted(notrack.keys())):
-            track[img_name] = {'num_boxes':len(notrack[img_name])}
-            for bid in range(len(notrack[img_name])):
-                track[img_name][bid+1] = {}
-                track[img_name][bid+1]['box_score'] = notrack[img_name][bid]['scores']
-                track[img_name][bid+1]['box_pos'] = get_box(notrack[img_name][bid]['keypoints'], os.path.join(image_dir,img_name))
-                track[img_name][bid+1]['box_pose_pos'] = np.array(notrack[img_name][bid]['keypoints']).reshape(-1,3)[:,0:2]
-                track[img_name][bid+1]['box_pose_score'] = np.array(notrack[img_name][bid]['keypoints']).reshape(-1,3)[:,-1]
+        pose_boxes = parallel_process([(k,) for k in sorted(notrack.keys())], load_pose_boxes, n_jobs=8)
+        track.update(zip(sorted(notrack.keys()), pose_boxes) )
    
     np.save('notrack-bl.npy',track)
     # track = np.load('notrack-bl.npy').item()
 
-    # tracking process
-    max_pid_id = 0
     frame_list = sorted(list(track.keys()))
 
+    print("ORB matching frame pairs ...\n")
+    tasks = []
+    for idx, frame_name in enumerate(frame_list[:-1]):
+        frame_id = frame_name.split(".")[0]
+        next_frame_name = frame_list[idx+1]
+        next_frame_id = next_frame_name.split(".")[0]
+        cor_file = os.path.join(image_dir, "".join([frame_id, '_', next_frame_id, '_orb.txt']))
+       
+        # regenerate the missed pair-matching txt
+        if not os.path.exists(cor_file) or os.stat(cor_file).st_size<200:
+            img1_path = os.path.join(image_dir, frame_name)
+            img2_path = os.path.join(image_dir, next_frame_name)
+            tasks.append((img1_path,img2_path, image_dir, frame_id, next_frame_id))
+    
+    # do the matching parallel
+    parallel_process(tasks, orb_matching, n_jobs=16)
+
     print("Start pose tracking...\n")
+    # tracking process
+    max_pid_id = 0
     for idx, frame_name in enumerate(tqdm(frame_list[:-1])):
         frame_new_pids = []
         frame_id = frame_name.split(".")[0]
 
         next_frame_name = frame_list[idx+1]
         next_frame_id = next_frame_name.split(".")[0]
-        
+
         # init tracking info of the first frame in one video
         if idx == 0:
             for pid in range(1, track[frame_name]['num_boxes']+1):
@@ -172,13 +195,6 @@ if __name__ == '__main__':
 
         max_pid_id = max(max_pid_id, track[frame_name]['num_boxes'])
         cor_file = os.path.join(image_dir, "".join([frame_id, '_', next_frame_id, '_orb.txt']))
-       
-        # regenerate the missed pair-matching txt
-        if not os.path.exists(cor_file) or os.stat(cor_file).st_size<200:
-            img1_path = os.path.join(image_dir, frame_name)
-            img2_path = os.path.join(image_dir, next_frame_name)
-            orb_matching(img1_path,img2_path, image_dir, frame_id, next_frame_id)
-
         all_cors = np.loadtxt(cor_file)
 
         # if there is no people in this frame, then copy the info from former frame
