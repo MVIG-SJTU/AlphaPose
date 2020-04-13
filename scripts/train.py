@@ -176,6 +176,9 @@ def main():
         optimizer = torch.optim.Adam(m.parameters(), lr=cfg.TRAIN.LR)
     elif cfg.TRAIN.OPTIMIZER == 'rmsprop':
         optimizer = torch.optim.RMSprop(m.parameters(), lr=cfg.TRAIN.LR)
+    elif cfg.TRAIN.OPTIMIZER == 'sgd':
+        # sherk: used for fine-tuning
+        optimizer = torch.optim.SGD(m.parameters(), lr=cfg.TRAIN.LR, momentum=0.9)
 
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=cfg.TRAIN.LR_STEP, gamma=cfg.TRAIN.LR_FACTOR)
@@ -212,6 +215,7 @@ def main():
                 logger.info(f'##### Epoch {opt.epoch} | gt mAP: {gt_AP} | rcnn mAP: {rcnn_AP} #####')
 
         # Time to add DPG
+        # Sherk: What is DPG?
         if i == cfg.TRAIN.DPG_MILESTONE:
             torch.save(m.module.state_dict(), './exp/{}-{}/final.pth'.format(opt.exp_id, cfg.FILE_NAME))
             # Adjust learning rate

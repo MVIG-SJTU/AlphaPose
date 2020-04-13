@@ -56,12 +56,12 @@ def build_from_cfg(cfg, registry, default_args=None):
     """
     assert isinstance(cfg, dict) and 'TYPE' in cfg
     assert isinstance(default_args, dict) or default_args is None
-    # args: .yaml.DATASET.VAL
+    # sherk: args: .yaml.DATASET.VAL or .TRAIN
     args = cfg.copy()
     obj_type = args.pop('TYPE') # sherk: Mscoco here
 
     if isinstance(obj_type, str):
-        # Registry('dataset').get('Mscoco')
+        # sherk: Registry('dataset').get('Mscoco')
         obj_cls = registry.get(obj_type)
         if obj_cls is None:
             raise KeyError('{} is not in the {} registry'.format(
@@ -74,4 +74,5 @@ def build_from_cfg(cfg, registry, default_args=None):
     if default_args is not None:
         for name, value in default_args.items():
             args.setdefault(name, value)
+    # sherk: Mscoco(.yaml.DATASET.TRAIN + default_args)
     return obj_cls(**args)

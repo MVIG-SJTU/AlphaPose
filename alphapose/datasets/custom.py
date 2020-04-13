@@ -51,6 +51,7 @@ class CustomDataset(data.Dataset):
         self._train = train
         self._dpg = dpg
 
+        # sherk: initialize augumentation parameters
         if 'AUG' in cfg.keys():
             self._scale_factor = cfg['AUG']['SCALE_FACTOR']
             self._rot = cfg['AUG']['ROT_FACTOR']

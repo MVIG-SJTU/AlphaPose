@@ -45,7 +45,7 @@ class SimpleTransform(object):
     output_size: tuple
         Heatmap size, as (height, width).
     rot: int
-        Ratation augmentation.
+        Rotation augmentation.
     train: bool
         True for training trasformation.
     """
@@ -182,6 +182,7 @@ class SimpleTransform(object):
             xmin, ymin, xmax - xmin, ymax - ymin, self._aspect_ratio)
 
         # half body transform
+        # sherk: only do half body transform when visable joints exceeds num_joints_half_body and prob is triggered
         if self._train and (np.sum(joints_vis[:, 0]) > self.num_joints_half_body and np.random.rand() < self.prob_half_body):
             c_half_body, s_half_body = self.half_body_transform(
                 gt_joints[:, :, 0], joints_vis

@@ -54,8 +54,8 @@ def get_args():
 
     args = parser.parse_args([
     '--cfg', './configs/coco/resnet/256x192_res18_lr1e-3_1x.yaml',
-    '--checkpoint', './exp/mytrain-256x192_res18_lr1e-3_1x.yaml/model_69.pth',
-    '--indir', './data/seedland/png_missing_error/png_missing',
+    '--checkpoint', './exp/mytrain-res18/final_DPG.pth',
+    '--indir', './data/seedland/dense',
     '--outdir', './data/output/'
     ])
     cfg = update_config(args.cfg)
