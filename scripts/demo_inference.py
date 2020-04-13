@@ -192,6 +192,7 @@ if __name__ == "__main__":
     batchSize = args.posebatch
     if args.flip:
         batchSize = int(batchSize / 2)
+    errors = 0
     try:
         for i in im_names_desc:
             start_time = getTime()
@@ -245,6 +246,10 @@ if __name__ == "__main__":
             print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...')
         writer.stop()
         det_loader.stop()
+    except Exception as e:
+        print(repr(e))
+        print('An error as above occurs when processing the images, please check it')
+        pass
     except KeyboardInterrupt:
         print_finish_info()
         # Thread won't be killed when press Ctrl+C
