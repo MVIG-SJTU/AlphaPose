@@ -44,15 +44,9 @@ Results on PoseTrack Challenge validation set:
 ## Installation
 
 1. Download PoseTrack Dataset from [PoseTrack](https://posetrack.net/) to `AlphaPose/PoseFlow/posetrack_data/`
-2. (Optional) Use [DeepMatching](http://lear.inrialpes.fr/src/deepmatching/) to extract dense correspondences between adjcent frames in every video, please refer to [DeepMatching Compile Error](https://github.com/MVIG-SJTU/AlphaPose/issues/97) to compile DeepMatching correctly
 
 ```shell
 pip install -r requirements.txt
-
-cd deepmatching
-make clean all
-make
-cd ..
 ```
 
 ## For Any Datasets (General Version)
@@ -62,9 +56,6 @@ cd ..
 ```shell
 # pytorch version
 python demo.py --indir ${image_dir}$ --outdir ${results_dir}$
-
-# torch version
-./run.sh --indir ${image_dir}$ --outdir ${results_dir}$
 ```
 
 2. Run pose tracking
@@ -76,12 +67,6 @@ python tracker-general.py --imgdir ${image_dir}$
                           --in_json ${results_dir}$/alphapose-results.json 
                           --out_json ${results_dir}$/alphapose-results-forvis-tracked.json
                           --visdir ${render_dir}$
-
-# torch version
-python tracker-general.py --imgdir ${image_dir}$ 
-                          --in_json ${results_dir}$/POSE/alpha-pose-results-forvis.json 
-                          --out_json ${results_dir}$/POSE/alpha-pose-results-forvis-tracked.json
-                          --visdir ${render_dir}$
 ```
 
 
@@ -91,14 +76,7 @@ python tracker-general.py --imgdir ${image_dir}$
 2. Using DeepMatching/ORB to generate correspondence files.
 
 ```shell
-# Generate correspondences by DeepMatching
-# (More Robust but Slower)
-python matching.py --orb=0 
-
-or
-
-# Generate correspondences by Orb
-# (Faster but Less Robust)
+# Generate correspondences by orb
 python matching.py --orb=1
 ```
 
@@ -106,7 +84,7 @@ python matching.py --orb=1
 
 
 ```shell
-python tracker-baseline.py --dataset=val/test  --orb=1/0
+python tracker-baseline.py --dataset=val/test  --orb=1
 ```
 4. Evaluation
 
