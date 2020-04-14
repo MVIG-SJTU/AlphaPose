@@ -104,6 +104,14 @@ def check_input():
         else:
             raise IOError('Error: --video must refer to a video file, not directory.')
 
+    # for detection results
+    if len(args.detfile):
+        if os.path.isfile(args.detfile):
+            detfile = args.detfile
+            return 'detfile', detfile
+        else:
+            raise IOError('Error: --detfile must refer to a detection json file, not directory.')
+
     # for images
     if len(args.inputpath) or len(args.inputlist) or len(args.inputimg):
         inputpath = args.inputpath
@@ -147,6 +155,8 @@ if __name__ == "__main__":
     # Load detection loader
     if mode == 'webcam':
         det_loader = WebCamDetectionLoader(input_source, get_detector(args), cfg, args).start()
+    elif mode == 'detfile':
+        det_loader = FileDetectionLoader(input_source, cfg, args).start()
     else:
         det_loader = DetectionLoader(input_source, get_detector(args), cfg, args, batchSize=args.detbatch, mode=mode, queueSize=args.qsize).start()
 
@@ -192,7 +202,6 @@ if __name__ == "__main__":
     batchSize = args.posebatch
     if args.flip:
         batchSize = int(batchSize / 2)
-    errors = 0
     try:
         for i in im_names_desc:
             start_time = getTime()
