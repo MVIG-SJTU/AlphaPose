@@ -9,7 +9,8 @@ import os
 import pickle as pk
 from abc import abstractmethod, abstractproperty
 
-import scipy.misc
+# import scipy.misc
+import cv2
 import torch.utils.data as data
 from pycocotools.coco import COCO
 
@@ -94,7 +95,8 @@ class CustomDataset(data.Dataset):
 
         # load ground truth, including bbox, keypoints, image size
         label = copy.deepcopy(self._labels[idx])
-        img = scipy.misc.imread(img_path, mode='RGB')
+        # img = scipy.misc.imread(img_path, mode='RGB')
+        img = cv2.imread(img_path)[:, :, ::-1]
 
         # transform ground truth into training label and apply data augmentation
         img, label, label_mask, bbox = self.transformation(img, label)

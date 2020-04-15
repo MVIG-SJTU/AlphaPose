@@ -7,7 +7,8 @@
 import json
 import os
 
-import scipy.misc
+# import scipy.misc
+import cv2
 import torch
 import torch.utils.data as data
 from tqdm import tqdm
@@ -71,7 +72,8 @@ class Mscoco_det(data.Dataset):
         img_path = './data/coco/val2017/%012d.jpg' % img_id # sherk: modified from `trainval2017` to `val2017`
 
         # Load image
-        image = scipy.misc.imread(img_path, mode='RGB')
+        # image = scipy.misc.imread(img_path, mode='RGB')
+        image = cv2.imread(img_path)[:, :, ::-1]
 
         imght, imgwidth = image.shape[1], image.shape[2]
         x1, y1, w, h = det_res['bbox']

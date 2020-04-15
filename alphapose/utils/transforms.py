@@ -7,7 +7,7 @@
 
 import torch
 import cv2
-import scipy.misc
+# import scipy.misc
 import numpy as np
 import random
 
@@ -113,7 +113,8 @@ def torch_to_im(img):
 
 def load_image(img_path):
     # H x W x C => C x H x W
-    return im_to_torch(scipy.misc.imread(img_path, mode='RGB'))
+    # return im_to_torch(scipy.misc.imread(img_path, mode='RGB'))
+    return im_to_torch(cv2.imread(img_path)[:, :, ::-1])
 
 
 def to_numpy(tensor):
