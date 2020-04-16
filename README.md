@@ -89,12 +89,19 @@ Please check out [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md)
 
 Examples:
 
+Demo using `FastPose` model.
+``` bash
+./scripts/inference.sh configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml pretrained_models/fast_res50_256x192.pth ${VIDEO_NAME}
+#or
+python scripts/demo_inference.py --cfg configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint pretrained_models/fast_res50_256x192.pth --indir examples/demo/
+```
+
 Train `FastPose` on mscoco dataset.
 ``` bash
 ./scripts/train.sh ./configs/coco/resnet/256x192_res50_lr1e-3_1x.yaml exp_fastpose
 ```
 
-More detailed inference options, please refer to [GETTING_STARTED.md](docs/GETTING_STARTED.md)
+More detailed inference options and examples, please refer to [GETTING_STARTED.md](docs/GETTING_STARTED.md)
 
 
 ## Common issue & FAQ
