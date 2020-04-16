@@ -16,6 +16,10 @@ def get_detector(opt=None):
         from detector.tracker_api import Tracker
         from detector.tracker_cfg import cfg
         return Tracker(cfg, opt)
+    elif opt.detector.startswith('efficientdet_d'):
+        from detector.effdet_api import EffDetDetector
+        from detector.effdet_cfg import cfg
+        return EffDetDetector(cfg, opt)
     else:
         raise NotImplementedError
 
