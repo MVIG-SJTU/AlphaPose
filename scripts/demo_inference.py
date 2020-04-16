@@ -281,7 +281,7 @@ if __name__ == "__main__":
                 p.terminate()
             writer.commit()
             writer.clear_queues()
-            det_loader.clear_queues()
+            # det_loader.clear_queues()
     final_result = writer.results()
     write_json(final_result, args.outputpath, form=args.format, for_eval=args.eval)
     print("Results have been written to json.")
