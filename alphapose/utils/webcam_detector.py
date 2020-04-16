@@ -62,12 +62,10 @@ class WebCamDetectionLoader():
 
     def start(self):
         # start a thread to pre process images for object detection
-        self.image_preprocess_worker = self.start_worker(self.frame_preprocess)
-        return self
+        image_preprocess_worker = self.start_worker(self.frame_preprocess)
+        return [image_preprocess_worker]
 
     def stop(self):
-        # end threads
-        self.image_preprocess_worker.join()
         # clear queues
         self.clear_queues()
 

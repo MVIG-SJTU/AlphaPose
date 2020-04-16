@@ -36,7 +36,6 @@ class DetectionLoader():
             stream.release()
 
         self.detector = detector
-
         self.batchSize = batchSize
         leftover = 0
         if (self.datalen) % batchSize:
@@ -56,6 +55,7 @@ class DetectionLoader():
                 rot=0, sigma=self._sigma,
                 train=False, add_dpg=False, gpu_device=self.device)
 
+        self.worker_list = []
         # initialize the queue used to store data
         """
         image_queue: the buffer storing pre-processed images for object detection
@@ -85,20 +85,17 @@ class DetectionLoader():
     def start(self):
         # start a thread to pre process images for object detection
         if self.mode == 'image':
-            self.image_preprocess_worker = self.start_worker(self.image_preprocess)
+            image_preprocess_worker = self.start_worker(self.image_preprocess)
         elif self.mode == 'video':
-            self.image_preprocess_worker = self.start_worker(self.frame_preprocess)
+            image_preprocess_worker = self.start_worker(self.frame_preprocess)
         # start a thread to detect human in images
-        self.image_detection_worker = self.start_worker(self.image_detection)
+        image_detection_worker = self.start_worker(self.image_detection)
         # start a thread to post process cropped human image for pose estimation
-        self.image_postprocess_worker = self.start_worker(self.image_postprocess)
-        return self
+        image_postprocess_worker = self.start_worker(self.image_postprocess)
+
+        return [image_preprocess_worker, image_detection_worker, image_postprocess_worker]
 
     def stop(self):
-        # end threads
-        self.image_preprocess_worker.join()
-        self.image_detection_worker.join()
-        self.image_postprocess_worker.join()
         # clear queues
         self.clear_queues()
 
