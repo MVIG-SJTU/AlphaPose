@@ -62,7 +62,6 @@ class CenterposeDetector(BaseDetector):
       images = np.concatenate((images, images[:, :, :, ::-1]), axis=0)
 
     images = torch.from_numpy(images)
-    print(images.shape)
 
     return images
 

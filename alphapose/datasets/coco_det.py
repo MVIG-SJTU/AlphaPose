@@ -6,6 +6,7 @@
 """MS COCO Human Detection Box dataset."""
 import json
 import os
+from os.path import join, split
 
 # import scipy.misc
 import cv2
@@ -40,7 +41,7 @@ class Mscoco_det(data.Dataset):
         self._ann_file = os.path.join(self._root, cfg['ANN'])
 
         if os.path.exists(det_file):
-            print("Detection results exist, will use it")
+            print("Detection results {} exist, will use it".format(det_file))
         else:
             print("Will create detection results to {}".format(det_file))
             self.write_coco_json(det_file)

@@ -19,7 +19,7 @@ DATASET:
     TYPE: 'Mscoco_det'
     ROOT: './data/coco/'
     IMG_PREFIX: 'val2017'
-    DET_FILE: './exp/json/test_det_yolo.json'
+    DET_FILE: './exp/json/test_det_d7.json'
     ANN: 'annotations/person_keypoints_val2017.json'
 DATA_PRESET:
   TYPE: 'simple'
