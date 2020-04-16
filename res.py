@@ -9,43 +9,45 @@ import numpy as np
 import cv2
 import torch
 
-from detector.resent_api import ResDetector
-from detector.resnet_cfg import cfg
+from detector.centerpose_api import CenterposeDetector
+from detector.centerpose_cfg import cfg
 
 
 
 
 
 if __name__ == '__main__':
-  detector = ResDetector(cfg)
+  detector = CenterposeDetector(cfg)
   detector.load_model()
 
   img_sources = [
     './data/seedland/pose_seg_hard/1.jpg',
-    './data/seedland/pose_seg_hard/2.jpg'
+    './data/seedland/pose_seg_hard/2.jpg',
+    './data/seedland/pose_seg_hard/3.png'
   ]
 
 
   imgs = torch.cat([detector.image_preprocess(_) for _ in img_sources])
 
 
+
   orig_imgs = [cv2.imread(_) for _ in img_sources]
   im_dim_list = torch.FloatTensor([(_.shape[1], _.shape[0]) for _ in orig_imgs]).repeat(1, 2)
+
+  print(im_dim_list)
+  print(im_dim_list.shape)
 
   images = imgs.clone()
 
   # here starts self.images_detection function
   results = detector.images_detection(imgs, im_dim_list)
-  # print(results[:, 0])
-  # print(results[:, 1:5])
-  # print(results[:, 5])
-  # print(results.dtype)
 
 
-  print(detector.detect_one_img(img_sources[0]))
+  # print(detector.detect_one_img(img_sources[0]))
   
   # visualization
   results = results.numpy()
+  print(type(results), results)
   for idx in range(orig_imgs.__len__()):
     img = orig_imgs[idx]
 

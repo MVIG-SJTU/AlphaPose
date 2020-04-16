@@ -7,15 +7,15 @@ import cv2
 import torch
 
 from detector.apis import BaseDetector
-from detector.resnet_cfg import cfg
-from detector.centorpose.model import create_model, load_model
-from detector.centorpose.image import get_affine_transform, transform_preds
-from detector.centorpose.utils import flip_lr, flip_lr_off, flip_tensor
-from detector.centorpose.decode import _nms, _topk, _transpose_and_gather_feat
+from detector.centerpose_cfg import cfg
+from detector.centerpose.model import create_model, load_model
+from detector.centerpose.image import get_affine_transform, transform_preds
+from detector.centerpose.utils import flip_lr, flip_lr_off, flip_tensor
+from detector.centerpose.decode import _nms, _topk, _transpose_and_gather_feat
 
 
 
-class ResDetector(BaseDetector):
+class CenterposeDetector(BaseDetector):
   def __init__(self, cfg, opt=None):
     self.model = None
     self.mean = np.array(cfg.DATASET.MEAN, dtype=np.float32).reshape(1, 1, 3)
@@ -62,6 +62,7 @@ class ResDetector(BaseDetector):
       images = np.concatenate((images, images[:, :, :, ::-1]), axis=0)
 
     images = torch.from_numpy(images)
+    print(images.shape)
 
     return images
 
