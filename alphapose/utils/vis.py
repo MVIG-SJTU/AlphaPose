@@ -156,13 +156,16 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
         kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
         # Draw bboxes
         if add_bbox:
-            from PoseFlow.poseflow_infer import get_box
-            keypoints = []
-            for n in range(kp_scores.shape[0]):
-                keypoints.append(float(kp_preds[n, 0]))
-                keypoints.append(float(kp_preds[n, 1]))
-                keypoints.append(float(kp_scores[n]))
-            bbox = get_box(keypoints, height, width)
+            if 'box' in human.keys():
+                bbox = human['box']
+            else:
+                from PoseFlow.poseflow_infer import get_box
+                keypoints = []
+                for n in range(kp_scores.shape[0]):
+                    keypoints.append(float(kp_preds[n, 0]))
+                    keypoints.append(float(kp_preds[n, 1]))
+                    keypoints.append(float(kp_scores[n]))
+                bbox = get_box(keypoints, height, width)
             # color = get_color_fast(int(abs(human['idx'][0])))
             cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), BLUE, 2)
             # Draw indexes of humans
@@ -230,13 +233,17 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
         kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
         # Draw bboxes
         if add_bbox:
-            from PoseFlow.poseflow_infer import get_box
-            keypoints = []
-            for n in range(kp_scores.shape[0]):
-                keypoints.append(float(kp_preds[n, 0]))
-                keypoints.append(float(kp_preds[n, 1]))
-                keypoints.append(float(kp_scores[n]))
-            bbox = get_box(keypoints, height, width)
+            if 'box' in human.keys():
+                bbox = human['box']
+                bbox = [bbox[0], bbox[0]+bbox[2], bbox[1], bbox[1]+bbox[3]]#xmin,xmax,ymin,ymax
+            else:
+                from PoseFlow.poseflow_infer import get_box
+                keypoints = []
+                for n in range(kp_scores.shape[0]):
+                    keypoints.append(float(kp_preds[n, 0]))
+                    keypoints.append(float(kp_preds[n, 1]))
+                    keypoints.append(float(kp_scores[n]))
+                bbox = get_box(keypoints, height, width)
             bg = img.copy()
             # color = get_color_fast(int(abs(human['idx'][0][0])))
             cv2.rectangle(bg, (int(bbox[0]/2), int(bbox[2]/2)), (int(bbox[1]/2),int(bbox[3]/2)), BLUE, 1)

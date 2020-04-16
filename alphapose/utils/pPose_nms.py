@@ -33,7 +33,8 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
     pose_scores[pose_scores == 0] = 1e-5
     kp_nums = pose_preds.size()[1]
     final_result = []
-
+    
+    ori_bboxes = bboxes.clone()
     ori_bbox_scores = bbox_scores.clone()
     ori_bbox_ids = bbox_ids.clone()
     ori_pose_preds = pose_preds.clone()
@@ -86,6 +87,7 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
     preds_pick = ori_pose_preds[pick]
     scores_pick = ori_pose_scores[pick]
     bbox_scores_pick = ori_bbox_scores[pick]
+    bboxes_pick = ori_bboxes[pick]
     bbox_ids_pick = ori_bbox_ids[pick]
     #final_result = pool.map(filter_result, zip(scores_pick, merge_ids, preds_pick, pick, bbox_scores_pick))
     #final_result = [item for item in final_result if item is not None]
@@ -110,11 +112,13 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
         xmin = min(merge_pose[:, 0])
         ymax = max(merge_pose[:, 1])
         ymin = min(merge_pose[:, 1])
+        bbox = bboxes_pick[j].cpu().tolist()
 
         if (1.5 ** 2 * (xmax - xmin) * (ymax - ymin) < areaThres):
             continue
 
         final_result.append({
+            'box': [bbox[0], bbox[1], bbox[2]-bbox[0],bbox[3]-bbox[1]],
             'keypoints': merge_pose - 0.3,
             'kp_score': merge_score,
             'proposal_score': torch.mean(merge_score) + bbox_scores_pick[j] + 1.25 * max(merge_score),
@@ -312,6 +316,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 keypoints.append(float(kp_scores[n]))
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
+            result['box'] = human['box']
             #pose track results by PoseFlow
             if 'idx' in human.keys():
                 result['idx'] = human['idx']

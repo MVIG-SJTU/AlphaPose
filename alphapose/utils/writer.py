@@ -124,7 +124,7 @@ class DataWriter():
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame
-                    img = vis_frame(orig_img, result, add_bbox=(self.opt.pose_track | self.opt.tracking))
+                    img = vis_frame(orig_img, result, add_bbox=(self.opt.pose_track | self.opt.tracking | self.opt.showbox))
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):
