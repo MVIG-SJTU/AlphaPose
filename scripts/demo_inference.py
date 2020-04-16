@@ -145,7 +145,7 @@ if __name__ == "__main__":
     if mode == 'webcam':
         det_loader = WebCamDetectionLoader(input_source, get_detector(args), cfg, args).start()
     else:
-        det_loader = DetectionLoader(input_source, get_detector(args), cfg, args, batchSize=args.detbatch, mode=mode).start()
+        det_loader = DetectionLoader(input_source, get_detector(args), cfg, args, batchSize=args.detbatch, mode=mode, queueSize=args.qsize).start()
 
     # Load pose model
     pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)

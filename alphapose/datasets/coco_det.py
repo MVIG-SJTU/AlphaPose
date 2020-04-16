@@ -72,6 +72,7 @@ class Mscoco_det(data.Dataset):
             img_id = det_res['image_id']
         img_path = './data/coco/val2017/%012d.jpg' % img_id # sherk: modified from `trainval2017` to `val2017`
 
+
         # Load image
         # image = scipy.misc.imread(img_path, mode='RGB')
         image = cv2.imread(img_path)[:, :, ::-1]
