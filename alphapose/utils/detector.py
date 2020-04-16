@@ -55,7 +55,6 @@ class DetectionLoader():
                 rot=0, sigma=self._sigma,
                 train=False, add_dpg=False, gpu_device=self.device)
 
-        self.worker_list = []
         # initialize the queue used to store data
         """
         image_queue: the buffer storing pre-processed images for object detection
