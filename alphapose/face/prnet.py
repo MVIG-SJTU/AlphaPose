@@ -34,6 +34,25 @@ class PRN:
         if self.device>-1:
             self.pos_predictor = self.pos_predictor.to("cuda:" + str(self.device))
 
+        # uv file
+        self.uv_kpt_ind = np.loadtxt(os.path.join(prefix, 'utils/uv_data/uv_kpt_ind.txt')).astype(
+            np.int32)  # 2 x 68 get kpt
+        self.face_ind = np.loadtxt(os.path.join(prefix, 'utils/uv_data/face_ind.txt')).astype(
+            np.int32)  # get valid vertices in the pos map
+        self.triangles = np.loadtxt(os.path.join(prefix, 'utils/uv_data/triangles.txt')).astype(
+            np.int32)  # ntri x 3
+
+        self.uv_coords = self.generate_uv_coords()
+
+    def generate_uv_coords(self):
+        resolution = self.resolution_op
+        uv_coords = np.meshgrid(range(resolution), range(resolution))
+        uv_coords = np.transpose(np.array(uv_coords), [1, 2, 0])
+        uv_coords = np.reshape(uv_coords, [resolution ** 2, -1]);
+        uv_coords = uv_coords[self.face_ind, :]
+        uv_coords = np.hstack((uv_coords[:, :2], np.zeros([uv_coords.shape[0], 1])))
+        return uv_coords
+    
     def net_forward(self, image):
         ''' The core of out method: regress the position map of a given image.
         Args:
