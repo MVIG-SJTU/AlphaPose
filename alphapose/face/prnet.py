@@ -20,6 +20,7 @@ class PRN:
         # resolution of input and output image size.
         self.resolution_inp = 256
         self.resolution_op = 256
+        self.device = device
 
 
         # 1) load model.
@@ -30,24 +31,8 @@ class PRN:
         self.pos_predictor.load_state_dict(state)
         self.pos_predictor.eval()  # inference stage only.
         
-        if self.device>0:
+        if self.device>-1:
             self.pos_predictor = self.pos_predictor.to("cuda:" + str(self.device))
-
-        # uv file
-        self.uv_kpt_ind = np.loadtxt(os.path.join(prefix, 'utils/uv_data/uv_kpt_ind.txt')).astype(np.int32) # 2 x 68 get kpt
-        self.face_ind = np.loadtxt(os.path.join(prefix, 'utils/uv_data/face_ind.txt')).astype(np.int32) # get valid vertices in the pos map
-        self.triangles = np.loadtxt(os.path.join(prefix, 'utils/uv_data/triangles.txt')).astype(np.int32) # ntri x 3
-        
-        self.uv_coords = self.generate_uv_coords()        
-
-    def generate_uv_coords(self):
-        resolution = self.resolution_op
-        uv_coords = np.meshgrid(range(resolution),range(resolution))
-        uv_coords = np.transpose(np.array(uv_coords), [1,2,0])
-        uv_coords = np.reshape(uv_coords, [resolution**2, -1]);
-        uv_coords = uv_coords[self.face_ind, :]
-        uv_coords = np.hstack((uv_coords[:,:2], np.zeros([uv_coords.shape[0], 1])))
-        return uv_coords
 
     def net_forward(self, image):
         ''' The core of out method: regress the position map of a given image.
@@ -105,7 +90,7 @@ class PRN:
         cropped_image = warp(image, tform.inverse, output_shape=(self.resolution_inp, self.resolution_inp))
         # run our net
         #st = time()
-        if self.device>0:
+        if self.device>-1:
             cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32)).cuda(self.device)
         else:
             cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32))
