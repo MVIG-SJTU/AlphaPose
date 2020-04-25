@@ -5,6 +5,43 @@ import time
 import cv2
 import numpy as np
 import torch
+end_list = np.array([17, 22, 27, 42, 48, 31, 36, 68], dtype=np.int32) - 1
+
+def plot_kpt(image, kpt):
+    ''' Draw 68 key points
+    Args:
+        image: the input image
+        kpt: (68, 3).
+    '''
+    image = image.copy()
+    kpt = np.round(kpt).astype(np.int32)
+    for i in range(kpt.shape[0]):
+        st = kpt[i, :2]
+
+        image = cv2.circle(image, (st[0], st[1]), 0, (255, 255, 255), 2)
+        if i in end_list:
+            continue
+        ed = kpt[i + 1, :2]
+        image = cv2.line(image, (st[0], st[1]), (ed[0], ed[1]), (255, 255, 255), 1)
+    return image
+
+def fast_plot_kpt(image, kpt):
+    ''' Draw 68 key points
+    Args:
+        image: the input image
+        kpt: (68, 3).
+    '''
+    image = image.copy()
+    kpt = np.round(kpt).astype(np.int32)
+    for i in range(kpt.shape[0]):
+        st = kpt[i, :2]
+
+        image = cv2.circle(image, (st[0], st[1]), 1, (255, 255, 255), 2)
+        if i in end_list:
+            continue
+        ed = kpt[i + 1, :2]
+        image = cv2.line(image, (st[0], st[1]), (ed[0], ed[1]), (255, 255, 255), 1)
+    return image
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -114,7 +151,7 @@ def vis_frame_dense(frame, im_res, add_bbox=False, format='coco'):
     return img
 
 
-def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
+def vis_frame_fast(frame, im_res, opt, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
@@ -155,8 +192,15 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
         kp_scores = human['kp_score']
         kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
         kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
+
+        # Draw faces
+        if opt.face:
+            face_keypoints = human['FaceKeypoint']
+
+            img = fast_plot_kpt(img, face_keypoints)
+
         # Draw bboxes
-        if add_bbox:
+        if opt.pose_track or opt.tracking or opt.showbox:
             if 'box' in human.keys():
                 bbox = human['box']
             else:
@@ -188,7 +232,7 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
     return img
 
 
-def vis_frame(frame, im_res, add_bbox=False, format='coco'):
+def vis_frame(frame, im_res, opt, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
@@ -232,8 +276,18 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
         kp_scores = human['kp_score']
         kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
         kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
+
+        # Draw faces (jiasong updated 3.1)
+        if opt.face:
+            face_keypoints = human['FaceKeypoint']
+            for i in range(face_keypoints.shape[0]):
+                st = face_keypoints[i, :2]
+                st[0] = int(st[0]/2)
+                st[1] = int(st[1]/2)
+            img = plot_kpt(img, face_keypoints)
+
         # Draw bboxes
-        if add_bbox:
+        if opt.pose_track or opt.tracking or opt.showbox:
             if 'box' in human.keys():
                 bbox = human['box']
                 bbox = [bbox[0], bbox[0]+bbox[2], bbox[1], bbox[1]+bbox[3]]#xmin,xmax,ymin,ymax
