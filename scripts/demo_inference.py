@@ -28,6 +28,8 @@ parser.add_argument('--sp', default=False, action='store_true',
                     help='Use single process for pytorch')
 parser.add_argument('--detector', dest='detector',
                     help='detector name', default="yolo")
+parser.add_argument('--detfile', dest='detfile',
+                    help='detection result file', default="")
 parser.add_argument('--indir', dest='inputpath',
                     help='image-directory', default="")
 parser.add_argument('--list', dest='inputlist',
@@ -40,6 +42,8 @@ parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
+parser.add_argument('--showbox', default=False, action='store_true',
+                    help='visualize human bbox')
 parser.add_argument('--profile', default=False, action='store_true',
                     help='add speed profiling at screen output')
 parser.add_argument('--format', type=str,
@@ -107,6 +111,14 @@ def check_input():
         else:
             raise IOError('Error: --video must refer to a video file, not directory.')
 
+    # for detection results
+    if len(args.detfile):
+        if os.path.isfile(args.detfile):
+            detfile = args.detfile
+            return 'detfile', detfile
+        else:
+            raise IOError('Error: --detfile must refer to a detection json file, not directory.')
+
     # for images
     if len(args.inputpath) or len(args.inputlist) or len(args.inputimg):
         inputpath = args.inputpath
@@ -148,9 +160,14 @@ if __name__ == "__main__":
 
     # Load detection loader
     if mode == 'webcam':
-        det_loader = WebCamDetectionLoader(input_source, get_detector(args), cfg, args).start()
+        det_loader = WebCamDetectionLoader(input_source, get_detector(args), cfg, args)
+        det_worker = det_loader.start()
+    elif mode == 'detfile':
+        det_loader = FileDetectionLoader(input_source, cfg, args)
+        det_worker = det_loader.start()
     else:
-        det_loader = DetectionLoader(input_source, get_detector(args), cfg, args, batchSize=args.detbatch, mode=mode).start()
+        det_loader = DetectionLoader(input_source, get_detector(args), cfg, args, batchSize=args.detbatch, mode=mode, queueSize=args.qsize)
+        det_worker = det_loader.start()
 
     # Load pose model
     pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
@@ -247,6 +264,10 @@ if __name__ == "__main__":
             print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...')
         writer.stop()
         det_loader.stop()
+    except Exception as e:
+        print(repr(e))
+        print('An error as above occurs when processing the images, please check it')
+        pass
     except KeyboardInterrupt:
         print_finish_info()
         # Thread won't be killed when press Ctrl+C
@@ -258,6 +279,8 @@ if __name__ == "__main__":
             writer.stop()
         else:
             # subprocesses are killed, manually clear queues
+            for p in det_worker:
+                p.terminate()
             writer.commit()
             writer.clear_queues()
             # det_loader.clear_queues()

@@ -27,7 +27,7 @@ cd AlphaPose
 # 4. install
 export PATH=/usr/local/cuda/bin/:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
-pip install cython
+python -m pip install cython
 sudo apt-get install libyaml-dev
 python setup.py build develop
 ```
@@ -50,6 +50,9 @@ python setup.py build develop --user
 ```
 
 #### Windows
+Windows users should install Visual Studio due to the problem mentioned [here](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L121).
+If you do not want to install Visual Studio and want to use AlphaPose, you can refer to our [previous version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch#installation) that do not require Visual Studio.
+
 For Windows user, if you meet error with PyYaml, you can download and install it manually from here: https://pyyaml.org/wiki/PyYAML.
 If your OS platform is `Windows`, make sure that Windows C++ build tool like visual studio 15+ or visual c++ 2015+ is installed for training.
 

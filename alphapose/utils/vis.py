@@ -1,3 +1,4 @@
+
 import math
 import time
 
@@ -37,6 +38,7 @@ def vis_frame_dense(frame, im_res, add_bbox=False, format='coco'):
     frame: frame image
     im_res: im_res of predictions
     format: coco or mpii
+
     return rendered image
     '''
     l_pair = [
@@ -117,6 +119,7 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
     frame: frame image
     im_res: im_res of predictions
     format: coco or mpii
+
     return rendered image
     '''
     if format == 'coco':
@@ -190,6 +193,7 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
     frame: frame image
     im_res: im_res of predictions
     format: coco or mpii
+
     return rendered image
     '''
     if format == 'coco':

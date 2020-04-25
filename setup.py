@@ -118,42 +118,41 @@ def make_cuda_ext(name, module, sources):
 
 def get_ext_modules():
     ext_modules = []
-    # only windows visual studio 2013~2017 support compile c/cuda extensions
+    # only windows visual studio 2013+ support compile c/cuda extensions
     # If you force to compile extension on Windows and ensure appropriate visual studio
     # is intalled, you can try to use these ext_modules.
-    if platform.system() != 'Windows':
-        ext_modules = [
-            make_cython_ext(
-                name='soft_nms_cpu',
-                module='detector.nms',
-                sources=['src/soft_nms_cpu.pyx']),
-            make_cuda_ext(
-                name='nms_cpu',
-                module='detector.nms',
-                sources=['src/nms_cpu.cpp']),
-            make_cuda_ext(
-                name='nms_cuda',
-                module='detector.nms',
-                sources=['src/nms_cuda.cpp', 'src/nms_kernel.cu']),
-            make_cuda_ext(
-                name='roi_align_cuda',
-                module='alphapose.utils.roi_align',
-                sources=['src/roi_align_cuda.cpp', 'src/roi_align_kernel.cu']),
-            make_cuda_ext(
-                name='deform_conv_cuda',
-                module='alphapose.models.layers.dcn',
-                sources=[
-                    'src/deform_conv_cuda.cpp',
-                    'src/deform_conv_cuda_kernel.cu'
-                ]),
-            make_cuda_ext(
-                name='deform_pool_cuda',
-                module='alphapose.models.layers.dcn',
-                sources=[
-                    'src/deform_pool_cuda.cpp',
-                    'src/deform_pool_cuda_kernel.cu'
-                ]),
-        ]
+    ext_modules = [
+        make_cython_ext(
+            name='soft_nms_cpu',
+            module='detector.nms',
+            sources=['src/soft_nms_cpu.pyx']),
+        make_cuda_ext(
+            name='nms_cpu',
+            module='detector.nms',
+            sources=['src/nms_cpu.cpp']),
+        make_cuda_ext(
+            name='nms_cuda',
+            module='detector.nms',
+            sources=['src/nms_cuda.cpp', 'src/nms_kernel.cu']),
+        make_cuda_ext(
+            name='roi_align_cuda',
+            module='alphapose.utils.roi_align',
+            sources=['src/roi_align_cuda.cpp', 'src/roi_align_kernel.cu']),
+        make_cuda_ext(
+            name='deform_conv_cuda',
+            module='alphapose.models.layers.dcn',
+            sources=[
+                'src/deform_conv_cuda.cpp',
+                'src/deform_conv_cuda_kernel.cu'
+            ]),
+        make_cuda_ext(
+            name='deform_pool_cuda',
+            module='alphapose.models.layers.dcn',
+            sources=[
+                'src/deform_pool_cuda.cpp',
+                'src/deform_pool_cuda_kernel.cu'
+            ]),
+    ]
     return ext_modules
 
 
@@ -164,7 +163,7 @@ def get_install_requires():
         'tqdm', 'tensorboardx', 'easydict',
         'pyyaml',
         'torch>=1.1.0', 'torchvision>=0.3.0',
-        'munkres'
+        'munkres', 'timm'
     ]
     # official pycocotools doesn't support Windows, we will install it by third-party git repository later
     if platform.system() != 'Windows':
@@ -213,9 +212,9 @@ if __name__ == '__main__':
     # Windows need pycocotools here: https://github.com/philferriere/cocoapi#subdirectory=PythonAPI
     if platform.system() == 'Windows' and not is_installed('pycocotools'):
         print("\nInstall third-party pycocotools for Windows...")
-        cmd = 'pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI'
+        cmd = 'python -m pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI'
         os.system(cmd)
     if not is_installed('cython_bbox'):
         print("\nInstall `cython_bbox`...")
-        cmd = 'pip install git+https://github.com/yanfengliu/cython_bbox.git'
+        cmd = 'python -m pip install git+https://github.com/yanfengliu/cython_bbox.git'
         os.system(cmd)
