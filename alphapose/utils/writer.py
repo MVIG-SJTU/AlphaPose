@@ -51,7 +51,7 @@ class DataWriter():
         if opt.pose_track:
             from PoseFlow.poseflow_infer import PoseFlowWrapper
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
-
+            
     def start_worker(self, target):
         if self.opt.sp:
             p = Thread(target=target, args=())
@@ -67,6 +67,11 @@ class DataWriter():
         return self
 
     def update(self):
+        if self.opt.face:
+            from alphapose.face.centerface import CenterFace
+            from alphapose.face.prnet import PRN
+            face_engine = CenterFace(landmarks=True)
+            face_3d_model = PRN(self.opt.device)
         if self.save_video:
             # initialize the file video stream, adapt ouput video resolution to original video
             stream = cv2.VideoWriter(*[self.video_save_opt[k] for k in ['savepath', 'fourcc', 'fps', 'frameSize']])
@@ -113,7 +118,7 @@ class DataWriter():
 
                 ### jiasong update 2.24
                 if self.opt.face:
-                    result = face_process(self.opt, result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores)
+                    result = face_process(face_engine, face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores)
                 ###
                 result = {
                     'imgname': im_name,

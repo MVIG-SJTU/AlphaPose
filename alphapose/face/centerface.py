@@ -5,7 +5,7 @@ import numpy as np
 
 current_path = os.path.dirname(__file__)
 class CenterFace(object):
-    def __init__(self, model_path, landmarks=True):
+    def __init__(self,  landmarks=True):
         self.landmarks = landmarks
         if self.landmarks:
             model_path = current_path + '/models/onnx/centerface.onnx'

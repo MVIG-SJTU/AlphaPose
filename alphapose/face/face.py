@@ -8,22 +8,18 @@ import numpy as np
 from alphapose.face.centerface import CenterFace
 from alphapose.face.prnet import PRN
 
-current_path = os.path.dirname(__file__)
+#useless path, enter anything
+#face_model_path = '../face/models/onnx/centerface.onnx'
+#face_engine = CenterFace(model_path=face_model_path, landmarks=True)
 
 #useless path, enter anything
-face_model_path = '../face/models/onnx/centerface.onnx'
-face_engine = CenterFace(model_path=face_model_path, landmarks=True)
-
-#useless path, enter anything
-face_3d_model_path = '../face/models/prnet.pth'
-
-colors = [tuple(np.random.choice(np.arange(256).astype(np.int32), size=3)) for i in range(100)]
+#face_3d_model_path = '../face/models/prnet.pth'
+#face_3d_model = PRN(face_3d_model_path, device, '../face')
 
 
-def face_process(opt, result, rgb_img, orig_img, boxes, scores, ids, preds_img, preds_scores):
-    device = opt.gpus[0]
-    face_3d_model = PRN(face_3d_model_path, device, '../face')
+def face_process(face_engine, face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores):
     boxes = boxes.numpy()
+    rgb_img = orig_img[:, :, ::-1]
 
     i = 0
     face_engine.transform(orig_img.shape[0], orig_img.shape[1])
@@ -31,6 +27,7 @@ def face_process(opt, result, rgb_img, orig_img, boxes, scores, ids, preds_img, 
 
     bbox_xywh = []
     cls_conf = []
+    result_new = []
 
     for person in result:
 
@@ -39,8 +36,6 @@ def face_process(opt, result, rgb_img, orig_img, boxes, scores, ids, preds_img, 
         keypoints = keypoints.numpy()
 
         bbox = boxes[i]
-        color = colors[i]
-
         body_prob = scores.numpy()
 
         body_bbox = np.array(bbox[:4], dtype=np.int32)
@@ -85,6 +80,6 @@ def face_process(opt, result, rgb_img, orig_img, boxes, scores, ids, preds_img, 
             face_keypoints = kpt[:,:2]
 
             person['FaceKeypoint'] = face_keypoints 
-            
+            result_new.append(person)            
         i += 1
-    return result
+    return result_new

@@ -15,7 +15,7 @@ class PRN:
         is_dlib(bool, optional): If true, dlib is used for detecting faces.
         prefix(str, optional): If run at another folder, the absolute path is needed to load the data.
     '''
-    def __init__(self, model_path, device, prefix = '.'):
+    def __init__(self, device):
 
         # resolution of input and output image size.
         self.resolution_inp = 256
@@ -26,20 +26,18 @@ class PRN:
         # 1) load model.
         self.pos_predictor = PRNet(3, 3)
         model_path = current_path + '/models/prnet.pth'
-        prefix = current_path 
+         
         state = torch.load(model_path)
         self.pos_predictor.load_state_dict(state)
-        self.pos_predictor.eval()  # inference stage only.
+        self.pos_predictor.eval().to(self.device)  # inference stage only.
         
-        if self.device>-1:
-            self.pos_predictor = self.pos_predictor.to("cuda:" + str(self.device))
 
         # uv file
-        self.uv_kpt_ind = np.loadtxt(os.path.join(prefix, 'utils/uv_data/uv_kpt_ind.txt')).astype(
+        self.uv_kpt_ind = np.loadtxt(os.path.join(current_path, 'utils/uv_data/uv_kpt_ind.txt')).astype(
             np.int32)  # 2 x 68 get kpt
-        self.face_ind = np.loadtxt(os.path.join(prefix, 'utils/uv_data/face_ind.txt')).astype(
+        self.face_ind = np.loadtxt(os.path.join(current_path, 'utils/uv_data/face_ind.txt')).astype(
             np.int32)  # get valid vertices in the pos map
-        self.triangles = np.loadtxt(os.path.join(prefix, 'utils/uv_data/triangles.txt')).astype(
+        self.triangles = np.loadtxt(os.path.join(current_path, 'utils/uv_data/triangles.txt')).astype(
             np.int32)  # ntri x 3
 
         self.uv_coords = self.generate_uv_coords()
@@ -109,10 +107,8 @@ class PRN:
         cropped_image = warp(image, tform.inverse, output_shape=(self.resolution_inp, self.resolution_inp))
         # run our net
         #st = time()
-        if self.device>-1:
-            cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32)).cuda(self.device)
-        else:
-            cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32))
+        cropped_image = torch.from_numpy(cropped_image[np.newaxis, ...].transpose(0,3,1,2).astype(np.float32)).to(self.device)
+       
         cropped_pos = self.net_forward(cropped_image)*self.resolution_inp*1.1
         #print 'net time:', time() - st
 

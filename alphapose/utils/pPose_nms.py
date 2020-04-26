@@ -320,7 +320,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
 
             if 'FaceKeypoint' in human:
                 fc_preds = human['FaceKeypoint']
-
+                facepoints = []
                 for n in range(fc_preds.shape[0]):
                     facepoints.append(float(fc_preds[n, 0]))
                     facepoints.append(float(fc_preds[n, 1]))
