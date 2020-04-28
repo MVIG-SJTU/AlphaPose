@@ -17,7 +17,7 @@ from alphapose.face.prnet import PRN
 #face_3d_model = PRN(face_3d_model_path, device, '../face')
 
 
-def face_process(face_engine, face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores):
+def face_process(face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores):
     face_engine = CenterFace( landmarks=True)
     boxes = boxes.numpy()
     rgb_img = orig_img[:, :, ::-1]
