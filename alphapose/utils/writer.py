@@ -68,9 +68,7 @@ class DataWriter():
 
     def update(self):
         if self.opt.face:
-            from alphapose.face.centerface import CenterFace
             from alphapose.face.prnet import PRN
-            face_engine = CenterFace(landmarks=True)
             face_3d_model = PRN(self.opt.device)
         if self.save_video:
             # initialize the file video stream, adapt ouput video resolution to original video
@@ -118,7 +116,7 @@ class DataWriter():
 
                 ### jiasong update 2.24
                 if self.opt.face:
-                    result = face_process(face_engine, face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores)
+                    result = face_process(face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores)
                 ###
                 result = {
                     'imgname': im_name,
