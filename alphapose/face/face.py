@@ -21,40 +21,42 @@ def face_process(face_3d_model, result, orig_img, boxes, scores, ids, preds_img,
     face_engine = CenterFace( landmarks=True)
     boxes = boxes.numpy()
     rgb_img = orig_img[:, :, ::-1]
-
-    i = 0
+    [H, W, _] = rgb_img.shape
     face_engine.transform(orig_img.shape[0], orig_img.shape[1])
     face_dets, lms = face_engine(orig_img, threshold=0.35)
 
-    bbox_xywh = []
-    cls_conf = []
     result_new = []
 
     for person in result:
 
         keypoints = person['keypoints']
+        kp_score = person['kp_score']
       
         keypoints = keypoints.numpy()
+        kp_score = kp_score.numpy()
 
-        bbox = boxes[i]
-        body_prob = scores.numpy()
 
-        body_bbox = np.array(bbox[:4], dtype=np.int32)
-        w = body_bbox[2] - body_bbox[0]
-        h = body_bbox[3] - body_bbox[1]
-        bbox_xywh.append([body_bbox[0], body_bbox[1], w, h])
-        cls_conf.append(body_prob)
+        center_of_the_face = np.mean(keypoints[:5, :], axis=0)
+        face_conf = np.mean(kp_score[:5, :], axis=0)
 
-        center_of_the_face = np.mean(keypoints[:7, :], axis=0)
-
-        image = orig_img
-
-        if len(face_dets) != 0:
+        face_keypoints = -1*np.ones((68,3))
+        if face_conf > 0.5 and len(face_dets) > 0:
             face_min_dis = np.argmin(
                 np.sum(((face_dets[:, 2:4] + face_dets[:, :2]) / 2. - center_of_the_face) ** 2, axis=1))
 
             face_bbox = face_dets[face_min_dis][:4]
             face_prob = face_dets[face_min_dis][4]
+            if center_of_the_face[0] < face_bbox[0] or center_of_the_face[1] < face_bbox[1] or center_of_the_face[0] > face_bbox[2] or center_of_the_face[1] > face_bbox[3]:
+                continue 
+            if face_prob < 0.5:
+                continue
+
+            ## below is by intuitive box
+            # wid = max(keypoints[:5, 0]) - min(keypoints[:5, 0])
+            # hgt = max(keypoints[:5, 1]) - min(keypoints[:5, 1])
+            # face_bbox = [max(0,min(keypoints[:5, 0])-0.1*wid), max(0,min(keypoints[:5, 1])-2*hgt), min(max(keypoints[:5, 0])+0.1*wid,W),  min(H,max(keypoints[:5, 1])+2.5*hgt)]
+            # print(face_bbox)
+            
 
 
             face_image = rgb_img[int(face_bbox[1]): int(face_bbox[3]), int(face_bbox[0]): int(face_bbox[2])]
@@ -78,9 +80,8 @@ def face_process(face_3d_model, result, orig_img, boxes, scores, ids, preds_img,
                 kpt_elem[0] +=face_bbox[0]
                 kpt_elem[1] +=face_bbox[1]
 
-            face_keypoints = kpt[:,:2]
+            face_keypoints = kpt[:,:3]
 
-            person['FaceKeypoint'] = face_keypoints 
-            result_new.append(person)            
-        i += 1
+        person['FaceKeypoint'] = face_keypoints 
+        result_new.append(person)            
     return result_new
