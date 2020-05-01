@@ -23,7 +23,7 @@ class CenterFace(object):
             heatmap, scale, offset = self.net.forward(["535", "536", "537"])
 
         end = datetime.datetime.now()
-        print("cpu times = ", end - begin)
+        # print("cpu times = ", end - begin)
         if self.landmarks:
             dets, lms = self.decode(heatmap, scale, offset, lms, (self.img_h_new, self.img_w_new), threshold=threshold)
         else:
