@@ -80,6 +80,9 @@ parser.add_argument('--pose_track', dest='pose_track',
 """----------------------------- Face options -----------------------------"""
 parser.add_argument('--face', dest='face', default=False, help='show face detection or not', action='store_true')
 
+"""----------------------------- Hand options -----------------------------"""
+parser.add_argument('--hand', dest='hand', default=False, help='show hand detection or not', action='store_true')
+
 args = parser.parse_args()
 cfg = update_config(args.cfg)
 

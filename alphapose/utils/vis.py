@@ -253,9 +253,7 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
             if 'idx' in human.keys():
                 cv2.putText(img, ''.join(str(human['idx'])), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
-
-        # cor_x, cor_y = int(kp_preds[7, 0]), int(kp_preds[7, 1])
-        # img = cv2.circle(img, (cor_x, cor_y), 4, (0, 0, 0), 3)
+        
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.35:
                 continue
