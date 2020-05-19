@@ -327,6 +327,15 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
 
                 result['FaceKeypoint'] = facepoints
 
+            if 'HandKeypoint' in human:
+                hd_preds = human['HandKeypoint']
+                handpoints = []
+                for n in range(hd_preds.shape[0]):
+                    handpoints.append(float(hd_preds[n, 0]))
+                    handpoints.append(float(hd_preds[n, 1]))
+
+                result['HandKeypoint'] = handpoints
+
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
             result['box'] = human['box']

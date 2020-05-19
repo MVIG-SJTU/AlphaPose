@@ -12,6 +12,7 @@ from alphapose.utils.transforms import get_func_heatmap_to_coord
 from alphapose.utils.pPose_nms import pose_nms
 
 from alphapose.face.face import face_process
+from alphapose.hand.hand import handDetect
 
 DEFAULT_VIDEO_SAVE_OPT = {
     'savepath': 'examples/res/1.mp4',
@@ -116,12 +117,20 @@ class DataWriter():
 
                 ### jiasong update 2.24
                 if self.opt.face:
-                    result = face_process(face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores)
+                    result = face_process(face_3d_model, result, orig_img)
                 ###
+                ### jiasong update 5.7
+
+                if self.opt.hand:
+                    result = handDetect(result, orig_img)
+                    
+                ###
+
                 result = {
                     'imgname': im_name,
                     'result': result
                 }
+                # print(result)
                 if self.opt.pose_track:
                     poseflow_result = self.pose_flow_wrapper.step(orig_img, result)
                     for i in range(len(poseflow_result)):

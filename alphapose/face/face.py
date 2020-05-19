@@ -17,9 +17,8 @@ from alphapose.face.prnet import PRN
 #face_3d_model = PRN(face_3d_model_path, device, '../face')
 
 
-def face_process(face_3d_model, result, orig_img, boxes, scores, ids, preds_img, preds_scores):
+def face_process(face_3d_model, result, orig_img):
     face_engine = CenterFace( landmarks=True)
-    boxes = boxes.numpy()
     rgb_img = orig_img[:, :, ::-1]
     [H, W, _] = rgb_img.shape
     face_engine.transform(orig_img.shape[0], orig_img.shape[1])
@@ -81,7 +80,7 @@ def face_process(face_3d_model, result, orig_img, boxes, scores, ids, preds_img,
                 kpt_elem[1] +=face_bbox[1]
 
             face_keypoints = kpt[:,:3]
-
+        # print('face', face_keypoints)
         person['FaceKeypoint'] = face_keypoints 
         result_new.append(person)            
     return result_new

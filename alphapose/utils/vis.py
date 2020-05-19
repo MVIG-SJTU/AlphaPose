@@ -5,8 +5,38 @@ import time
 import cv2
 import numpy as np
 import torch
+
 end_list = np.array([17, 22, 27, 42, 48, 31, 36, 68], dtype=np.int32) - 1
 
+def fast_hand_plot(canvas, all_hand_peaks, show_number=False):
+    edges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], \
+            [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20]]
+    image = canvas.copy()
+    hands = np.round(all_hand_peaks).astype(np.int32)
+    for i in range(hands.shape[0]):
+        st = hands[i, :2]
+        image = cv2.circle(image, (st[0], st[1]), 1, (255, 0, 0), 2)
+    for k1, k2 in enumerate(edges):
+        st = hands[k2[0], :2]
+        ed = hands[k2[1], :2]
+        image = cv2.line(image, (st[0], st[1]), (ed[0], ed[1]), (255, 0, 0), 1)
+    return image
+
+def hand_plot(canvas, all_hand_peaks, show_number=False):
+    edges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], \
+            [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20]]
+    image = canvas.copy()
+    hands = np.round(all_hand_peaks).astype(np.int32)
+    for i in range(hands.shape[0]):
+        st = hands[i, :2]
+
+        image = cv2.circle(image, (st[0], st[1]), 0, (255, 0, 0), 2)
+    for k1, k2 in enumerate(edges):
+        st = hands[k2[0], :2]
+        ed = hands[k2[1], :2]
+        image = cv2.line(image, (st[0], st[1]), (ed[0], ed[1]), (255, 0, 0), 1)
+    return image
+    
 def plot_kpt(image, kpt):
     ''' Draw 68 key points
     Args:
@@ -193,7 +223,13 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
         kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
         kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
 
-        # Draw faces
+        # Draw hands  (jiasong updated 5.7)
+        if 'HandKeypoint' in human:
+            hand_keypoints = human['HandKeypoint']
+
+            img = fast_hand_plot(img, hand_keypoints)
+
+        # Draw faces (jiasong updated 3.1)
         if opt.face:
             face_keypoints = human['FaceKeypoint']
 
@@ -217,6 +253,9 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
             if 'idx' in human.keys():
                 cv2.putText(img, ''.join(str(human['idx'])), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
+
+        # cor_x, cor_y = int(kp_preds[7, 0]), int(kp_preds[7, 1])
+        # img = cv2.circle(img, (cor_x, cor_y), 4, (0, 0, 0), 3)
         for n in range(kp_scores.shape[0]):
             if kp_scores[n] <= 0.35:
                 continue
@@ -276,6 +315,15 @@ def vis_frame(frame, im_res, opt, format='coco'):
         kp_scores = human['kp_score']
         kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
         kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
+
+        # Draw hands (jiasong updated 5.7)
+        if 'HandKeypoint' in human:
+            hand_keypoints = human['HandKeypoint']
+            for i in range(hand_keypoints.shape[0]):
+                st = hand_keypoints[i, :2]
+                st[0] = int(st[0]/2)
+                st[1] = int(st[1]/2)
+            img = hand_plot(img, hand_keypoints)
 
         # Draw faces (jiasong updated 3.1)
         if opt.face:
