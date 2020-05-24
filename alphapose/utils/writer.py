@@ -11,6 +11,9 @@ import torch.multiprocessing as mp
 from alphapose.utils.transforms import get_func_heatmap_to_coord
 from alphapose.utils.pPose_nms import pose_nms
 
+from alphapose.face.face import face_process
+from alphapose.hand.hand import handDetect
+
 DEFAULT_VIDEO_SAVE_OPT = {
     'savepath': 'examples/res/1.mp4',
     'fourcc': cv2.VideoWriter_fourcc(*'mp4v'),
@@ -49,7 +52,7 @@ class DataWriter():
         if opt.pose_track:
             from PoseFlow.poseflow_infer import PoseFlowWrapper
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
-
+            
     def start_worker(self, target):
         if self.opt.sp:
             p = Thread(target=target, args=())
@@ -65,6 +68,9 @@ class DataWriter():
         return self
 
     def update(self):
+        if self.opt.face:
+            from alphapose.face.prnet import PRN
+            face_3d_model = PRN(self.opt.device)
         if self.save_video:
             # initialize the file video stream, adapt ouput video resolution to original video
             stream = cv2.VideoWriter(*[self.video_save_opt[k] for k in ['savepath', 'fourcc', 'fps', 'frameSize']])
@@ -108,10 +114,23 @@ class DataWriter():
                 preds_img = torch.cat(pose_coords)
                 preds_scores = torch.cat(pose_scores)
                 result = pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
+
+                ### jiasong update 2.24
+                if self.opt.face:
+                    result = face_process(face_3d_model, result, orig_img)
+                ###
+                ### jiasong update 5.7
+
+                if self.opt.hand:
+                    result = handDetect(result, orig_img)
+                    
+                ###
+
                 result = {
                     'imgname': im_name,
                     'result': result
                 }
+                # print(result)
                 if self.opt.pose_track:
                     poseflow_result = self.pose_flow_wrapper.step(orig_img, result)
                     for i in range(len(poseflow_result)):
@@ -124,7 +143,7 @@ class DataWriter():
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame
-                    img = vis_frame(orig_img, result, add_bbox=(self.opt.pose_track | self.opt.tracking | self.opt.showbox))
+                    img = vis_frame(orig_img, result, self.opt)
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):

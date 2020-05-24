@@ -298,9 +298,12 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
     json_results_cmu = {}
     for im_res in all_results:
         im_name = im_res['imgname']
+        # facebox = im_res['facebox']
+        #facebox = torch.from_numpy(facebox)
         for human in im_res['result']:
             keypoints = []
             result = {}
+            # result['facebox'] = facebox
             if for_eval:
                 result['image_id'] = int(os.path.basename(im_name).split('.')[0].split('_')[-1])
             else:
@@ -314,6 +317,25 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 keypoints.append(float(kp_preds[n, 0]))
                 keypoints.append(float(kp_preds[n, 1]))
                 keypoints.append(float(kp_scores[n]))
+
+            if 'FaceKeypoint' in human:
+                fc_preds = human['FaceKeypoint']
+                facepoints = []
+                for n in range(fc_preds.shape[0]):
+                    facepoints.append(float(fc_preds[n, 0]))
+                    facepoints.append(float(fc_preds[n, 1]))
+
+                result['FaceKeypoint'] = facepoints
+
+            if 'HandKeypoint' in human:
+                hd_preds = human['HandKeypoint']
+                handpoints = []
+                for n in range(hd_preds.shape[0]):
+                    handpoints.append(float(hd_preds[n, 0]))
+                    handpoints.append(float(hd_preds[n, 1]))
+
+                result['HandKeypoint'] = handpoints
+
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
             result['box'] = human['box']

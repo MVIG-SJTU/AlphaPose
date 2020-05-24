@@ -4,7 +4,6 @@ import os
 import platform
 import sys
 import time
-
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -76,6 +75,13 @@ parser.add_argument('--vis_fast', dest='vis_fast',
                     help='use fast rendering', action='store_true', default=False)
 parser.add_argument('--pose_track', dest='pose_track',
                     help='track humans in video', action='store_true', default=False)
+
+
+"""----------------------------- Face options -----------------------------"""
+parser.add_argument('--face', dest='face', default=False, help='show face detection or not', action='store_true')
+
+"""----------------------------- Hand options -----------------------------"""
+parser.add_argument('--hand', dest='hand', default=False, help='show hand detection or not', action='store_true')
 
 args = parser.parse_args()
 cfg = update_config(args.cfg)
@@ -152,7 +158,6 @@ def loop():
 
 if __name__ == "__main__":
     mode, input_source = check_input()
-
     if not os.path.exists(args.outputpath):
         os.makedirs(args.outputpath)
 
@@ -283,5 +288,8 @@ if __name__ == "__main__":
             writer.clear_queues()
             # det_loader.clear_queues()
     final_result = writer.results()
+
     write_json(final_result, args.outputpath, form=args.format, for_eval=args.eval)
+
     print("Results have been written to json.")
+
