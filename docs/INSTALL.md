@@ -6,6 +6,7 @@
 * PyTorch 1.1+
 * torchvision 0.3.0+
 * Linux, [Windows user check here](#Windows)
+* GCC<6.0, check https://github.com/facebookresearch/maskrcnn-benchmark/issues/25
 
 ### Code installation
 
