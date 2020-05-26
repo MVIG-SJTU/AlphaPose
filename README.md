@@ -6,6 +6,7 @@
 a google colab link to test
 https://colab.research.google.com/drive/1o9RhThxyxHr4P3n6a19UGmc5LTRn5zfp?usp=sharing
 
+
 ## News!
 - Dec 2019: [**v0.3.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Smaller model, higher accuracy!
 - Apr 2019: [**MXNet** version](https://github.com/MVIG-SJTU/AlphaPose/tree/mxnet) of AlphaPose is released! It runs at **23 fps** on COCO validation set.
