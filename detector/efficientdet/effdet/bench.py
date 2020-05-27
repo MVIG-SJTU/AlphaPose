@@ -47,9 +47,11 @@ def _post_process(config, cls_outputs, box_outputs):
 
 
 class DetBenchEval(nn.Module):
-    def __init__(self, model, config):
+    def __init__(self, model, config, nms_thres=0.5, max_dets=100):
         super(DetBenchEval, self).__init__()
         self.config = config
+        self.nms_thres = nms_thres
+        self.max_dets = max_dets
         self.model = model
         self.anchors = Anchors(
             config.min_level, config.max_level,
@@ -64,7 +66,9 @@ class DetBenchEval(nn.Module):
         # FIXME we may be able to do this as a batch with some tensor reshaping/indexing, PR welcome
         for i in range(x.shape[0]):
             detections = generate_detections(
-                class_out[i], box_out[i], self.anchors.boxes, indices[i], classes[i], image_scales[i])
+                class_out[i], box_out[i], self.anchors.boxes, indices[i], classes[i], image_scales[i], 
+                nms_thres=self.nms_thres, max_dets=self.max_dets
+                )
             batch_detections.append(detections)
         return torch.stack(batch_detections, dim=0)
 

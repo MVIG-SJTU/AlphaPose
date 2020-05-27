@@ -44,6 +44,7 @@ class EffDetDetector(BaseDetector):
         self.nms_thres = cfg.get('NMS_THRES', 0.6)
         self.confidence = cfg.get('CONFIDENCE', 0.05)
         self.num_classes = cfg.get('NUM_CLASSES', 80)
+        self.max_dets = cfg.get('MAX_DETECTIONS', 100)
         self.model = None
 
 
@@ -52,7 +53,7 @@ class EffDetDetector(BaseDetector):
 
         net = EfficientDet(self.model_cfg)
         load_checkpoint(net, self.model_weights)
-        self.model = DetBenchEval(net, self.model_cfg)
+        self.model = DetBenchEval(net, self.model_cfg, nms_thres=self.nms_thres, max_dets=self.max_dets)
 
         if args:
             if len(args.gpus) > 1:
@@ -333,6 +334,9 @@ class EffDetDetector(BaseDetector):
                     score = float(det[4])
                     if score < .001:  # stop when below this threshold, scores in descending order
                         break
+                    #### add by das
+                    if int(det[5]) != 1 or score < self.confidence:
+                        continue
                     coco_det = dict(
                         image_id=image_id,
                         bbox=det[0:4].tolist(),
@@ -353,6 +357,7 @@ if __name__ == "__main__":
 
         opt = edict()
         _coco = COCO(sys.argv[1]+'/annotations/instances_val2017.json')
+        # _coco = COCO(sys.argv[1]+'/annotations/person_keypoints_val2017.json')
         opt.detector = sys.argv[2]
         opt.gpus = [0] if torch.cuda.device_count() >= 1 else [-1]
         opt.device = torch.device("cuda:" + str(opt.gpus[0]) if opt.gpus[0] >= 0 else "cpu")

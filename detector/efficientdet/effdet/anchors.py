@@ -162,7 +162,7 @@ def _generate_anchor_boxes(image_size, anchor_scale, anchor_configs):
     return anchor_boxes
 
 
-def generate_detections(cls_outputs, box_outputs, anchor_boxes, indices, classes, image_scale):
+def generate_detections(cls_outputs, box_outputs, anchor_boxes, indices, classes, image_scale, nms_thres=0.5, max_dets=100):
     """Generates detections with RetinaNet model outputs and anchors.
 
     Args:
@@ -196,10 +196,10 @@ def generate_detections(cls_outputs, box_outputs, anchor_boxes, indices, classes
     boxes = decode_box_outputs(box_outputs.T.float(), anchor_boxes.T, output_xyxy=True)
 
     scores = cls_outputs.sigmoid().squeeze(1).float()
-    top_detection_idx = batched_nms(boxes, scores, classes, iou_threshold=0.5)
+    top_detection_idx = batched_nms(boxes, scores, classes, iou_threshold=nms_thres)
 
     # keep only topk scoring predictions
-    top_detection_idx = top_detection_idx[:MAX_DETECTIONS_PER_IMAGE]
+    top_detection_idx = top_detection_idx[:max_dets]
     boxes = boxes[top_detection_idx]
     scores = scores[top_detection_idx, None]
     classes = classes[top_detection_idx, None]
@@ -213,11 +213,11 @@ def generate_detections(cls_outputs, box_outputs, anchor_boxes, indices, classes
 
     # stack em and pad out to MAX_DETECTIONS_PER_IMAGE if necessary
     detections = torch.cat([boxes, scores, classes.float()], dim=1)
-    if len(top_detection_idx) < MAX_DETECTIONS_PER_IMAGE:
+    if len(top_detection_idx) < max_dets:
         detections = torch.cat([
             detections,
             torch.zeros(
-                (MAX_DETECTIONS_PER_IMAGE - len(top_detection_idx), 6), device=detections.device, dtype=detections.dtype)
+                (max_dets - len(top_detection_idx), 6), device=detections.device, dtype=detections.dtype)
         ], dim=0)
     return detections
 
