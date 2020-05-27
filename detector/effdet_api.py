@@ -278,9 +278,10 @@ if __name__ == "__main__":
             det = det_model.check_detector(abs_path)
             if det:
                 dets += det
-        json.dump(dets, open('results.json', 'w'))
+        result_file = 'results.json'
+        json.dump(dets, open(result_file, 'w'))
 
-        coco_results = _coco.loadRes('results.json')
+        coco_results = _coco.loadRes(result_file)
         coco_eval = COCOeval(_coco, coco_results, 'bbox')
         coco_eval.params.imgIds = image_ids  # score only ids we've used
         coco_eval.evaluate()
