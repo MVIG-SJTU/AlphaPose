@@ -196,6 +196,10 @@ def generate_detections(cls_outputs, box_outputs, anchor_boxes, indices, classes
     boxes = decode_box_outputs(box_outputs.T.float(), anchor_boxes.T, output_xyxy=True)
 
     scores = cls_outputs.sigmoid().squeeze(1).float()
+    human_idx = classes == 0
+    boxes = boxes[human_idx]
+    scores = scores[human_idx]
+    classes = classes[human_idx]
     top_detection_idx = batched_nms(boxes, scores, classes, iou_threshold=nms_thres)
 
     # keep only topk scoring predictions
