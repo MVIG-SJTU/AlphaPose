@@ -8,6 +8,7 @@ import time
 import numpy as np
 import torch
 from tqdm import tqdm
+import natsort
 
 from detector.apis import get_detector
 from alphapose.models import builder
@@ -127,6 +128,7 @@ def check_input():
         elif len(inputpath) and inputpath != '/':
             for root, dirs, files in os.walk(inputpath):
                 im_names = files
+            im_names = natsort.natsorted(im_names)
         elif len(inputimg):
             im_names = [inputimg]
 
