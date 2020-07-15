@@ -109,7 +109,7 @@ def vis_frame_dense(frame, im_res, add_bbox=False, format='coco'):
             if start_p in part_line and end_p in part_line:
                 start_xy = part_line[start_p]
                 end_xy = part_line[end_p]
-                cv2.line(img, start_xy, end_xy, line_color[i], (kp_scores[start_p] + kp_scores[end_p]) + 1)
+                cv2.line(img, start_xy, end_xy, line_color[i], int(kp_scores[start_p] + kp_scores[end_p]) + 1)
     return img
 
 
@@ -183,7 +183,7 @@ def vis_frame_fast(frame, im_res, add_bbox=False, format='coco'):
             if start_p in part_line and end_p in part_line:
                 start_xy = part_line[start_p]
                 end_xy = part_line[end_p]
-                cv2.line(img, start_xy, end_xy, line_color[i], 2 * (kp_scores[start_p] + kp_scores[end_p]) + 1)
+                cv2.line(img, start_xy, end_xy, line_color[i], 2 * int(kp_scores[start_p] + kp_scores[end_p]) + 1)
     return img
 
 
@@ -280,9 +280,9 @@ def vis_frame(frame, im_res, add_bbox=False, format='coco'):
                 length = ((Y[0] - Y[1]) ** 2 + (X[0] - X[1]) ** 2) ** 0.5
                 angle = math.degrees(math.atan2(Y[0] - Y[1], X[0] - X[1]))
                 stickwidth = (kp_scores[start_p] + kp_scores[end_p]) + 1
-                polygon = cv2.ellipse2Poly((int(mX), int(mY)), (int(length / 2), stickwidth), int(angle), 0, 360, 1)
+                polygon = cv2.ellipse2Poly((int(mX), int(mY)), (int(length / 2), int(stickwidth)), int(angle), 0, 360, 1)
                 cv2.fillConvexPoly(bg, polygon, line_color[i])
-                # cv2.line(bg, start_xy, end_xy, line_color[i], (2 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
+                # cv2.line(bg, start_xy, end_xy, line_color[i], (2 * int(kp_scores[start_p] + kp_scores[end_p])) + 1)
                 transparency = max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p])))
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
     img = cv2.resize(img, (width, height), interpolation=cv2.INTER_CUBIC)
