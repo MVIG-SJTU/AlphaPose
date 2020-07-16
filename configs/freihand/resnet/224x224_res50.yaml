@@ -1,0 +1,66 @@
+DATASET:
+  TRAIN:
+    TYPE: 'ConcatDataset'
+    SET_LIST:
+      - TYPE: 'Freihand'
+        MASK_ID: 0
+        ROOT: './data/Freihand/'
+        IMG_PREFIX: 'train'
+        ANN: 'annotations/Freihand_keypoints_train.json'
+        AUG:
+          FLIP: true
+          ROT_FACTOR: 40
+          SCALE_FACTOR: 0.3
+          NUM_JOINTS_HALF_BODY: 8
+          PROB_HALF_BODY: -1
+  VAL:
+    TYPE: 'Freihand'
+    ROOT: './data/Freihand/'
+    IMG_PREFIX: 'val'
+    ANN: 'annotations/Freihand_keypoints_val.json'
+  TEST:
+    TYPE: 'Freihand_det'
+    ROOT: './data/Freihand/'
+    IMG_PREFIX: 'val'
+    DET_FILE: './exp/json/test_det_yolo.json'
+    ANN: 'annotations/Freihand_keypoints_val.json'
+DATA_PRESET:
+  TYPE: 'simple'
+  SIGMA: 2
+  NUM_JOINTS: 21
+  IMAGE_SIZE:
+  - 224
+  - 224
+  HEATMAP_SIZE:
+  - 56
+  - 56
+MODEL:
+  TYPE: 'FastPose'
+  PRETRAINED: ''
+  TRY_LOAD: ''
+  NUM_DECONV_FILTERS:
+  - 256
+  - 256
+  - 256
+  NUM_LAYERS: 50
+DETECTOR:
+  NAME: 'yolo'
+  CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
+  WEIGHTS: 'detector/yolo/data/yolov3-spp.weights'
+  NMS_THRES: 0.6
+  CONFIDENCE: 0.05
+TRAIN:
+  WORLD_SIZE: 4
+  BATCH_SIZE: 32
+  BEGIN_EPOCH: 0
+  END_EPOCH: 200
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 90
+  - 120
+  DPG_MILESTONE: 140
+  DPG_STEP:
+  - 160
+  - 190
