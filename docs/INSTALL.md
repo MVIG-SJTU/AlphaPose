@@ -29,6 +29,7 @@ cd AlphaPose
 export PATH=/usr/local/cuda/bin/:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
 python -m pip install cython
+conda install natsort
 sudo apt-get install libyaml-dev
 python setup.py build develop
 ```
@@ -46,6 +47,7 @@ cd AlphaPose
 export PATH=/usr/local/cuda/bin/:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
 pip install cython
+pip install natsort
 sudo apt-get install libyaml-dev
 python setup.py build develop --user
 ```
