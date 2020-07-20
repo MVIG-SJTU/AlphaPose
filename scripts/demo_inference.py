@@ -11,6 +11,9 @@ from tqdm import tqdm
 import natsort
 
 from detector.apis import get_detector
+from trackers.tracker_api import Tracker
+from trackers.tracker_cfg import cfg as tcfg
+from trackers import track
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
@@ -88,7 +91,7 @@ args.gpus = [int(i) for i in args.gpus.split(',')] if torch.cuda.device_count() 
 args.device = torch.device("cuda:" + str(args.gpus[0]) if args.gpus[0] >= 0 else "cpu")
 args.detbatch = args.detbatch * len(args.gpus)
 args.posebatch = args.posebatch * len(args.gpus)
-args.tracking = (args.detector == 'tracker')
+args.tracking = args.pose_track
 
 if not args.sp:
     torch.multiprocessing.set_start_method('forkserver', force=True)
@@ -174,7 +177,8 @@ if __name__ == "__main__":
 
     print(f'Loading pose model from {args.checkpoint}...')
     pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
-
+    if args.tracking:
+        tracker = Tracker(tcfg)
     if len(args.gpus) > 1:
         pose_model = torch.nn.DataParallel(pose_model, device_ids=args.gpus).to(args.device)
     else:
@@ -245,9 +249,9 @@ if __name__ == "__main__":
                 if args.profile:
                     ckpt_time, pose_time = getTime(ckpt_time)
                     runtime_profile['pt'].append(pose_time)
-                hm = hm.cpu()
-                writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, os.path.basename(im_name))
-
+                if args.tracking:
+                    boxes,scores,ids,hm,cropped_boxes = track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores)
+                writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, im_name)
                 if args.profile:
                     ckpt_time, post_time = getTime(ckpt_time)
                     runtime_profile['pn'].append(post_time)

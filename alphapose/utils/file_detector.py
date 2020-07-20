@@ -32,11 +32,14 @@ class FileDetectionLoader():
                 rot=0, sigma=self._sigma,
                 train=False, add_dpg=False)
 
-        # initialize the det file list
+        # initialize the det file list        
         boxes = None
-        with open(self.bbox_file, 'r') as f:
-            boxes = json.load(f)
-        assert boxes is not None, 'Load %s fail!' % self.bbox_file
+        if isinstance(self.bbox_file,list):
+            boxes = self.bbox_file
+        else:
+            with open(self.bbox_file, 'r') as f:
+                boxes = json.load(f)
+            assert boxes is not None, 'Load %s fail!' % self.bbox_file
 
         self.all_imgs = []
         self.all_boxes = {}
@@ -142,6 +145,9 @@ class FileDetectionLoader():
             return self._stopped
         else:
             return self._stopped.value
+    @property
+    def length(self):
+        return len(self.all_imgs)
 
     @property
     def joint_pairs(self):

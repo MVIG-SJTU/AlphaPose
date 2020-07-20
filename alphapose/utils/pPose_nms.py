@@ -316,7 +316,8 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 keypoints.append(float(kp_scores[n]))
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
-            result['box'] = human['box']
+            if 'box' in human.keys():
+                result['box'] = human['box']
             #pose track results by PoseFlow
             if 'idx' in human.keys():
                 result['idx'] = human['idx']
