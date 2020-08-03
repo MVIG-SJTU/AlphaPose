@@ -707,9 +707,18 @@ def load_pretrained_weights(model, weight_path):
     model_dict = model.state_dict()
     new_state_dict = OrderedDict()
     matched_layers, discarded_layers = [], []
+    #show weight keys
+    '''
+    print('keys of loaded model:')
     for k, v in state_dict.items():
-        #if k.startswith('module.'):
-            #k = k[7:] # discard module
+        print(k)
+    print('keys of model archs:')
+    for k, v in model_dict.items():
+        print(k)
+    '''
+    for k, v in state_dict.items():
+        if not k.startswith('module.'):
+            k = 'module.' + k
 
         if k in model_dict and model_dict[k].size() == v.size():
             new_state_dict[k] = v

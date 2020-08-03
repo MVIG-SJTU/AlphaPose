@@ -196,10 +196,10 @@ class Tracker(object):
         self.num_joints = 17
         self.frame_rate = opt.frame_rate
         #m = ResModel(n_ID=opt.nid)
-        m = resnet50_fc512(
-            num_classes=1,
-            pretrained=False
-        )
+        if self.opt.arch == "res50-fc512":
+            m = resnet50_fc512(num_classes=1,pretrained=False)
+        elif self.opt.arch == "osnet":
+            m = osnet_x1_0(num_classes=1,pretrained=False)
         self.model = nn.DataParallel(m).cuda().eval()
         load_pretrained_weights(self.model,self.opt.loadmodel)
         self.tracked_stracks = []  # type: list[STrack]
