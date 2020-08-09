@@ -46,6 +46,9 @@ class DataWriter():
             if not os.path.exists(opt.outputpath + '/vis'):
                 os.mkdir(opt.outputpath + '/vis')
 
+        if opt.pose_flow:
+            from PoseFlow.poseflow_infer import PoseFlowWrapper
+            self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
 
     def start_worker(self, target):
         if self.opt.sp:
@@ -104,7 +107,7 @@ class DataWriter():
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)
                 preds_scores = torch.cat(pose_scores)
-                if self.opt.tracking:
+                if self.opt.pose_track:
                     _result = []
                     for k in range(len(scores)):
                         _result.append(
@@ -122,6 +125,12 @@ class DataWriter():
                     'imgname': im_name,
                     'result': _result
                 }
+
+                if self.opt.pose_flow:
+                    poseflow_result = self.pose_flow_wrapper.step(orig_img, result)
+                    for i in range(len(poseflow_result)):
+                        result['result'][i]['idx'] = poseflow_result[i]['idx']
+
                 self.wait_and_put(self.final_result_queue, result)
                 if self.opt.save_img or self.save_video or self.opt.vis:
                     if hm_data.size()[1] == 49:
@@ -130,7 +139,7 @@ class DataWriter():
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame
-                    img = vis_frame(orig_img, result, add_bbox=(self.opt.pose_track | self.opt.tracking | self.opt.showbox))
+                    img = vis_frame(orig_img, result, self.opt)
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):

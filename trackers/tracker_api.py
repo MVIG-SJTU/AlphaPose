@@ -26,6 +26,7 @@ from tracking.basetrack import BaseTrack, TrackState
 from utils.transform import build_transforms
 from ReidModels.ResBnLin import ResModel
 from ReidModels.osnet import *
+from ReidModels.osnet_ain import osnet_ain_x1_0
 from ReidModels.resnet_fc import resnet50_fc512
 
 class STrack(BaseTrack):
@@ -191,16 +192,19 @@ class STrack(BaseTrack):
 
 
 class Tracker(object):
-    def __init__(self, opt):
+    def __init__(self, opt, args):
         self.opt = opt
         self.num_joints = 17
         self.frame_rate = opt.frame_rate
         #m = ResModel(n_ID=opt.nid)
         if self.opt.arch == "res50-fc512":
             m = resnet50_fc512(num_classes=1,pretrained=False)
-        elif self.opt.arch == "osnet":
-            m = osnet_x1_0(num_classes=1,pretrained=False)
-        self.model = nn.DataParallel(m).cuda().eval()
+        elif self.opt.arch == "osnet_ain":
+            m = osnet_ain_x1_0(num_classes=1,pretrained=False)
+        if len(args.gpus) > 1:
+            self.model = nn.DataParallel(m,device_ids=args.gpus).to(args.device).eval()
+        else:
+            self.model = nn.DataParallel(m).to(args.device).eval()
         load_pretrained_weights(self.model,self.opt.loadmodel)
         self.tracked_stracks = []  # type: list[STrack]
         self.lost_stracks = []  # type: list[STrack]
@@ -224,12 +228,8 @@ class Tracker(object):
         ''' Step 1: Network forward, get human identity embedding''' 
         assert len(inps)==len(bboxs),'Unmatched Length Between Inps and Bboxs'
         assert len(inps)==len(pose),'Unmatched Length Between Inps and Heatmaps'  
-        feats = []
-        for inp in inps:
-            with torch.no_grad():
-                _feat = self.model(inp.unsqueeze(0))
-                feats.append(_feat.squeeze(0).cpu().numpy())
-        feats = np.asarray(feats)
+        with torch.no_grad():
+            feats = self.model(inps).cpu().numpy()
         bboxs = np.asarray(bboxs)
         if len(bboxs)>0:
             detections = [STrack(STrack.tlbr_to_tlwh(tlbrs[:]), 0.9, f,p,c,file_name,ps,30) for
