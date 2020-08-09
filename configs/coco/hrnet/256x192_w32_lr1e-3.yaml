@@ -59,6 +59,8 @@ MODEL:
     NUM_CHANNELS: [32, 64, 128, 256]
     BLOCK: 'BASIC'
     FUSE_METHOD: 'SUM'
+LOSS:
+  TYPE: 'MSELoss'
 DETECTOR:
   NAME: 'yolo'
   CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'

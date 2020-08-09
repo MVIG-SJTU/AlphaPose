@@ -12,7 +12,7 @@ from tqdm import tqdm
 from alphapose.models import builder
 from alphapose.opt import cfg, logger, opt
 from alphapose.utils.logger import board_writing, debug_writing
-from alphapose.utils.metrics import DataLogger, calc_accuracy, evaluate_mAP
+from alphapose.utils.metrics import DataLogger, calc_accuracy, calc_integral_accuracy, evaluate_mAP
 from alphapose.utils.transforms import get_func_heatmap_to_coord
 
 num_gpu = torch.cuda.device_count()
@@ -27,6 +27,7 @@ def train(opt, train_loader, m, criterion, optimizer, writer):
     loss_logger = DataLogger()
     acc_logger = DataLogger()
     m.train()
+    norm_type = cfg.LOSS.get('NORM_TYPE', None)
 
     train_loader = tqdm(train_loader, dynamic_ncols=True)
 
@@ -40,8 +41,12 @@ def train(opt, train_loader, m, criterion, optimizer, writer):
 
         output = m(inps)
 
-        loss = 0.5 * criterion(output.mul(label_masks), labels.mul(label_masks))
-        acc = calc_accuracy(output.mul(label_masks), labels.mul(label_masks))
+        if cfg.LOSS.get('TYPE') == 'MSELoss':
+            loss = 0.5 * criterion(output.mul(label_masks), labels.mul(label_masks))
+            acc = calc_accuracy(output.mul(label_masks), labels.mul(label_masks))
+        else:
+            loss = criterion(output, labels, label_masks)
+            acc = calc_integral_accuracy(output, labels, label_masks, output_3d=False, norm_type=norm_type)
 
         if isinstance(inps, list):
             batch_size = inps[0].size(0)
@@ -85,6 +90,9 @@ def validate(m, opt, heatmap_to_coord, batch_size=20):
 
     m.eval()
 
+    norm_type = cfg.LOSS.get('NORM_TYPE', None)
+    hm_size = cfg.DATA_PRESET.HEATMAP_SIZE
+
     for inps, crop_bboxes, bboxes, img_ids, scores, imghts, imgwds in tqdm(det_loader, dynamic_ncols=True):
         if isinstance(inps, list):
             inps = [inp.cuda() for inp in inps]
@@ -92,15 +100,15 @@ def validate(m, opt, heatmap_to_coord, batch_size=20):
             inps = inps.cuda()
         output = m(inps)
 
-        pred = output.cpu().data.numpy()
+        pred = output
         assert pred.ndim == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
             bbox = crop_bboxes[i].tolist()
-            pose_coords, pose_scores = heatmap_to_coord(pred[i][det_dataset.EVAL_JOINTS], bbox)
+            pose_coords, pose_scores = heatmap_to_coord(pred[i][det_dataset.EVAL_JOINTS], bbox, hm_size, norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()
@@ -127,6 +135,9 @@ def validate_gt(m, opt, cfg, heatmap_to_coord, batch_size=20):
     kpt_json = []
     m.eval()
 
+    norm_type = cfg.LOSS.get('NORM_TYPE', None)
+    hm_size = cfg.DATA_PRESET.HEATMAP_SIZE
+
     for inps, labels, label_masks, img_ids, bboxes in tqdm(gt_val_loader, dynamic_ncols=True):
         if isinstance(inps, list):
             inps = [inp.cuda() for inp in inps]
@@ -134,15 +145,15 @@ def validate_gt(m, opt, cfg, heatmap_to_coord, batch_size=20):
             inps = inps.cuda()
         output = m(inps)
 
-        pred = output.cpu().data.numpy()
+        pred = output
         assert pred.ndim == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
             bbox = bboxes[i].tolist()
-            pose_coords, pose_scores = heatmap_to_coord(pred[i][gt_val_dataset.EVAL_JOINTS], bbox)
+            pose_coords, pose_scores = heatmap_to_coord(pred[i][gt_val_dataset.EVAL_JOINTS], bbox, hm_size, norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()
@@ -171,7 +182,8 @@ def main():
     m = preset_model(cfg)
     m = nn.DataParallel(m).cuda()
 
-    criterion = torch.nn.MSELoss().cuda()
+    criterion = builder.build_loss(cfg.LOSS).cuda()
+
     if cfg.TRAIN.OPTIMIZER == 'adam':
         optimizer = torch.optim.Adam(m.parameters(), lr=cfg.TRAIN.LR)
     elif cfg.TRAIN.OPTIMIZER == 'rmsprop':

@@ -40,6 +40,8 @@ MODEL:
   - 256
   - 256
   NUM_LAYERS: 50
+LOSS:
+  TYPE: 'MSELoss'
 DETECTOR:
   NAME: 'yolo'
   CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'

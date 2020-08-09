@@ -48,6 +48,8 @@ MODEL:
     NUM_CONV: 2
   STAGE3:
     NUM_CONV: 1
+LOSS:
+  TYPE: 'MSELoss'
 DETECTOR:
   NAME: 'yolo'
   CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'

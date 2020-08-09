@@ -6,10 +6,10 @@ DATASET:
     ANN: 'annotations/person_keypoints_train2017.json'
     AUG:
       FLIP: true
-      ROT_FACTOR: 40
-      SCALE_FACTOR: 0.3
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.35
       NUM_JOINTS_HALF_BODY: 8
-      PROB_HALF_BODY: -1
+      PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'Mscoco'
     ROOT: './data/coco/'
@@ -23,6 +23,7 @@ DATASET:
     ANN: 'annotations/person_keypoints_val2017.json'
 DATA_PRESET:
   TYPE: 'simple'
+  LOSS_TYPE: 'L1JointRegression'
   SIGMA: 2
   NUM_JOINTS: 17
   IMAGE_SIZE:
@@ -32,7 +33,7 @@ DATA_PRESET:
   - 64
   - 48
 MODEL:
-  TYPE: 'SimplePose'
+  TYPE: 'FastPose'
   PRETRAINED: ''
   TRY_LOAD: ''
   NUM_DECONV_FILTERS:
@@ -41,25 +42,27 @@ MODEL:
   - 256
   NUM_LAYERS: 50
 LOSS:
-  TYPE: 'MSELoss'
+  TYPE: 'L1JointRegression'
+  NORM_TYPE: 'sigmoid'
+  OUTPUT_3D: False
 DETECTOR:
   NAME: 'yolo'
   CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
   WEIGHTS: 'detector/yolo/data/yolov3-spp.weights'
   NMS_THRES: 0.6
-  CONFIDENCE: 0.1
+  CONFIDENCE: 0.05
 TRAIN:
   WORLD_SIZE: 4
   BATCH_SIZE: 32
   BEGIN_EPOCH: 0
-  END_EPOCH: 200
+  END_EPOCH: 270
   OPTIMIZER: 'adam'
   LR: 0.001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 90
-  - 120
-  DPG_MILESTONE: 140
+  - 170
+  - 200
+  DPG_MILESTONE: 210
   DPG_STEP:
-  - 160
-  - 190
+  - 230
+  - 250

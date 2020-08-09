@@ -9,7 +9,7 @@ import sys
 import numpy as np
 import torch
 import torch.nn.functional as F
-from .transforms import get_max_pred_batch
+from .transforms import get_max_pred_batch, _integral_tensor
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -128,6 +128,77 @@ def calc_accuracy(preds, labels):
     norm = np.ones((preds.shape[0], 2)) * np.array([hm_w, hm_h]) / 10
 
     dists = calc_dist(preds, labels, norm)
+
+    acc = 0
+    sum_acc = 0
+    cnt = 0
+    for i in range(num_joints):
+        acc = dist_acc(dists[i])
+        if acc >= 0:
+            sum_acc += acc
+            cnt += 1
+
+    if cnt > 0:
+        return sum_acc / cnt
+    else:
+        return 0
+
+
+def calc_integral_accuracy(preds, labels, label_masks, output_3d=False, norm_type='softmax'):
+    """Calculate integral coordinates accuracy."""
+    def integral_op(hm_1d):
+        hm_1d = hm_1d * torch.cuda.comm.broadcast(torch.arange(hm_1d.shape[-1]).type(
+            torch.cuda.FloatTensor), devices=[hm_1d.device.index])[0]
+        return hm_1d
+
+    preds = preds.detach()
+    hm_width = preds.shape[-1]
+    hm_height = preds.shape[-2]
+
+    if output_3d:
+        hm_depth = hm_height
+        num_joints = preds.shape[1] // hm_depth
+    else:
+        hm_depth = 1
+        num_joints = preds.shape[1]
+
+    with torch.no_grad():
+        pred_jts, _ = _integral_tensor(preds, num_joints, output_3d, hm_width, hm_height, hm_depth, integral_op, norm_type=norm_type)
+
+    coords = pred_jts.detach().cpu().numpy()
+    coords = coords.astype(float)
+    if output_3d:
+        coords = coords.reshape((coords.shape[0], int(coords.shape[1] / 3), 3))
+    else:
+        coords = coords.reshape((coords.shape[0], int(coords.shape[1] / 2), 2))
+    coords[:, :, 0] = (coords[:, :, 0] + 0.5) * hm_width
+    coords[:, :, 1] = (coords[:, :, 1] + 0.5) * hm_height
+
+    if output_3d:
+        labels = labels.cpu().data.numpy().reshape(preds.shape[0], num_joints, 3)
+        label_masks = label_masks.cpu().data.numpy().reshape(preds.shape[0], num_joints, 3)
+
+        labels[:, :, 0] = (labels[:, :, 0] + 0.5) * hm_width
+        labels[:, :, 1] = (labels[:, :, 1] + 0.5) * hm_height
+        labels[:, :, 2] = (labels[:, :, 2] + 0.5) * hm_depth
+
+        coords[:, :, 2] = (coords[:, :, 2] + 0.5) * hm_depth
+    else:
+        labels = labels.cpu().data.numpy().reshape(preds.shape[0], num_joints, 2)
+        label_masks = label_masks.cpu().data.numpy().reshape(preds.shape[0], num_joints, 2)
+
+        labels[:, :, 0] = (labels[:, :, 0] + 0.5) * hm_width
+        labels[:, :, 1] = (labels[:, :, 1] + 0.5) * hm_height
+
+    coords = coords * label_masks
+    labels = labels * label_masks
+
+    if output_3d:
+        norm = np.ones((preds.shape[0], 3)) * np.array([hm_width, hm_height, hm_depth]) / 10
+    else:
+        norm = np.ones((preds.shape[0], 2)) * np.array([hm_width, hm_height]) / 10
+
+    dists = calc_dist(coords, labels, norm)
 
     acc = 0
     sum_acc = 0
