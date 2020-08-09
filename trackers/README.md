@@ -1,6 +1,6 @@
 # Pose Tracking
 ## Models
-Download our [human reid model](https://jbox.sjtu.edu.cn/l/I51LcR) and place it into `./trackers`.
+Download  [human reid model](https://mega.nz/#!YTZFnSJY!wlbo_5oa2TpDAGyWCTKTX1hh4d6DvJhh_RUA2z6i_so) and place it into `./trackers/weights/`.
 
 You can try different person reid model by modifing `cfg.arch` and `cfg.loadmodel` in `./trackers/tracker_cfg.py`.
 
