@@ -46,7 +46,7 @@ class DataWriter():
             if not os.path.exists(opt.outputpath + '/vis'):
                 os.mkdir(opt.outputpath + '/vis')
 
-        if opt.pose_track:
+        if opt.pose_flow:
             from PoseFlow.poseflow_infer import PoseFlowWrapper
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
 
@@ -88,7 +88,7 @@ class DataWriter():
                 return
             # image channel RGB->BGR
             orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]
-            if boxes is None:
+            if boxes is None or len(boxes) == 0:
                 if self.opt.save_img or self.save_video or self.opt.vis:
                     self.write_image(orig_img, im_name, stream=stream if self.save_video else None)
             else:
@@ -107,15 +107,30 @@ class DataWriter():
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)
                 preds_scores = torch.cat(pose_scores)
-                result = pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
+                if self.opt.pose_track:
+                    _result = []
+                    for k in range(len(scores)):
+                        _result.append(
+                            {
+                                'keypoints':preds_img[k],
+                                'kp_score':preds_scores[k],
+                                'proposal_score':scores[k],
+                                'idx':ids[k],
+                                'bbox':boxes[k]
+                            }
+                        )
+                else:
+                    _result = pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
                 result = {
                     'imgname': im_name,
-                    'result': result
+                    'result': _result
                 }
-                if self.opt.pose_track:
+
+                if self.opt.pose_flow:
                     poseflow_result = self.pose_flow_wrapper.step(orig_img, result)
                     for i in range(len(poseflow_result)):
                         result['result'][i]['idx'] = poseflow_result[i]['idx']
+
                 self.wait_and_put(self.final_result_queue, result)
                 if self.opt.save_img or self.save_video or self.opt.vis:
                     if hm_data.size()[1] == 49:
@@ -124,7 +139,7 @@ class DataWriter():
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame
-                    img = vis_frame(orig_img, result, add_bbox=(self.opt.pose_track | self.opt.tracking | self.opt.showbox))
+                    img = vis_frame(orig_img, result, self.opt)
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):

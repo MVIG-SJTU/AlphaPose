@@ -37,7 +37,7 @@ class YOLODetector(BaseDetector):
         self.model_weights = cfg.get('WEIGHTS', 'detector/yolo/data/yolov3-spp.weights')
         self.inp_dim = cfg.get('INP_DIM', 608)
         self.nms_thres = cfg.get('NMS_THRES', 0.6)
-        self.confidence = cfg.get('CONFIDENCE', 0.05)
+        self.confidence = 0.3 if opt.tracking else cfg.get('CONFIDENCE', 0.05)
         self.num_classes = cfg.get('NUM_CLASSES', 80)
         self.model = None
 
@@ -48,7 +48,7 @@ class YOLODetector(BaseDetector):
         self.model = Darknet(self.model_cfg)
         self.model.load_weights(self.model_weights)
         self.model.net_info['height'] = self.inp_dim
-        print("Network successfully loaded")
+        
 
         if args:
             if len(args.gpus) > 1:

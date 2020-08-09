@@ -11,6 +11,9 @@ from tqdm import tqdm
 import natsort
 
 from detector.apis import get_detector
+from trackers.tracker_api import Tracker
+from trackers.tracker_cfg import cfg as tcfg
+from trackers import track
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
@@ -75,8 +78,11 @@ parser.add_argument('--save_video', dest='save_video',
                     help='whether to save rendered video', default=False, action='store_true')
 parser.add_argument('--vis_fast', dest='vis_fast',
                     help='use fast rendering', action='store_true', default=False)
+"""----------------------------- Tracking options -----------------------------"""
+parser.add_argument('--pose_flow', dest='pose_flow',
+                    help='track humans in video with PoseFlow', action='store_true', default=False)
 parser.add_argument('--pose_track', dest='pose_track',
-                    help='track humans in video', action='store_true', default=False)
+                    help='track humans in video with reid', action='store_true', default=False)
 
 args = parser.parse_args()
 cfg = update_config(args.cfg)
@@ -88,7 +94,7 @@ args.gpus = [int(i) for i in args.gpus.split(',')] if torch.cuda.device_count() 
 args.device = torch.device("cuda:" + str(args.gpus[0]) if args.gpus[0] >= 0 else "cpu")
 args.detbatch = args.detbatch * len(args.gpus)
 args.posebatch = args.posebatch * len(args.gpus)
-args.tracking = (args.detector == 'tracker')
+args.tracking = args.pose_track or args.pose_flow or args.detector=='tracker'
 
 if not args.sp:
     torch.multiprocessing.set_start_method('forkserver', force=True)
@@ -174,7 +180,8 @@ if __name__ == "__main__":
 
     print(f'Loading pose model from {args.checkpoint}...')
     pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
-
+    if args.pose_track:
+        tracker = Tracker(tcfg, args)
     if len(args.gpus) > 1:
         pose_model = torch.nn.DataParallel(pose_model, device_ids=args.gpus).to(args.device)
     else:
@@ -245,9 +252,9 @@ if __name__ == "__main__":
                 if args.profile:
                     ckpt_time, pose_time = getTime(ckpt_time)
                     runtime_profile['pt'].append(pose_time)
-                hm = hm.cpu()
-                writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, os.path.basename(im_name))
-
+                if args.pose_track:
+                    boxes,scores,ids,hm,cropped_boxes = track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores)
+                writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, im_name)
                 if args.profile:
                     ckpt_time, post_time = getTime(ckpt_time)
                     runtime_profile['pn'].append(post_time)

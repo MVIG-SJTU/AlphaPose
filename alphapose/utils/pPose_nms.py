@@ -122,7 +122,7 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
             'keypoints': merge_pose - 0.3,
             'kp_score': merge_score,
             'proposal_score': torch.mean(merge_score) + bbox_scores_pick[j] + 1.25 * max(merge_score),
-            'idx' : ori_bbox_ids[merge_id].tolist()
+            'idx' : ori_bbox_ids[merge_id][0]#.tolist()
         })
 
     return final_result
@@ -316,7 +316,8 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 keypoints.append(float(kp_scores[n]))
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
-            result['box'] = human['box']
+            if 'box' in human.keys():
+                result['box'] = human['box']
             #pose track results by PoseFlow
             if 'idx' in human.keys():
                 result['idx'] = human['idx']
