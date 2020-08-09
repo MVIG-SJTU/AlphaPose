@@ -18,7 +18,7 @@ DEFAULT_VIDEO_SAVE_OPT = {
     'frameSize': (640, 480)
 }
 
-EVAL_JOINTS = list(range(136))
+EVAL_JOINTS =list(range(136))
 
 
 class DataWriter():
