@@ -18,7 +18,7 @@ DEFAULT_VIDEO_SAVE_OPT = {
     'frameSize': (640, 480)
 }
 
-EVAL_JOINTS =list(range(136))
+EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
 
 class DataWriter():
@@ -93,16 +93,15 @@ class DataWriter():
                     self.write_image(orig_img, im_name, stream=stream if self.save_video else None)
             else:
                 # location prediction (n, kp, 2) | score prediction (n, kp, 1)
-                pred = hm_data.cpu().data.numpy()
-                assert pred.ndim == 4
+                assert dim(hm_data) == 4
 
-                if hm_data.size()[1] == 49:
-                    self.eval_joints = [*range(0,49)]
+                if hm_data.size()[1] == 136:
+                    self.eval_joints = [*range(0,136)]
                 pose_coords = []
                 pose_scores = []
                 for i in range(hm_data.shape[0]):
                     bbox = cropped_boxes[i].tolist()
-                    pose_coord, pose_score = self.heatmap_to_coord(pred[i][self.eval_joints], bbox)
+                    pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox)
                     pose_coords.append(torch.from_numpy(pose_coord).unsqueeze(0))
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)

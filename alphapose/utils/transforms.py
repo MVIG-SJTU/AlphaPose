@@ -585,7 +585,7 @@ def flip_joints_3d(joints_3d, width, joint_pairs):
 
 
 def heatmap_to_coord_simple(hms, bbox, *args):
-    # hms = hms.cpu().data.numpy()
+    hms = hms.cpu().data.numpy()
     coords, maxvals = get_max_pred(hms)
 
     hm_h = hms.shape[1]
