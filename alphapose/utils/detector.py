@@ -4,7 +4,6 @@ from threading import Thread
 from queue import Queue
 
 import cv2
-import scipy.misc
 import numpy as np
 
 import torch
@@ -139,12 +138,12 @@ class DetectionLoader():
                 # add one dimension at the front for batch if image shape (3,h,w)
                 if img_k.dim() == 3:
                     img_k = img_k.unsqueeze(0)
-                orig_img_k = scipy.misc.imread(im_name_k, mode='RGB')
+                orig_img_k = cv2.cvtColor(cv2.imread(im_name_k), cv2.COLOR_BGR2RGB) # scipy.misc.imread(im_name_k, mode='RGB') is depreciated
                 im_dim_list_k = orig_img_k.shape[1], orig_img_k.shape[0]
 
                 imgs.append(img_k)
                 orig_imgs.append(orig_img_k)
-                im_names.append(im_name_k)
+                im_names.append(os.path.basename(im_name_k))
                 im_dim_list.append(im_dim_list_k)
 
             with torch.no_grad():

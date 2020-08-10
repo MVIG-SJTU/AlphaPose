@@ -136,7 +136,8 @@ def check_input():
                 im_names = files
             im_names = natsort.natsorted(im_names)
         elif len(inputimg):
-            im_names = [inputimg]
+            args.inputpath = os.path.split(inputimg)[0]
+            im_names = [os.path.split(inputimg)[1]]
 
         return 'image', im_names
 
@@ -226,7 +227,7 @@ if __name__ == "__main__":
                 if orig_img is None:
                     break
                 if boxes is None or boxes.nelement() == 0:
-                    writer.save(None, None, None, None, None, orig_img, os.path.basename(im_name))
+                    writer.save(None, None, None, None, None, orig_img, im_name)
                     continue
                 if args.profile:
                     ckpt_time, det_time = getTime(start_time)
