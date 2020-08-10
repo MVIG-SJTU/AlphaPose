@@ -93,7 +93,7 @@ class DataWriter():
                     self.write_image(orig_img, im_name, stream=stream if self.save_video else None)
             else:
                 # location prediction (n, kp, 2) | score prediction (n, kp, 1)
-                assert dim(hm_data) == 4
+                assert hm_data.dim() == 4
 
                 if hm_data.size()[1] == 136:
                     self.eval_joints = [*range(0,136)]
