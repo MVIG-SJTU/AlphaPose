@@ -31,13 +31,8 @@ class Mscoco(CustomDataset):
     CLASSES = ['person']
     EVAL_JOINTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     num_joints = 17
-
-    @property
-    def joint_pairs(self):
-        """Joint pairs which defines the pairs of joint to be swapped
-        when the image is flipped horizontally."""
-        return [[1, 2], [3, 4], [5, 6], [7, 8],
-                [9, 10], [11, 12], [13, 14], [15, 16]]
+    joint_pairs = [[1, 2], [3, 4], [5, 6], [7, 8],
+                   [9, 10], [11, 12], [13, 14], [15, 16]]
 
     def _load_jsons(self):
         """Load all image paths and labels from JSON annotation files into buffer."""
