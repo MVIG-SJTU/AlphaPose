@@ -181,6 +181,7 @@ if __name__ == "__main__":
 
     print(f'Loading pose model from {args.checkpoint}...')
     pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
+    pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
     if args.pose_track:
         tracker = Tracker(tcfg, args)
     if len(args.gpus) > 1:
@@ -246,7 +247,7 @@ if __name__ == "__main__":
                         inps_j = torch.cat((inps_j, flip(inps_j)))
                     hm_j = pose_model(inps_j)
                     if args.flip:
-                        hm_j_flip = flip_heatmap(hm_j[int(len(hm_j) / 2):], det_loader.joint_pairs, shift=True)
+                        hm_j_flip = flip_heatmap(hm_j[int(len(hm_j) / 2):], pose_dataset.joint_pairs, shift=True)
                         hm_j = (hm_j[0:int(len(hm_j) / 2)] + hm_j_flip) / 2
                     hm.append(hm_j)
                 hm = torch.cat(hm)
