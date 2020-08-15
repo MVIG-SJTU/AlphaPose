@@ -20,20 +20,20 @@
 - `FastPose` is our own network design. Paper coming soon!
 
 
-## Halpe dataset (26 keypoints)
+## [Halpe dataset](https://github.com/Fang-Haoshu/Halpe-FullBody) (26 keypoints)
 
 | Model                    | Backbone | Detector | Input Size |     AP     | Speed |  Download | Config | Training Log |  
 |--------------------------|----------|----------|------------|------------|-------|-----------|--------|--------------|
-|[Fast Pose](../configs/halpe/resnet/256x192_res50_lr1e-3_1x.yaml)    | ResNet50           | YOLOv3 | 256x192            | 69.0        | 3.54 iter/s | [Google](https://drive.google.com/file/d/1S-ROA28de-1zvLv-hVfPFJ5tFBYOSITb/view?usp=sharing) [Baidu](https://pan.baidu.com/s/1lvzMhoYgS6o6n8lVDx3GtQ) | [cfg](../configs/halpe/resnet/256x192_res50_lr1e-3_1x.yaml)    | [log]() |
+|[Fast Pose](../configs/halpe_26/resnet/256x192_res50_lr1e-3_1x.yaml)    | ResNet50           | YOLOv3 | 256x192            | 69.0        | 3.54 iter/s | [Google](https://drive.google.com/file/d/1S-ROA28de-1zvLv-hVfPFJ5tFBYOSITb/view?usp=sharing) [Baidu](https://pan.baidu.com/s/1lvzMhoYgS6o6n8lVDx3GtQ) | [cfg](../configs/halpe_26/resnet/256x192_res50_lr1e-3_1x.yaml)    | [log]() |
 
 #### Notes
 - More models coming soon!
 
-## Halpe dataset (136 keypoints)
+## [Halpe dataset](https://github.com/Fang-Haoshu/Halpe-FullBody) (136 keypoints)
 
 | Model                    | Backbone | Detector | Input Size |     AP     | Speed |  Download | Config | Training Log |  
 |--------------------------|----------|----------|------------|------------|-------|-----------|--------|--------------|
-|[Fast Pose](../configs/halpe/resnet/256x192_res50_lr1e-3_1x.yaml)    | ResNet50           | YOLOv3 | 256x192            | 69.0        | 3.54 iter/s | [Google]() [Baidu]() | [cfg](../configs/halpe/resnet/256x192_res50_lr1e-3_1x.yaml)    | [log]() |
+|[Fast Pose](../configs/halpe_136/resnet/256x192_res50_lr1e-3_1x.yaml)    | ResNet50           | YOLOv3 | 256x192            | 69.0        | 3.54 iter/s | [Google]() [Baidu]() | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_1x.yaml)    | [log]() |
 
 #### Notes
 - Coming soon!

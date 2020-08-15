@@ -1,6 +1,6 @@
 DATASET:
   TRAIN:
-    TYPE: 'Halpe'
+    TYPE: 'Halpe_136'
     ROOT: './data/coco/'
     IMG_PREFIX: 'train2017'
     ANN: 'annotations/person_keypoints_train2017.json'
@@ -11,12 +11,12 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 8
       PROB_HALF_BODY: -1
   VAL:
-    TYPE: 'Halpe'
+    TYPE: 'Halpe_136'
     ROOT: './data/coco/'
     IMG_PREFIX: 'val2017'
     ANN: 'annotations/person_keypoints_val2017.json'
   TEST:
-    TYPE: 'Halpe_det'
+    TYPE: 'Halpe_136_det'
     ROOT: './data/coco/'
     IMG_PREFIX: 'val2017'
     DET_FILE: './exp/json/test_det_yolo.json'

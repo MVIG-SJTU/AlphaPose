@@ -1,6 +1,6 @@
 DATASET:
   TRAIN:
-    TYPE: 'Halpe_simple'
+    TYPE: 'Halpe_26'
     ROOT: ''
     IMG_PREFIX: 'train2017'
     ANN: '/home/group3/hico_and_coco_26kpts.json'
@@ -11,12 +11,12 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 11
       PROB_HALF_BODY: -1
   VAL:
-    TYPE: 'Halpe_simple'
+    TYPE: 'Halpe_26'
     ROOT: ''
     IMG_PREFIX: 'val2017'
     ANN: '/home/group3/coco_val_full_26.json'
   TEST:
-    TYPE: 'Halpe_simple'
+    TYPE: 'Halpe_26'
     ROOT: ''
     IMG_PREFIX: 'val2017'
     DET_FILE: './exp/json/test_det_yolo.json'

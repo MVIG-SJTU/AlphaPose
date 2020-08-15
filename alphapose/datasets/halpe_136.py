@@ -3,7 +3,7 @@
 # Written by Haoyi Zhu and Hao-Shu Fang
 # -----------------------------------------------------
 
-"""MS COCO Human keypoint dataset."""
+"""Halpe Full-Body(136 points) Human keypoint dataset."""
 import os
 
 import numpy as np
@@ -16,8 +16,8 @@ from .custom import CustomDataset
 
 
 @DATASET.register_module
-class Halpe_simple(CustomDataset):
-    """ Halpe_simple 26 keypoints Person Pose dataset.
+class Halpe_136(CustomDataset):
+    """ Halpe Full-Body(136 points) Person dataset.
 
     Parameters
     ----------
@@ -30,11 +30,20 @@ class Halpe_simple(CustomDataset):
         If true, will activate `dpg` for data augmentation.
     """
     CLASSES = ['person']
-    EVAL_JOINTS = list(range(26))
-    num_joints = 26
+    EVAL_JOINTS = list(range(136))
+    num_joints = 136
     CustomDataset.lower_body_ids = (11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 25)
-    joint_pairs = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16],
-        [20, 21], [22, 23], [24, 25]]
+    """Joint pairs which defines the pairs of joint to be swapped
+        when the image is flipped horizontally."""
+    joint_pairs =  [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], #17 body keypoints
+        [20, 23], [21, 24], [22, 25], [26, 42], [27, 41], [28, 40], [29, 39], [30, 38], 
+        [31, 37], [32, 36], [33, 35], [43, 52], [44, 51], [45, 50],[46, 49], [47, 48], 
+        [62, 71], [63, 70], [64, 69], [65, 68], [66, 73], [67, 72], [57, 61], [58, 60],
+        [74, 80], [75, 79], [76, 78], [87, 89], [93, 91], [86, 90], [85, 81], [84, 82],
+        [94, 115], [95, 116], [96, 117], [97, 118], [98, 119], [99, 120], [100, 121],
+        [101, 122], [102, 123], [103, 124], [104, 125], [105, 126], [106, 127], [107, 128],
+        [108, 129], [109, 130], [110, 131], [111, 132], [112, 133], [113, 134], [114, 135]]
+                
 
     def _load_jsons(self):
         """Load all image paths and labels from JSON annotation files into buffer."""
