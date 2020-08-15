@@ -298,7 +298,7 @@ def vis_frame(frame, im_res, opt, format='coco'):
 
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= 0.6:
+            if kp_scores[n] <= 0.4:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
             part_line[n] = (int(cor_x), int(cor_y))
