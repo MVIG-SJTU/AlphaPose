@@ -32,7 +32,7 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
 
     pose_scores[pose_scores == 0] = 1e-5
     kp_nums = pose_preds.size()[1]
-    final_result = []
+    res_bboxes, res_bbox_scores, res_bbox_ids, res_pose_preds, res_pose_scores, res_pick_ids = [],[],[],[],[],[]
     
     ori_bboxes = bboxes.clone()
     ori_bbox_scores = bbox_scores.clone()
@@ -53,35 +53,33 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
     human_scores = pose_scores.mean(dim=1)
 
     human_ids = np.arange(nsamples)
+    mask = np.ones(len(human_ids)).astype(bool)
+    
     # Do pPose-NMS
     pick = []
     merge_ids = []
-    while(human_scores.shape[0] != 0):
+    while(mask.any()):
+        tensor_mask = torch.Tensor(mask)==True
         # Pick the one with highest score
-        pick_id = torch.argmax(human_scores)
-        pick.append(human_ids[pick_id])
-        # num_visPart = torch.sum(pose_scores[pick_id] > 0.2)
+        pick_id = torch.argmax(human_scores[tensor_mask])
+        pick.append(human_ids[mask][pick_id])
 
         # Get numbers of match keypoints by calling PCK_match
-        ref_dist = ref_dists[human_ids[pick_id]]
-        simi = get_parametric_distance(pick_id, pose_preds, pose_scores, ref_dist)
-        num_match_keypoints = PCK_match(pose_preds[pick_id], pose_preds, ref_dist)
+        ref_dist = ref_dists[human_ids[mask][pick_id]]
+        simi = get_parametric_distance(pick_id, pose_preds[tensor_mask], pose_scores[tensor_mask], ref_dist)
+        num_match_keypoints = PCK_match(pose_preds[tensor_mask][pick_id], pose_preds[tensor_mask], ref_dist)
 
         # Delete humans who have more than matchThreds keypoints overlap and high similarity
-        delete_ids = torch.from_numpy(np.arange(human_scores.shape[0]))[((simi > gamma) | (num_match_keypoints >= matchThreds))]
+        delete_ids = torch.from_numpy(np.arange(human_scores[tensor_mask].shape[0]))[((simi > gamma) | (num_match_keypoints >= matchThreds))]
 
         if delete_ids.shape[0] == 0:
             delete_ids = pick_id
-        #else:
-        #    delete_ids = torch.from_numpy(delete_ids)
 
-        merge_ids.append(human_ids[delete_ids])
-        pose_preds = np.delete(pose_preds, delete_ids, axis=0)
-        pose_scores = np.delete(pose_scores, delete_ids, axis=0)
-        human_ids = np.delete(human_ids, delete_ids)
-        human_scores = np.delete(human_scores, delete_ids, axis=0)
-        bbox_scores = np.delete(bbox_scores, delete_ids, axis=0)
-        bbox_ids = np.delete(bbox_ids, delete_ids, axis=0)
+        merge_ids.append(human_ids[mask][delete_ids])
+        newmask = mask[mask]
+        newmask[delete_ids] = False
+        mask[mask] = newmask
+
 
     assert len(merge_ids) == len(pick)
     preds_pick = ori_pose_preds[pick]
@@ -113,19 +111,22 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
         ymax = max(merge_pose[:, 1])
         ymin = min(merge_pose[:, 1])
         bbox = bboxes_pick[j].cpu().tolist()
+        bbox_score = bbox_scores_pick[j].cpu()
 
         if (1.5 ** 2 * (xmax - xmin) * (ymax - ymin) < areaThres):
             continue
 
-        final_result.append({
-            'box': [bbox[0], bbox[1], bbox[2]-bbox[0],bbox[3]-bbox[1]],
-            'keypoints': merge_pose - 0.3,
-            'kp_score': merge_score,
-            'proposal_score': torch.mean(merge_score) + bbox_scores_pick[j] + 1.25 * max(merge_score),
-            'idx' : ori_bbox_ids[merge_id].tolist()[0]
-        })
 
-    return final_result
+        res_bboxes.append(bbox)
+        res_bbox_scores.append(bbox_score)
+        res_bbox_ids.append(ori_bbox_ids[merge_id].tolist())
+        res_pose_preds.append(merge_pose)
+        res_pose_scores.append(merge_score)
+        res_pick_ids.append(pick[j])
+
+ 
+
+    return res_bboxes, res_bbox_scores, res_bbox_ids, res_pose_preds, res_pose_scores, res_pick_ids
 
 
 def filter_result(args):

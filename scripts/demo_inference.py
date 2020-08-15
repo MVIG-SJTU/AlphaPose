@@ -17,7 +17,6 @@ from trackers import track
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
-from alphapose.utils.pPose_nms import write_json
 from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader
@@ -256,6 +255,7 @@ if __name__ == "__main__":
                     runtime_profile['pt'].append(pose_time)
                 if args.pose_track:
                     boxes,scores,ids,hm,cropped_boxes = track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores)
+                hm = hm.cpu()
                 writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, im_name)
                 if args.profile:
                     ckpt_time, post_time = getTime(ckpt_time)
@@ -288,11 +288,9 @@ if __name__ == "__main__":
             writer.stop()
         else:
             # subprocesses are killed, manually clear queues
-            for p in det_worker:
-                p.terminate()
-            writer.commit()
+
+            det_loader.terminate()
+            writer.terminate()
             writer.clear_queues()
-            # det_loader.clear_queues()
-    final_result = writer.results()
-    write_json(final_result, args.outputpath, form=args.format, for_eval=args.eval)
-    print("Results have been written to json.")
+            det_loader.clear_queues()
+

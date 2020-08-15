@@ -298,7 +298,7 @@ def vis_frame(frame, im_res, opt, format='coco'):
 
         # Draw keypoints
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= 0.4:
+            if kp_scores[n] <= 0.6:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
             part_line[n] = (int(cor_x), int(cor_y))
@@ -335,7 +335,7 @@ def vis_frame(frame, im_res, opt, format='coco'):
                         cv2.fillConvexPoly(bg, polygon, line_color[i])
                 else:
                     cv2.line(bg, start_xy, end_xy, (255,255,255), 1)
-                transparency = float(max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p]))))
+                transparency = float(max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p])-0.1)))
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
     return img
 
