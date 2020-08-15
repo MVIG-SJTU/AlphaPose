@@ -19,16 +19,12 @@ To match poses that correspond to the same person across frames, we also provide
 AlphaPose supports both Linux and **Windows!**
 
 <div align="center">
-    <img src="docs/alphapose_17.gif", width="400">
-    COCO 17 keypoints
-</div>
-<div align="center">
-    <img src="docs/alphapose_26.gif", width="400">
-    Halpe 26 keypoints
-</div>
-<div align="center">
-    <img src="docs/alphapose_136.gif", width="400">
-    Halpe 136 keypoints
+    <img src="docs/alphapose_17.gif", width="300" alt>
+    <em>COCO 17 keypoints</em>
+    <img src="docs/alphapose_26.gif", width="300" alt>
+    <em><a src="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 26 keypoints</a> + tracking</em>
+    <img src="docs/alphapose_136.gif", width="300"alt>
+    <em><a src="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a> + tracking</em>
 </div>
 
 
@@ -41,7 +37,7 @@ Results on COCO test-dev 2015:
 |:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
 | OpenPose (CMU-Pose) | 61.8 | 84.9 | 67.5 | 57.1 | 68.2 |
 | Detectron (Mask R-CNN) | 67.0 | 88.0 | 73.1 | 62.2 | 75.6 |
-| **AlphaPose** | **72.3** | **89.2** | **79.1** | **69.0** | **78.6** |
+| **AlphaPose** | **73.3** | **89.2** | **79.1** | **69.0** | **78.6** |
 
 </center>
 
