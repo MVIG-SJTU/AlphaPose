@@ -24,11 +24,11 @@ AlphaPose supports both Linux and **Windows!**
 </div>
 <div align="center">
     <img src="docs/alphapose_26.gif", width="400" alt><br>
-    <a src="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 26 keypoints</a> + tracking
+    <b><a href="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 26 keypoints</a></b> + tracking
 </div>
 <div align="center">
     <img src="docs/alphapose_136.gif", width="400"alt><br>
-    <a src="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a> + tracking
+    <b><a href="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a></b> + tracking
 </div>
 
 
