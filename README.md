@@ -19,14 +19,15 @@ To match poses that correspond to the same person across frames, we also provide
 AlphaPose supports both Linux and **Windows!**
 
 <div align="center">
-    <img src="docs/alphapose_17.gif", width="400" alt>
+    <img src="docs/alphapose_17.gif", width="400" alt><br>
     COCO 17 keypoints
 </div>
 <div align="center">
-    <img src="docs/alphapose_26.gif", width="400" alt>
+    <img src="docs/alphapose_26.gif", width="400" alt><br>
     <a src="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 26 keypoints</a> + tracking
 </div>
-    <img src="docs/alphapose_136.gif", width="400"alt>
+<div align="center">
+    <img src="docs/alphapose_136.gif", width="400"alt><br>
     <a src="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a> + tracking
 </div>
 
