@@ -12,8 +12,13 @@ AlphaPose is authored by [Hao-Shu Fang\*](https://fang-haoshu.github.io/), [Jief
 We would also like to thank the following people who have highly contributed to AlphaPose:
 
 [Hongyang Tang](): AlphaPose Tracking module developer
+
 [Chao Xu](): AlphaPose pytorch 0.3.0 version contributor
+
 [Haoyi Zhu](): AlphaPose whole-body keypoints developer
+
 [Chenxi Wang](): AlphaPose mxnet version main developer
+
 [Chongwei Liu](): AlphaPose c++ version developer
+
 [Ruiheng Chang](): AlphaPose master version(old) detection module
