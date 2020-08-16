@@ -175,7 +175,7 @@ if __name__ == '__main__':
             tasks.append((img1_path,img2_path, image_dir, frame_id, next_frame_id))
     
     # do the matching parallel
-    parallel_process(tasks, orb_matching, n_jobs=16)
+    parallel_process(tasks, orb_matching, n_jobs=8)
 
     print("Start pose tracking...\n")
     # tracking process

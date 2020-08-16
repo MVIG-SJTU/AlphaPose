@@ -136,7 +136,7 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
             if 'box' in human.keys():
                 bbox = human['box']
             else:
-                from PoseFlow.poseflow_infer import get_box
+                from trackers.PoseFlow.poseflow_infer import get_box
                 keypoints = []
                 for n in range(kp_scores.shape[0]):
                     keypoints.append(float(kp_preds[n, 0]))
@@ -284,7 +284,7 @@ def vis_frame(frame, im_res, opt, format='coco'):
                 bbox = human['box']
                 bbox = [bbox[0], bbox[0]+bbox[2], bbox[1], bbox[1]+bbox[3]]#xmin,xmax,ymin,ymax
             else:
-                from PoseFlow.poseflow_infer import get_box
+                from trackers.PoseFlow.poseflow_infer import get_box
                 keypoints = []
                 for n in range(kp_scores.shape[0]):
                     keypoints.append(float(kp_preds[n, 0]))

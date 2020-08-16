@@ -65,7 +65,7 @@ More results and models are available in the [docs/MODEL_ZOO.md](docs/MODEL_ZOO.
     <img src="docs/posetrack2.gif", width="344">
 </p>
 
-Please read [PoseFlow/README.md](PoseFlow/) for details.
+Please read [trackers/README.md](trackers/) for details.
 
 ### CrowdPose
 <p align='center'>

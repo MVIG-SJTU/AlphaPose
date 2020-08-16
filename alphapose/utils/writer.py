@@ -44,7 +44,7 @@ class DataWriter():
                 os.mkdir(opt.outputpath + '/vis')
 
         if opt.pose_flow:
-            from PoseFlow.poseflow_infer import PoseFlowWrapper
+            from trackers.PoseFlow.poseflow_infer import PoseFlowWrapper
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
 
     def start_worker(self, target):
