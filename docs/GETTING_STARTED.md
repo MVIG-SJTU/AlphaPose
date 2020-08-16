@@ -24,13 +24,17 @@ python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model}
 ``` bash
 python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --list examples/list-coco-demo.txt --indir ${img_directory} --outdir examples/res --gpus ${-1(cpu only)/0,1,2,3(multi-gpus)}
 ```
+- **Re-ID Track(Experimental)**: Run AlphaPose for tracking persons in a video by human re-id algorithm:
+``` bash
+python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --video ${path to video} --outdir examples/res --pose_track --save_video
+```
 - **Simple Track(Experimental)**: Run AlphaPose for tracking persons in a video by MOT tracking algorithm:
 ``` bash
 python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --video ${path to video} --outdir examples/res --detector tracker --save_video
 ```
-- **Pose Track(not ready)**: Run AlphaPose for tracking persons in a video by embedded PoseFlow algorithm:
+- **Pose Flow(not ready)**: Run AlphaPose for tracking persons in a video by embedded PoseFlow algorithm:
 ``` bash
-python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --video ${path to video} --outdir examples/res --pose_track --save_video
+python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --video ${path to video} --outdir examples/res --pose_flow --save_video
 ```
 
 

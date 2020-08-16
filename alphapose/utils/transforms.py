@@ -584,8 +584,11 @@ def flip_joints_3d(joints_3d, width, joint_pairs):
     return joints
 
 
-def heatmap_to_coord_simple(hms, bbox, *args):
-    hms = hms.cpu().data.numpy()
+def heatmap_to_coord_simple(hms, bbox, hms_flip=None, **kwargs):
+    if hms_flip is not None:
+        hms = (hms + hms_flip) / 2
+    if not isinstance(hms,np.ndarray):
+        hms = hms.cpu().data.numpy()
     coords, maxvals = get_max_pred(hms)
 
     hm_h = hms.shape[1]
@@ -617,7 +620,7 @@ def heatmap_to_coord_simple(hms, bbox, *args):
     return preds, maxvals
 
 
-def heatmap_to_coord_simple_regress(preds, bbox, hm_shape, norm_type):
+def heatmap_to_coord_simple_regress(preds, bbox, hm_shape, norm_type, hms_flip=None):
     def integral_op(hm_1d):
         hm_1d = hm_1d * torch.cuda.comm.broadcast(torch.arange(hm_1d.shape[-1]).type(
             torch.cuda.FloatTensor), devices=[hm_1d.device.index])[0]
@@ -630,6 +633,15 @@ def heatmap_to_coord_simple_regress(preds, bbox, hm_shape, norm_type):
 
     pred_jts, pred_scores = _integral_tensor(preds, num_joints, False, hm_width, hm_height, 1, integral_op, norm_type)
     pred_jts = pred_jts.reshape(pred_jts.shape[0], num_joints, 2)
+
+    if hms_flip is not None:
+        if hms_flip.dim() == 3:
+            hms_flip = hms_flip.unsqueeze(0)
+        pred_jts_flip, pred_scores_flip = _integral_tensor(hms_flip, num_joints, False, hm_width, hm_height, 1, integral_op, norm_type)
+        pred_jts_flip = pred_jts_flip.reshape(pred_jts_flip.shape[0], num_joints, 2)
+
+        pred_jts = (pred_jts + pred_jts_flip) / 2
+        pred_scores = (pred_scores + pred_scores_flip) / 2
 
     ndims = pred_jts.dim()
     assert ndims in [2, 3], "Dimensions of input heatmap should be 3 or 4"

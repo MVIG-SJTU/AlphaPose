@@ -30,6 +30,12 @@ export PATH=/usr/local/cuda/bin/:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
 python -m pip install cython
 sudo apt-get install libyaml-dev
+################Only For Ubuntu 18.04#################
+locale-gen C.UTF-8
+# if locale-gen not found
+sudo apt-get install locales
+export LANG=C.UTF-8
+######################################################
 python setup.py build develop
 ```
 

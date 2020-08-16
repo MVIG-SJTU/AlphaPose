@@ -25,6 +25,9 @@ Here, we first list the flags and other parameters you can tune. Default paramet
 - `--min_box_area`: Min box area to filter out, you can set it like 100 to filter out small people.
 - `--gpus`: Choose which cuda device to use by index and input comma to use multi gpus, e.g. 0,1,2,3. (input -1 for cpu only)
 
+- `--pose_track`: Enable tracking pipeline with human re-id feature, it is currently the best performance pose tracker
+- `--pose_flow`: This flag will be depreciated. It enables the old tracking version of PoseFlow.
+
 All the flags available here: [link](../scripts/demo_inference.py#L22)
 
 

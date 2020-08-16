@@ -73,3 +73,31 @@ def build_from_cfg(cfg, registry, default_args=None):
         for name, value in default_args.items():
             args.setdefault(name, value)
     return obj_cls(**args)
+
+
+def retrieve_from_cfg(cfg, registry):
+    """Retrieve a module class from config dict.
+
+    Args:
+        cfg (dict): Config dict. It should at least contain the key "type".
+        registry (:obj:`Registry`): The registry to search the type from.
+
+    Returns:
+        class: The class.
+    """
+    assert isinstance(cfg, dict) and 'TYPE' in cfg
+    args = cfg.copy()
+    obj_type = args.pop('TYPE')
+
+    if isinstance(obj_type, str):
+        obj_cls = registry.get(obj_type)
+        if obj_cls is None:
+            raise KeyError('{} is not in the {} registry'.format(
+                obj_type, registry.name))
+    elif inspect.isclass(obj_type):
+        obj_cls = obj_type
+    else:
+        raise TypeError('type must be a str or valid type, but got {}'.format(
+            type(obj_type)))
+
+    return obj_cls

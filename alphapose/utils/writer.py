@@ -9,7 +9,7 @@ import torch
 import torch.multiprocessing as mp
 
 from alphapose.utils.transforms import get_func_heatmap_to_coord
-from alphapose.utils.pPose_nms import pose_nms
+from alphapose.utils.pPose_nms import pose_nms, write_json
 
 DEFAULT_VIDEO_SAVE_OPT = {
     'savepath': 'examples/res/1.mp4',
@@ -31,23 +31,20 @@ class DataWriter():
 
         self.eval_joints = EVAL_JOINTS
         self.save_video = save_video
-        self.final_result = []
         self.heatmap_to_coord = get_func_heatmap_to_coord(cfg)
         # initialize the queue used to store frames read from
         # the video file
         if opt.sp:
             self.result_queue = Queue(maxsize=queueSize)
-            self.final_result_queue = Queue(maxsize=queueSize)
         else:
             self.result_queue = mp.Queue(maxsize=queueSize)
-            self.final_result_queue = mp.Queue(maxsize=queueSize)
 
         if opt.save_img:
             if not os.path.exists(opt.outputpath + '/vis'):
                 os.mkdir(opt.outputpath + '/vis')
 
         if opt.pose_flow:
-            from PoseFlow.poseflow_infer import PoseFlowWrapper
+            from trackers.PoseFlow.poseflow_infer import PoseFlowWrapper
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
 
     def start_worker(self, target):
@@ -65,6 +62,7 @@ class DataWriter():
         return self
 
     def update(self):
+        final_result = []
         if self.save_video:
             # initialize the file video stream, adapt ouput video resolution to original video
             stream = cv2.VideoWriter(*[self.video_save_opt[k] for k in ['savepath', 'fourcc', 'fps', 'frameSize']])
@@ -82,9 +80,10 @@ class DataWriter():
             (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name) = self.wait_and_get(self.result_queue)
             if orig_img is None:
                 # if the thread indicator variable is set (img is None), stop the thread
-                self.wait_and_put(self.final_result_queue, None)
                 if self.save_video:
                     stream.release()
+                write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval)
+                print("Results have been written to json.")
                 return
             # image channel RGB->BGR
             orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]
@@ -93,44 +92,50 @@ class DataWriter():
                     self.write_image(orig_img, im_name, stream=stream if self.save_video else None)
             else:
                 # location prediction (n, kp, 2) | score prediction (n, kp, 1)
-                assert dim(hm_data) == 4
+                assert hm_data.dim() == 4
+                pred = hm_data.cpu().data.numpy()
 
                 if hm_data.size()[1] == 136:
                     self.eval_joints = [*range(0,136)]
+                elif hm_data.size()[1] == 26:
+                    self.eval_joints = [*range(0,26)]
                 pose_coords = []
                 pose_scores = []
                 for i in range(hm_data.shape[0]):
                     bbox = cropped_boxes[i].tolist()
-                    pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox)
+                    pose_coord, pose_score = self.heatmap_to_coord(pred[i][self.eval_joints], bbox)
                     pose_coords.append(torch.from_numpy(pose_coord).unsqueeze(0))
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)
                 preds_scores = torch.cat(pose_scores)
-                if self.opt.pose_track:
-                    _result = []
-                    for k in range(len(scores)):
-                        _result.append(
-                            {
-                                'keypoints':preds_img[k],
-                                'kp_score':preds_scores[k],
-                                'proposal_score':scores[k],
-                                'idx':ids[k],
-                                'bbox':boxes[k]
-                            }
-                        )
-                else:
-                    _result = pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
+                if not self.opt.pose_track:
+                    boxes, scores, ids, preds_img, preds_scores, pick_ids = \
+                        pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
+
+                _result = []
+                for k in range(len(scores)):
+                    _result.append(
+                        {
+                            'keypoints':preds_img[k],
+                            'kp_score':preds_scores[k],
+                            'proposal_score': torch.mean(preds_scores[k]) + scores[k] + 1.25 * max(preds_scores[k]),
+                            'idx':ids[k],
+                            'bbox':[boxes[k][0], boxes[k][1], boxes[k][2]-boxes[k][0],boxes[k][3]-boxes[k][1]] 
+                        }
+                    )
+
                 result = {
                     'imgname': im_name,
                     'result': _result
                 }
+
 
                 if self.opt.pose_flow:
                     poseflow_result = self.pose_flow_wrapper.step(orig_img, result)
                     for i in range(len(poseflow_result)):
                         result['result'][i]['idx'] = poseflow_result[i]['idx']
 
-                self.wait_and_put(self.final_result_queue, result)
+                final_result.append(result)
                 if self.opt.save_img or self.save_video or self.opt.vis:
                     if hm_data.size()[1] == 49:
                         from alphapose.utils.vis import vis_frame_dense as vis_frame
@@ -157,14 +162,11 @@ class DataWriter():
         return queue.get()
 
     def save(self, boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name):
-        self.commit()
         # save next frame in the queue
         self.wait_and_put(self.result_queue, (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name))
 
     def running(self):
         # indicate that the thread is still running
-        time.sleep(0.2)
-        self.commit()
         return not self.result_queue.empty()
 
     def count(self):
@@ -174,29 +176,22 @@ class DataWriter():
     def stop(self):
         # indicate that the thread should be stopped
         self.save(None, None, None, None, None, None, None)
-        while True:
-            final_res = self.wait_and_get(self.final_result_queue)
-            if final_res:
-                self.final_result.append(final_res)
-            else:
-                break
         self.result_worker.join()
+
+    def terminate(self):
+        # directly terminate
+        self.result_worker.terminate()
 
     def clear_queues(self):
         self.clear(self.result_queue)
-        self.clear(self.final_result_queue)
         
     def clear(self, queue):
         while not queue.empty():
             queue.get()
 
-    def commit(self):
-        # commit finished final results to main process
-        while not self.final_result_queue.empty():
-            self.final_result.append(self.wait_and_get(self.final_result_queue))
-
     def results(self):
         # return final result
+        print(self.final_result)
         return self.final_result
 
     def recognize_video_ext(self, ext=''):

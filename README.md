@@ -5,6 +5,7 @@
 
 
 ## News!
+- Aug 2020: [**v0.4.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Stronger tracking! Include whole body(face,hand,foot) keypoints!
 - Dec 2019: [**v0.3.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Smaller model, higher accuracy!
 - Apr 2019: [**MXNet** version](https://github.com/MVIG-SJTU/AlphaPose/tree/mxnet) of AlphaPose is released! It runs at **23 fps** on COCO validation set.
 - Feb 2019: [CrowdPose](https://github.com/MVIG-SJTU/AlphaPose/docs/CrowdPose.md) is integrated into AlphaPose Now!
@@ -18,7 +19,16 @@ To match poses that correspond to the same person across frames, we also provide
 AlphaPose supports both Linux and **Windows!**
 
 <div align="center">
-    <img src="docs/alphapose.gif", width="400">
+    <img src="docs/alphapose_17.gif", width="400" alt><br>
+    COCO 17 keypoints
+</div>
+<div align="center">
+    <img src="docs/alphapose_26.gif", width="400" alt><br>
+    <b><a href="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 26 keypoints</a></b> + tracking
+</div>
+<div align="center">
+    <img src="docs/alphapose_136.gif", width="400"alt><br>
+    <b><a href="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a></b> + tracking
 </div>
 
 
@@ -31,7 +41,7 @@ Results on COCO test-dev 2015:
 |:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
 | OpenPose (CMU-Pose) | 61.8 | 84.9 | 67.5 | 57.1 | 68.2 |
 | Detectron (Mask R-CNN) | 67.0 | 88.0 | 73.1 | 62.2 | 75.6 |
-| **AlphaPose** | **72.3** | **89.2** | **79.1** | **69.0** | **78.6** |
+| **AlphaPose** | **73.3** | **89.2** | **79.1** | **69.0** | **78.6** |
 
 </center>
 
@@ -55,7 +65,7 @@ More results and models are available in the [docs/MODEL_ZOO.md](docs/MODEL_ZOO.
     <img src="docs/posetrack2.gif", width="344">
 </p>
 
-Please read [PoseFlow/README.md](PoseFlow/) for details.
+Please read [trackers/README.md](trackers/) for details.
 
 ### CrowdPose
 <p align='center'>

@@ -52,6 +52,9 @@ def validate(m, heatmap_to_coord, batch_size=20):
     kpt_json = []
     m.eval()
 
+    norm_type = cfg.LOSS.get('NORM_TYPE', None)
+    hm_size = cfg.DATA_PRESET.HEATMAP_SIZE
+
     for inps, crop_bboxes, bboxes, img_ids, scores, imghts, imgwds in tqdm(det_loader, dynamic_ncols=True):
         if isinstance(inps, list):
             inps = [inp.cuda() for inp in inps]
@@ -60,21 +63,24 @@ def validate(m, heatmap_to_coord, batch_size=20):
         output = m(inps)
         if opt.flip_test:
             if isinstance(inps, list):
-                inps_flip = [flip(inp) for inp in inps]
+                inps_flip = [flip(inp).cuda() for inp in inps]
             else:
-                inps_flip = flip(inps)
+                inps_flip = flip(inps).cuda()
             output_flip = flip_heatmap(m(inps_flip), det_dataset.joint_pairs, shift=True)
-            output = (output + output_flip) / 2
+            pred_flip = output_flip[:, eval_joints, :, :]
+        else:
+            output_flip = None
 
-        pred = output.cpu().data.numpy()
+        pred = output
         assert pred.ndim == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
             bbox = crop_bboxes[i].tolist()
-            pose_coords, pose_scores = heatmap_to_coord(pred[i][det_dataset.EVAL_JOINTS], bbox)
+            pose_coords, pose_scores = heatmap_to_coord(
+                pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()
@@ -101,6 +107,9 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
     kpt_json = []
     m.eval()
 
+    norm_type = cfg.LOSS.get('NORM_TYPE', None)
+    hm_size = cfg.DATA_PRESET.HEATMAP_SIZE
+
     for inps, labels, label_masks, img_ids, bboxes in tqdm(gt_val_loader, dynamic_ncols=True):
         if isinstance(inps, list):
             inps = [inp.cuda() for inp in inps]
@@ -109,21 +118,24 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
         output = m(inps)
         if opt.flip_test:
             if isinstance(inps, list):
-                inps_flip = [flip(inp) for inp in inps]
+                inps_flip = [flip(inp).cuda() for inp in inps]
             else:
-                inps_flip = flip(inps)
+                inps_flip = flip(inps).cuda()
             output_flip = flip_heatmap(m(inps_flip), gt_val_dataset.joint_pairs, shift=True)
-            output = (output + output_flip) / 2
+            pred_flip = output_flip[:, eval_joints, :, :]
+        else:
+            output_flip = None
 
-        pred = output.cpu().data.numpy()
+        pred = output
         assert pred.ndim == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
             bbox = bboxes[i].tolist()
-            pose_coords, pose_scores = heatmap_to_coord(pred[i][gt_val_dataset.EVAL_JOINTS], bbox)
+            pose_coords, pose_scores = heatmap_to_coord(
+                pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()

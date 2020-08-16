@@ -17,7 +17,6 @@ from trackers import track
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
-from alphapose.utils.pPose_nms import write_json
 from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader
@@ -136,7 +135,8 @@ def check_input():
                 im_names = files
             im_names = natsort.natsorted(im_names)
         elif len(inputimg):
-            im_names = [inputimg]
+            args.inputpath = os.path.split(inputimg)[0]
+            im_names = [os.path.split(inputimg)[1]]
 
         return 'image', im_names
 
@@ -180,6 +180,7 @@ if __name__ == "__main__":
 
     print(f'Loading pose model from {args.checkpoint}...')
     pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
+    pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
     if args.pose_track:
         tracker = Tracker(tcfg, args)
     if len(args.gpus) > 1:
@@ -226,7 +227,7 @@ if __name__ == "__main__":
                 if orig_img is None:
                     break
                 if boxes is None or boxes.nelement() == 0:
-                    writer.save(None, None, None, None, None, orig_img, os.path.basename(im_name))
+                    writer.save(None, None, None, None, None, orig_img, im_name)
                     continue
                 if args.profile:
                     ckpt_time, det_time = getTime(start_time)
@@ -245,7 +246,7 @@ if __name__ == "__main__":
                         inps_j = torch.cat((inps_j, flip(inps_j)))
                     hm_j = pose_model(inps_j)
                     if args.flip:
-                        hm_j_flip = flip_heatmap(hm_j[int(len(hm_j) / 2):], det_loader.joint_pairs, shift=True)
+                        hm_j_flip = flip_heatmap(hm_j[int(len(hm_j) / 2):], pose_dataset.joint_pairs, shift=True)
                         hm_j = (hm_j[0:int(len(hm_j) / 2)] + hm_j_flip) / 2
                     hm.append(hm_j)
                 hm = torch.cat(hm)
@@ -254,6 +255,7 @@ if __name__ == "__main__":
                     runtime_profile['pt'].append(pose_time)
                 if args.pose_track:
                     boxes,scores,ids,hm,cropped_boxes = track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores)
+                hm = hm.cpu()
                 writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, im_name)
                 if args.profile:
                     ckpt_time, post_time = getTime(ckpt_time)
@@ -286,11 +288,9 @@ if __name__ == "__main__":
             writer.stop()
         else:
             # subprocesses are killed, manually clear queues
-            for p in det_worker:
-                p.terminate()
-            writer.commit()
+
+            det_loader.terminate()
+            writer.terminate()
             writer.clear_queues()
-            # det_loader.clear_queues()
-    final_result = writer.results()
-    write_json(final_result, args.outputpath, form=args.format, for_eval=args.eval)
-    print("Results have been written to json.")
+            det_loader.clear_queues()
+

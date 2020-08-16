@@ -1,5 +1,5 @@
-from .registry import Registry, build_from_cfg
+from .registry import Registry, build_from_cfg, retrieve_from_cfg
 
 __all__ = [
-    'Registry', 'build_from_cfg'
+    'Registry', 'build_from_cfg', 'retrieve_from_cfg'
 ]
