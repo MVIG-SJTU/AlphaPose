@@ -71,7 +71,7 @@ class CustomDataset(data.Dataset):
 
         self.num_class = len(self.CLASSES)
 
-        self._loss_type = self._preset_cfg['LOSS_TYPE']
+        self._loss_type = self._preset_cfg.get('LOSS_TYPE', 'MSELoss')
 
         self.upper_body_ids = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         self.lower_body_ids = (11, 12, 13, 14, 15, 16)

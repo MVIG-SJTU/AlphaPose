@@ -11,6 +11,8 @@ from alphapose.utils.config import update_config
 from alphapose.utils.metrics import evaluate_mAP
 from alphapose.utils.transforms import (flip, flip_heatmap,
                                         get_func_heatmap_to_coord)
+from alphapose.utils.pPose_nms import oks_pose_nms
+
 
 parser = argparse.ArgumentParser(description='AlphaPose Validate')
 parser.add_argument('--cfg',
@@ -72,7 +74,7 @@ def validate(m, heatmap_to_coord, batch_size=20):
             output_flip = None
 
         pred = output
-        assert pred.ndim == 4
+        assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
@@ -80,17 +82,21 @@ def validate(m, heatmap_to_coord, batch_size=20):
             pose_coords, pose_scores = heatmap_to_coord(
                 pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()
             data['bbox'] = bboxes[i, 0].tolist()
             data['image_id'] = int(img_ids[i])
-            data['score'] = float(scores[i] + np.mean(pose_scores) + np.max(pose_scores))
+            data['area'] = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+            # data['score'] = float(scores[i] + np.mean(pose_scores) + np.max(pose_scores))
+            data['score'] = float(scores[i])
             data['category_id'] = 1
             data['keypoints'] = keypoints
 
             kpt_json.append(data)
+
+    kpt_json = oks_pose_nms(kpt_json)
 
     with open('./exp/json/validate_rcnn_kpt.json', 'w') as fid:
         json.dump(kpt_json, fid)
@@ -127,7 +133,7 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
             output_flip = None
 
         pred = output
-        assert pred.ndim == 4
+        assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
@@ -135,7 +141,7 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
             pose_coords, pose_scores = heatmap_to_coord(
                 pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()
