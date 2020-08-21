@@ -137,7 +137,7 @@ def vis_frame_fast(frame, im_res, format='coco'):
             if start_p in part_line and end_p in part_line:
                 start_xy = part_line[start_p]
                 end_xy = part_line[end_p]
-                cv2.line(img, start_xy, end_xy, line_color[i], 2*(kp_scores[start_p] + kp_scores[end_p]) + 1)
+                cv2.line(img, start_xy, end_xy, line_color[i], 2*int(kp_scores[start_p] + kp_scores[end_p]) + 1)
     return img
 
 
@@ -194,7 +194,7 @@ def vis_frame(frame, im_res, format='coco'):
             bg = img.copy()
             cv2.circle(bg, (int(cor_x/2), int(cor_y/2)), 2, p_color[n], -1)
             # Now create a mask of logo and create its inverse mask also
-            transparency = max(0, min(1, kp_scores[n]))
+            transparency = float(max(0, min(1, kp_scores[n])))
             img = cv2.addWeighted(bg, transparency, img, 1-transparency, 0)
         # Draw limbs
         for i, (start_p, end_p) in enumerate(l_pair):
@@ -213,7 +213,7 @@ def vis_frame(frame, im_res, format='coco'):
                 polygon = cv2.ellipse2Poly((int(mX),int(mY)), (int(length/2), stickwidth), int(angle), 0, 360, 1)
                 cv2.fillConvexPoly(bg, polygon, line_color[i])
                 #cv2.line(bg, start_xy, end_xy, line_color[i], (2 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
-                transparency = max(0, min(1, 0.5*(kp_scores[start_p] + kp_scores[end_p])))
+                transparency = float(max(0, min(1, 0.5*(kp_scores[start_p] + kp_scores[end_p]))))
                 img = cv2.addWeighted(bg, transparency, img, 1-transparency, 0)
     img = cv2.resize(img,(width,height),interpolation=cv2.INTER_CUBIC)
     return img
