@@ -670,6 +670,9 @@ def heatmap_to_coord_simple_regress(preds, bbox, hm_shape, norm_type, hms_flip=N
             preds[i, j, 0:2] = transform_preds(coords[i, j, 0:2], center, scale,
                                                [hm_width, hm_height])
 
+    if preds.shape[0] == 1:
+        preds = preds[0]
+        pred_scores = pred_scores[0]
     return preds, pred_scores
 
 

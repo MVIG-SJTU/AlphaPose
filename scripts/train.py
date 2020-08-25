@@ -109,7 +109,7 @@ def validate(m, opt, heatmap_to_coord, batch_size=20):
             pose_coords, pose_scores = heatmap_to_coord(
                 pred[i][det_dataset.EVAL_JOINTS], bbox, hm_shape=hm_size, norm_type=norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()
@@ -155,7 +155,7 @@ def validate_gt(m, opt, cfg, heatmap_to_coord, batch_size=20):
             pose_coords, pose_scores = heatmap_to_coord(
                 pred[i][gt_val_dataset.EVAL_JOINTS], bbox, hm_shape=hm_size, norm_type=norm_type)
 
-            keypoints = np.concatenate((pose_coords, pose_scores), axis=2)[0]
+            keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
 
             data = dict()

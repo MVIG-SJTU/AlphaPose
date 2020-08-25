@@ -89,3 +89,6 @@ def weighted_l1_loss(input, target, weights, size_average):
         return out.sum() / len(input)
     else:
         return out.sum()
+
+
+LOSS.register_module(torch.nn.MSELoss)
