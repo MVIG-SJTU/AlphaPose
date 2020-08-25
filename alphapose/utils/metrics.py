@@ -102,14 +102,18 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017.j
 
     if silence:
         sys.stdout = oldstdout  # enable output
-
+    
+    parts = ['body', 'face', 'hand', 'fullbody']
     stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
                    'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
     info_str = {}
-    for ind, name in enumerate(stats_names):
-        info_str[name] = cocoEval.stats[ind]
-
-    return info_str
+    info = {}
+    for part in parts:
+        for ind, name in enumerate(stats_names):
+            info_str[name] = cocoEval.stats[part][ind]
+        info[part] = info_str['AP']
+        info_str = {}
+    return info
 
 
 def calc_accuracy(preds, labels):
