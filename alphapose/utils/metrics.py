@@ -85,7 +85,7 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017.j
         def write(self, arg):
             pass
 
-    ann_file = os.path.join('./data/coco/annotations/', ann_file)
+    # ann_file = os.path.join('./data/coco/annotations/', ann_file)
 
     if silence:
         nullwrite = NullWriter()
