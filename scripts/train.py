@@ -101,7 +101,7 @@ def validate(m, opt, heatmap_to_coord, batch_size=20):
         output = m(inps)
 
         pred = output
-        assert pred.ndim == 4
+        assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
@@ -147,7 +147,7 @@ def validate_gt(m, opt, cfg, heatmap_to_coord, batch_size=20):
         output = m(inps)
 
         pred = output
-        assert pred.ndim == 4
+        assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
         for i in range(output.shape[0]):
