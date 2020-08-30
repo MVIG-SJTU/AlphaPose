@@ -7,6 +7,7 @@
 import json
 import os
 
+import cv2
 import torch
 import torch.utils.data as data
 from tqdm import tqdm
