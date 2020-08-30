@@ -42,17 +42,17 @@ class Flatten(nn.Module):
 
 
 class CombConvLayer(nn.Sequential):
-    def __init__(self, in_channels, out_channels, kernel=1, stride=1, dropout=0.1, bias=False):
+    def __init__(self, in_channels, out_channels, norm_layer, kernel=1, stride=1, dropout=0.1, bias=False):
         super().__init__()
         self.add_module('layer1',ConvLayer(in_channels, out_channels, kernel))
-        self.add_module('layer2',DWConvLayer(out_channels, out_channels, stride=stride))
+        self.add_module('layer2',DWConvLayer(out_channels, out_channels, norm_layer, stride=stride))
 
     def forward(self, x):
         return super().forward(x)
 
 
 class DWConvLayer(nn.Sequential):
-    def __init__(self, in_channels, out_channels,  stride=1,  bias=False):
+    def __init__(self, in_channels, out_channels,  norm_layer, stride=1,  bias=False):
         super().__init__()
         out_ch = out_channels
 
@@ -64,13 +64,13 @@ class DWConvLayer(nn.Sequential):
         self.add_module('dwconv', nn.Conv2d(groups, groups, kernel_size=3,
                                           stride=stride, padding=1, groups=groups, bias=bias))
 
-        self.add_module('norm', nn.BatchNorm2d(groups, momentum=BN_MOMENTUM))
+        self.add_module('norm', norm_layer(groups, momentum=BN_MOMENTUM))
     def forward(self, x):
         return super().forward(x)
 
 
 class ConvLayer(nn.Sequential):
-    def __init__(self, in_channels, out_channels, kernel=3, stride=1, padding=0, bias=False):
+    def __init__(self, in_channels, out_channels, norm_layer, kernel=3, stride=1, padding=0, bias=False):
         super().__init__()
         self.out_channels = out_channels
         out_ch = out_channels
@@ -80,17 +80,17 @@ class ConvLayer(nn.Sequential):
         pad = kernel//2 if padding == 0 else padding
         self.add_module('conv', nn.Conv2d(in_channels, out_ch, kernel_size=kernel,
                                           stride=stride, padding=pad, groups=groups, bias=bias))
-        self.add_module('norm', nn.BatchNorm2d(out_ch, momentum=BN_MOMENTUM))
+        self.add_module('norm', norm_layer(out_ch, momentum=BN_MOMENTUM))
         self.add_module('relu', nn.ReLU(True))
     def forward(self, x):
         return super().forward(x)
 
 
 class BRLayer(nn.Sequential):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, norm_layer):
         super().__init__()
 
-        self.add_module('norm', nn.BatchNorm2d(in_channels))
+        self.add_module('norm', norm_layer(in_channels))
         self.add_module('relu', nn.ReLU(True))
     def forward(self, x):
         return super().forward(x)
@@ -119,12 +119,13 @@ class HarDBlock(nn.Module):
     def get_out_ch(self):
         return self.out_channels
 
-    def __init__(self, in_channels, growth_rate, grmul, n_layers, keepBase=False, residual_out=False, dwconv=False):
+    def __init__(self, in_channels, growth_rate, grmul, n_layers, norm_layer, keepBase=False, residual_out=False, dwconv=False):
         super().__init__()
         self.in_channels = in_channels
         self.growth_rate = growth_rate
         self.grmul = grmul
         self.n_layers = n_layers
+        self.norm_layer = norm_layer
         self.keepBase = keepBase
         self.links = []
         layers_ = []
@@ -135,9 +136,9 @@ class HarDBlock(nn.Module):
           self.links.append(link)
           use_relu = residual_out
           if dwconv:
-            layers_.append(CombConvLayer(inch, outch))
+            layers_.append(CombConvLayer(inch, outch, norm_layer))
           else:
-            layers_.append(ConvLayer(inch, outch))
+            layers_.append(ConvLayer(inch, outch, norm_layer))
 
           if (i % 2 == 0) or (i == n_layers - 1):
             self.out_channels += outch
@@ -191,13 +192,14 @@ class HarDBlock_v2(nn.Module):
     def get_out_ch(self):
         return self.out_channels
 
-    def __init__(self, in_channels, growth_rate, grmul, n_layers, dwconv=False):
+    def __init__(self, in_channels, growth_rate, grmul, n_layers, norm_layer, dwconv=False):
         super().__init__()
         self.links = []
         conv_layers_ = []
         bnrelu_layers_ = []
         self.layer_bias = []
         self.out_channels = 0
+        self.norm_layer = norm_layer
         self.out_partition = collections.defaultdict(list)
 
         for i in range(n_layers):
@@ -211,7 +213,7 @@ class HarDBlock_v2(nn.Module):
           accum_out_ch = sum( self.out_partition[i] )
           real_out_ch = self.out_partition[i][0]
           conv_layers_.append( nn.Conv2d(cur_ch, accum_out_ch, kernel_size=3, stride=1, padding=1, bias=True) )
-          bnrelu_layers_.append( BRLayer(real_out_ch) )
+          bnrelu_layers_.append( BRLayer(real_out_ch, norm_layer) )
           cur_ch = real_out_ch
           if (i % 2 == 0) or (i == n_layers - 1):
             self.out_channels += real_out_ch
@@ -264,7 +266,7 @@ class HarDBlock_v2(nn.Module):
 
             #update BatchNorm or remove it if there is no BatchNorm in the v1 block
             self.bnrelu_layers[i] = None
-            if isinstance(blk.layers[i][1], nn.BatchNorm2d):
+            if isinstance(blk.layers[i][1], self.norm_layer):
                 self.bnrelu_layers[i] = nn.Sequential(
                          blk.layers[i][1],
                          blk.layers[i][2])
@@ -305,7 +307,7 @@ class HarDBlock_v2(nn.Module):
 
 
 class HarDNetBase(nn.Module):
-    def __init__(self, arch, depth_wise=False):
+    def __init__(self, arch, norm_layer, depth_wise=False):
         super().__init__()
         if arch == 85:
           first_ch  = [48, 96]
@@ -332,11 +334,11 @@ class HarDNetBase(nn.Module):
 
         # First Layer: Standard Conv3x3, Stride=2
         self.base.append (
-             ConvLayer(in_channels=3, out_channels=first_ch[0], kernel=3,
+             ConvLayer(in_channels=3, out_channels=first_ch[0], norm_layer=norm_layer, kernel=3,
                        stride=2,  bias=False) )
 
         # Second Layer
-        self.base.append ( ConvLayer(first_ch[0], first_ch[1],  kernel=second_kernel) )
+        self.base.append ( ConvLayer(first_ch[0], first_ch[1], norm_layer, kernel=second_kernel) )
 
         # Maxpooling or DWConv3x3 downsampling
         self.base.append(nn.AvgPool2d(kernel_size=3, stride=2, padding=1))
@@ -344,12 +346,12 @@ class HarDNetBase(nn.Module):
         # Build all HarDNet blocks
         ch = first_ch[1]
         for i in range(blks):
-            blk = HarDBlock(ch, gr[i], grmul, n_layers[i], dwconv=depth_wise)
+            blk = HarDBlock(ch, gr[i], grmul, n_layers[i], norm_layer, dwconv=depth_wise)
             ch = blk.get_out_ch()
             self.base.append ( blk )
 
             if i != blks-1:            
-              self.base.append ( ConvLayer(ch, ch_list[i], kernel=1) )
+              self.base.append ( ConvLayer(ch, ch_list[i], norm_layer, kernel=1) )
             ch = ch_list[i]
             if i== 0:
                 self.base.append(nn.AvgPool2d(kernel_size=2, stride=2, ceil_mode=True))
@@ -393,19 +395,20 @@ class TransitionUp(nn.Module):
 
 @SPPE.register_module
 class HarDNetPose(nn.Module):
-    def __init__(self, **cfg):
+    def __init__(self, norm_layer=nn.BatchNorm2d, **cfg):
         super(HarDNetPose, self).__init__()
         assert cfg['DOWN_RATIO'] in [2, 4, 8, 16]
+        self.norm_layer = norm_layer
         self._preset_cfg = cfg['PRESET']
         self.first_level = int(np.log2(cfg['DOWN_RATIO']))-1
         self.trt = cfg['TRT']
         
-        self.base = HarDNetBase(cfg['NUM_LAYERS']).base
+        self.base = HarDNetBase(cfg['NUM_LAYERS'], norm_layer).base
         self.last_pool = nn.AvgPool2d(kernel_size=2, stride=2)
         
         if cfg['NUM_LAYERS'] == 85:
-          self.last_proj = ConvLayer(784, 256, kernel=1)
-          self.last_blk = HarDBlock(768, 80, 1.7, 8)
+          self.last_proj = ConvLayer(784, 256, norm_layer, kernel=1)
+          self.last_blk = HarDBlock(768, 80, 1.7, 8, norm_layer)
           self.skip_nodes = [1,3,8,13]
           self.SC = [32, 32, 0]
           gr = [64, 48, 28]
@@ -416,8 +419,8 @@ class HarDNetPose(nn.Module):
           scales = [2 ** i for i in range(len(channels[self.first_level:]))]
 
         elif cfg['NUM_LAYERS'] == 68:
-          self.last_proj = ConvLayer(654, 192, kernel=1)
-          self.last_blk = HarDBlock(576, 72, 1.7, 8)
+          self.last_proj = ConvLayer(654, 192, norm_layer, kernel=1)
+          self.last_blk = HarDBlock(576, 72, 1.7, 8, norm_layer)
           self.skip_nodes = [1,3,8,11]
           self.SC = [32, 32, 0 ]  
           gr = [48, 32, 20]
@@ -442,12 +445,12 @@ class HarDNetPose(nn.Module):
               cur_ch = prev_ch + skip_ch
             else:
               cur_ch = prev_ch
-            self.conv1x1_up.append(ConvLayer(cur_ch, ch_list2[i], kernel=1))
+            self.conv1x1_up.append(ConvLayer(cur_ch, ch_list2[i], norm_layer, kernel=1))
             cur_ch = ch_list2[i]
             cur_ch -= self.SC[i]
             cur_ch *= 3
 
-            blk = HarDBlock(cur_ch, gr[i], 1.7, layers[i])
+            blk = HarDBlock(cur_ch, gr[i], 1.7, layers[i], norm_layer)
 
             self.denseBlocksUp.append(blk)
             prev_ch = blk.get_out_ch()
@@ -478,14 +481,14 @@ class HarDNetPose(nn.Module):
         for i in range( len(self.base)):
             if isinstance(self.base[i], HarDBlock):
                 blk = self.base[i]
-                self.base[i] = HarDBlock_v2(blk.in_channels, blk.growth_rate, blk.grmul, blk.n_layers)
+                self.base[i] = HarDBlock_v2(blk.in_channels, blk.growth_rate, blk.grmul, blk.n_layers, blk.norm_layer)
                 self.base[i].transform(blk, self.trt)
         blk = self.last_blk
-        self.last_blk = HarDBlock_v2(blk.in_channels, blk.growth_rate, blk.grmul, blk.n_layers)
+        self.last_blk = HarDBlock_v2(blk.in_channels, blk.growth_rate, blk.grmul, blk.n_layers, blk.norm_layer)
         self.last_blk.transform(blk, self.trt)
         for i in range(3):
             blk = self.denseBlocksUp[i]
-            self.denseBlocksUp[i] = HarDBlock_v2(blk.in_channels, blk.growth_rate, blk.grmul, blk.n_layers)
+            self.denseBlocksUp[i] = HarDBlock_v2(blk.in_channels, blk.growth_rate, blk.grmul, blk.n_layers, blk.norm_layer)
             self.denseBlocksUp[i].transform(blk, self.trt)
 
     def forward(self, x):
@@ -535,7 +538,7 @@ class HarDNetPose(nn.Module):
                 for name, _ in m.named_parameters():
                     if name in ['bias']:
                         nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d):
+            elif isinstance(m, self.norm_layer):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.ConvTranspose2d):
