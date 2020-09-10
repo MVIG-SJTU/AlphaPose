@@ -190,7 +190,7 @@ class CustomDataset(data.Dataset):
             label['bbox'] = tuple(label['bbox'])
 
         # transform ground truth into training label and apply data augmentation
-        img, label, label_mask, bbox = self.transformation(img, label)
+        img, label, label_mask, bbox = self.transformation(img, label, source)
         return img, label, label_mask, img_id, bbox
 
     def __len__(self):
