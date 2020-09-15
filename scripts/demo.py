@@ -21,9 +21,6 @@ from alphapose.utils.presets import SimpleTransform
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from detector.apis import get_detector
-from alphapose.utils.vis import getTime
-from detector.yolo_api import YOLODetector
-from detector.yolo_cfg import cfg as yolo_cfg
 
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Single-Image Demo')
@@ -398,7 +395,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.outputpath):
         os.mkdir(args.outputpath)
 
-    detector = YOLODetector(yolo_cfg, args)
+    # detector = YOLODetector(yolo_cfg, args)
 
     det_loader = DetectionLoader(image, get_detector(args), cfg, args).start()
     #det_worker = det_loader.start()
@@ -417,7 +414,6 @@ if __name__ == "__main__":
     writer = DataWriter(cfg, args)
 
     try:
-        start_time = getTime()
         with torch.no_grad():
             (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = det_loader.read()
             if orig_img is None:
