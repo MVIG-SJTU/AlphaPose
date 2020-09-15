@@ -16,11 +16,13 @@ import cv2
 import numpy as np
 
 from alphapose.utils.transforms import get_func_heatmap_to_coord
-from alphapose.utils.pPose_nms import pose_nms, write_json
+from alphapose.utils.pPose_nms import pose_nms
 from alphapose.utils.presets import SimpleTransform
+from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from detector.apis import get_detector
+from alphapose.utils.vis import getTime
 
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Single-Image Demo')
@@ -30,28 +32,46 @@ parser.add_argument('--checkpoint', type=str, required=True,
                     help='checkpoint file name')
 parser.add_argument('--detector', dest='detector',
                     help='detector name', default="yolo")
+parser.add_argument('--detfile', dest='detfile',
+                    help='detection result file', default="")
+parser.add_argument('--list', dest='inputlist',
+                    help='image-list', default="")
 parser.add_argument('--image', dest='inputimg',
                     help='image-name', default="")
-parser.add_argument('--outdir', dest='outputpath',
-                    help='output-directory', default="examples/res/")
 parser.add_argument('--save_img', default=False, action='store_true',
                     help='save result as image')
 parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
 parser.add_argument('--showbox', default=False, action='store_true',
                     help='visualize human bbox')
+parser.add_argument('--profile', default=False, action='store_true',
+                    help='add speed profiling at screen output')
+parser.add_argument('--format', type=str,
+                    help='save in the format of cmu or coco or openpose, option: coco/cmu/open')
 parser.add_argument('--min_box_area', type=int, default=0,
                     help='min box area to filter out')
 parser.add_argument('--eval', dest='eval', default=False, action='store_true',
                     help='save the result json as coco format, using image index(int) instead of image name(str)')
 parser.add_argument('--gpus', type=str, dest='gpus', default="0",
-                    help='choose which cuda device to use by index. (input -1 for cpu only)')
+                    help='choose which cuda device to use by index and input comma to use multi gpus, e.g. 0,1,2,3. (input -1 for cpu only)')
+parser.add_argument('--flip', default=False, action='store_true',
+                    help='enable flip testing')
+parser.add_argument('--debug', default=False, action='store_true',
+                    help='print detail information')
+parser.add_argument('--vis_fast', dest='vis_fast',
+                    help='use fast rendering', action='store_true', default=False)
+"""----------------------------- Tracking options -----------------------------"""
+parser.add_argument('--pose_flow', dest='pose_flow',
+                    help='track humans in video with PoseFlow', action='store_true', default=False)
+parser.add_argument('--pose_track', dest='pose_track',
+                    help='track humans in video with reid', action='store_true', default=False)
 
 args = parser.parse_args()
 cfg = update_config(args.cfg)
 
 args.gpus = [int(args.gpus[0])] if torch.cuda.device_count() >= 1 else [-1]
 args.device = torch.device("cuda:" + str(args.gpus[0]) if args.gpus[0] >= 0 else "cpu")
+args.tracking = args.pose_track or args.pose_flow or args.detector=='tracker'
 
 class DetectionLoader():
     def __init__(self, input_image, detector, cfg, opt):
@@ -60,7 +80,6 @@ class DetectionLoader():
         self.device = opt.device
         self.input_image = input_image
         self.detector = detector
-        self.num_batches = 1
 
         self._input_size = cfg.DATA_PRESET.IMAGE_SIZE
         self._output_size = cfg.DATA_PRESET.HEATMAP_SIZE
@@ -76,7 +95,6 @@ class DetectionLoader():
                 rot=0, sigma=self._sigma,
                 train=False, add_dpg=False, gpu_device=self.device)
 
-        self._stopped = False
         self.image = (None, None, None, None)
         self.det = (None, None, None, None, None, None, None)
         self.pose = (None, None, None, None, None, None, None)
@@ -90,13 +108,7 @@ class DetectionLoader():
         self.image_postprocess()
         return self
 
-    def terminate(self):
-        self._stopped = True
-
     def image_preprocess(self):
-        if self.stopped:
-            self.image = (None, None, None, None)
-            return
         im_name = self.input_image
         # expected image shape like (1,3,h,w) or (3,h,w)
         img = self.detector.image_preprocess(im_name)
@@ -117,7 +129,7 @@ class DetectionLoader():
 
     def image_detection(self):
         imgs, orig_imgs, im_names, im_dim_list = self.image
-        if imgs is None or self.stopped:
+        if imgs is None:
             self.det = (None, None, None, None, None, None, None)
             return
 
@@ -145,7 +157,7 @@ class DetectionLoader():
     def image_postprocess(self):
         with torch.no_grad():
             (orig_img, im_name, boxes, scores, ids, inps, cropped_boxes) = self.det
-            if orig_img is None or self.stopped:
+            if orig_img is None:
                 self.pose = (None, None, None, None, None, None, None)
                 return
             if boxes is None or boxes.nelement() == 0:
@@ -161,9 +173,6 @@ class DetectionLoader():
     def read(self):
         return self.pose
 
-    @property
-    def stopped(self):
-        return self._stopped
 
 class DataWriter():
     def __init__(self, cfg, opt):
@@ -173,36 +182,27 @@ class DataWriter():
         self.eval_joints = list(range(cfg.DATA_PRESET.NUM_JOINTS))
         self.heatmap_to_coord = get_func_heatmap_to_coord(cfg)
         self.item = (None, None, None, None, None, None, None)
-        if opt.save_img:
-            if not os.path.exists(opt.outputpath + '/vis'):
-                os.mkdir(opt.outputpath + '/vis')
 
     def start(self):
-        # start a thread to read pose estimation results per frame
-        self.update()
-        return self
+        # start to read pose estimation results
+        return self.update()
 
     def update(self):
-        final_result = []
         norm_type = self.cfg.LOSS.get('NORM_TYPE', None)
         hm_size = self.cfg.DATA_PRESET.HEATMAP_SIZE
 
-        # ensure the queue is not empty and get item
+        # get item
         (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name) = self.item
         if orig_img is None:
-            # if the thread indicator variable is set (img is None), stop the thread
-            write_json(final_result, self.opt.outputpath, for_eval=self.opt.eval)
-            print("Results have been written to json.")
-            return
+            return None
         # image channel RGB->BGR
         orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]
+        self.orig_img = orig_img
         if boxes is None or len(boxes) == 0:
-            if self.opt.save_img or self.opt.vis:
-                self.write_image(orig_img, im_name, stream=None)
+            return None
         else:
             # location prediction (n, kp, 2) | score prediction (n, kp, 1)
             assert hm_data.dim() == 4
-            # pred = hm_data.cpu().data.numpy()
             if hm_data.size()[1] == 136:
                 self.eval_joints = [*range(0,136)]
             elif hm_data.size()[1] == 26:
@@ -238,204 +238,132 @@ class DataWriter():
                 'result': _result
             }
 
+            if hm_data.size()[1] == 49:
+                from alphapose.utils.vis import vis_frame_dense as vis_frame
+            elif self.opt.vis_fast:
+                from alphapose.utils.vis import vis_frame_fast as vis_frame
+            else:
+                from alphapose.utils.vis import vis_frame
+            self.vis_frame = vis_frame
 
-            final_result.append(result)
-            if self.opt.save_img or self.opt.vis:
-                img = vis_frame_fast(orig_img, result, self.opt)
-                self.write_image(img, im_name, stream=None)
-        write_json(final_result, self.opt.outputpath, for_eval=self.opt.eval)
-        print("Results have been written to json.")
-
-    def write_image(self, img, im_name, stream=None):
-        if self.opt.vis:
-            cv2.imshow("AlphaPose Demo", img)
-            cv2.waitKey(30)
-        if self.opt.save_img:
-            cv2.imwrite(os.path.join(self.opt.outputpath, 'vis', im_name), img)
+        return result
 
     def save(self, boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name):
-        # save next frame in the queue
         self.item = (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name)
 
-    def stop(self):
-        # indicate that the thread should be stopped
-        self.save(None, None, None, None, None, None, None)
-        self.result_worker.join()
+class SimgleImageAlphaPose():
+    def __init__(self, args, cfg):
+        self.args = args
+        self.cfg = cfg
 
-    def terminate(self):
-        # directly terminate
-        self.result_worker.terminate()
+        # Load pose model
+        self.pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
 
-def vis_frame_fast(frame, im_res, opt):
-    '''
-    frame: frame image
-    im_res: im_res of predictions
-    format: coco or mpii
+        print(f'Loading pose model from {args.checkpoint}...')
+        self.pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
+        self.pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
 
-    return rendered image
-    '''
-    kp_num = 17
-    if len(im_res['result']) > 0:
-        kp_num = len(im_res['result'][0]['keypoints'])
-    if kp_num == 17:
-        l_pair = [
-            (0, 1), (0, 2), (1, 3), (2, 4),  # Head
-            (5, 6), (5, 7), (7, 9), (6, 8), (8, 10),
-            (17, 11), (17, 12),  # Body
-            (11, 13), (12, 14), (13, 15), (14, 16)
-        ]
-        p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),  # Nose, LEye, REye, LEar, REar
-                   (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),  # LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
-                   (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255)]  # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
-        line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
-                      (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
-                      (77, 222, 255), (255, 156, 127),
-                      (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36)]
-    elif kp_num == 136:
-        l_pair = [
-            (0, 1), (0, 2), (1, 3), (2, 4),  # Head
-            (5, 18), (6, 18), (5, 7), (7, 9), (6, 8), (8, 10),# Body
-            (17, 18), (18, 19), (19, 11), (19, 12),
-            (11, 13), (12, 14), (13, 15), (14, 16),
-            (20, 24), (21, 25), (23, 25), (22, 24), (15, 24), (16, 25),# Foot
-            (26, 27),(27, 28),(28, 29),(29, 30),(30, 31),(31, 32),(32, 33),(33, 34),(34, 35),(35, 36),(36, 37),(37, 38),#Face
-            (38, 39),(39, 40),(40, 41),(41, 42),(43, 44),(44, 45),(45, 46),(46, 47),(48, 49),(49, 50),(50, 51),(51, 52),#Face
-            (53, 54),(54, 55),(55, 56),(57, 58),(58, 59),(59, 60),(60, 61),(62, 63),(63, 64),(64, 65),(65, 66),(66, 67),#Face
-            (68, 69),(69, 70),(70, 71),(71, 72),(72, 73),(74, 75),(75, 76),(76, 77),(77, 78),(78, 79),(79, 80),(80, 81),#Face
-            (81, 82),(82, 83),(83, 84),(84, 85),(85, 86),(86, 87),(87, 88),(88, 89),(89, 90),(90, 91),(91, 92),(92, 93),#Face
-            (94,95),(95,96),(96,97),(97,98),(94,99),(99,100),(100,101),(101,102),(94,103),(103,104),(104,105),#LeftHand
-            (105,106),(94,107),(107,108),(108,109),(109,110),(94,111),(111,112),(112,113),(113,114),#LeftHand
-            (115,116),(116,117),(117,118),(118,119),(115,120),(120,121),(121,122),(122,123),(115,124),(124,125),#RightHand
-            (125,126),(126,127),(115,128),(128,129),(129,130),(130,131),(115,132),(132,133),(133,134),(134,135)#RightHand
-        ]
-        p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),  # Nose, LEye, REye, LEar, REar
-                   (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),  # LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
-                   (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127),  # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
-                   (77, 255, 255), (0, 255, 255), (77, 204, 255),  # head, neck, shoulder
-                   (0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0), (77, 255, 255)] # foot
-    
-        line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
-                      (0, 255, 102), (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
-                      (77, 191, 255), (204, 77, 255), (77, 222, 255), (255, 156, 127),
-                      (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36), 
-                      (0, 77, 255), (0, 77, 255), (0, 77, 255), (0, 77, 255), (255, 156, 127), (255, 156, 127)]
-    elif kp_num == 26:
-        l_pair = [
-            (0, 1), (0, 2), (1, 3), (2, 4),  # Head
-            (5, 18), (6, 18), (5, 7), (7, 9), (6, 8), (8, 10),# Body
-            (17, 18), (18, 19), (19, 11), (19, 12),
-            (11, 13), (12, 14), (13, 15), (14, 16),
-            (20, 24), (21, 25), (23, 25), (22, 24), (15, 24), (16, 25),# Foot
-        ]
-        p_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),  # Nose, LEye, REye, LEar, REar
-                   (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),  # LShoulder, RShoulder, LElbow, RElbow, LWrist, RWrist
-                   (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127),  # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
-                   (77, 255, 255), (0, 255, 255), (77, 204, 255),  # head, neck, shoulder
-                   (0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0), (77, 255, 255)] # foot
-    
-        line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
-                      (0, 255, 102), (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
-                      (77, 191, 255), (204, 77, 255), (77, 222, 255), (255, 156, 127),
-                      (0, 127, 255), (255, 127, 77), (0, 77, 255), (255, 77, 36), 
-                      (0, 77, 255), (0, 77, 255), (0, 77, 255), (0, 77, 255), (255, 156, 127), (255, 156, 127)]
-    else:
-        raise NotImplementedError
-    # im_name = os.path.basename(im_res['imgname'])
-    img = frame.copy()
-    height, width = img.shape[:2]
-    for human in im_res['result']:
-        part_line = {}
-        kp_preds = human['keypoints']
-        kp_scores = human['kp_score']
-        if kp_num == 17:
-            kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
-            kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
-        color = [255, 0, 0]
+        self.pose_model.to(args.device)
+        self.pose_model.eval()
 
-        # Draw bboxes
-        if opt.showbox:
-            if 'box' in human.keys():
-                bbox = human['box']
-            else:
-                from trackers.PoseFlow.poseflow_infer import get_box
-                keypoints = []
-                for n in range(kp_scores.shape[0]):
-                    keypoints.append(float(kp_preds[n, 0]))
-                    keypoints.append(float(kp_preds[n, 1]))
-                    keypoints.append(float(kp_scores[n]))
-                bbox = get_box(keypoints, height, width)
-            
-            cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), color, 2)
+    def process(self, image):
+        det_loader = DetectionLoader(image, get_detector(self.args), self.cfg, self.args)
+        # Init data writer
+        self.writer = DataWriter(self.cfg, self.args)
 
-        # Draw keypoints
-        for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= 0.2:
-                continue
-            cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
-            part_line[n] = (cor_x, cor_y)
-            if n < len(p_color):
-                cv2.circle(img, (cor_x, cor_y), 3, p_color[n], -1)
-            else:
-                cv2.circle(img, (cor_x, cor_y), 1, (255,255,255), 2)
-        # Draw limbs
-        for i, (start_p, end_p) in enumerate(l_pair):
-            if start_p in part_line and end_p in part_line:
-                start_xy = part_line[start_p]
-                end_xy = part_line[end_p]
-                if i < len(line_color):
-                    cv2.line(img, start_xy, end_xy, line_color[i], 2 * int(kp_scores[start_p] + kp_scores[end_p]) + 1)
+        runtime_profile = {
+            'dt': [],
+            'pt': [],
+            'pn': []
+        }
+        pose = None
+        try:
+            start_time = getTime()
+            with torch.no_grad():
+                (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = det_loader.start().read()
+                if orig_img is None:
+                    raise Exception("no image is given")
+                if boxes is None or boxes.nelement() == 0:
+                    if self.args.profile:
+                        ckpt_time, det_time = getTime(start_time)
+                        runtime_profile['dt'].append(det_time)
+                    self.writer.save(None, None, None, None, None, orig_img, im_name)
+                    if self.args.profile:
+                        ckpt_time, pose_time = getTime(ckpt_time)
+                        runtime_profile['pt'].append(pose_time)
+                    pose = self.writer.start()
+                    if self.args.profile:
+                        ckpt_time, post_time = getTime(ckpt_time)
+                        runtime_profile['pn'].append(post_time)
                 else:
-                    cv2.line(img, start_xy, end_xy, (255,255,255), 1)  
+                    if self.args.profile:
+                        ckpt_time, det_time = getTime(start_time)
+                        runtime_profile['dt'].append(det_time)
+                    # Pose Estimation
+                    inps = inps.to(self.args.device)
+                    if self.args.flip:
+                        inps = torch.cat((inps, flip(inps)))
+                    hm = self.pose_model(inps)
+                    if self.args.flip:
+                        hm_flip = flip_heatmap(hm[int(len(hm) / 2):], self.pose_dataset.joint_pairs, shift=True)
+                        hm = (hm[0:int(len(hm) / 2)] + hm_flip) / 2
+                    if self.args.profile:
+                        ckpt_time, pose_time = getTime(ckpt_time)
+                        runtime_profile['pt'].append(pose_time)
+                    hm = hm.cpu()
+                    self.writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, im_name)
+                    pose = self.writer.start()
+                    if self.args.profile:
+                        ckpt_time, post_time = getTime(ckpt_time)
+                        runtime_profile['pn'].append(post_time)
 
-    return img
+            if self.args.profile:
+                print(
+                    'det time: {dt:.4f} | pose time: {pt:.4f} | post processing: {pn:.4f}'.format(
+                        dt=np.mean(runtime_profile['dt']), pt=np.mean(runtime_profile['pt']), pn=np.mean(runtime_profile['pn']))
+                )
+            print('===========================> Finish Model Running.')
+        except Exception as e:
+            print(repr(e))
+            print('An error as above occurs when processing the images, please check it')
+            pass
+        except KeyboardInterrupt:
+            print('===========================> Finish Model Running.')
+
+        return pose
+
+    def getImg(self):
+        return self.writer.orig_img
+
+    def vis(self, image, pose):
+        if pose is not None:
+            image = self.writer.vis_frame(image, pose, self.writer.opt)
+        return image
+
+    def writeJson(self, final_result, outputpath, form='coco', for_eval=False):
+        from alphapose.utils.pPose_nms import write_json
+        write_json(final_result, outputpath, form=form, for_eval=for_eval)
+        print("Results have been written to json.")
+
+def example():
+    outputpath = "examples/res/"
+    if not os.path.exists(outputpath + '/vis'):
+        os.mkdir(outputpath + '/vis')
+
+    demo = SimgleImageAlphaPose(args, cfg)
+    image = args.inputimg    # the path to the target image
+    pose = demo.process(image)
+    img = demo.getImg()     # or you can just use: img = cv2.imread(image)
+    img = demo.vis(img, pose)   # visulize the pose result
+    cv2.imwrite(os.path.join(outputpath, 'vis', os.path.basename(image)), img)
+    
+    # if you want to vis the img:
+    # cv2.imshow("AlphaPose Demo", img)
+    # cv2.waitKey(30)
+
+    # write the result to json:
+    result = [pose]
+    demo.writeJson(result, outputpath, form=args.format, for_eval=args.eval)
 
 if __name__ == "__main__":
-    mode = 'image'
-    image = args.inputimg
-    if not os.path.exists(args.outputpath):
-        os.mkdir(args.outputpath)
-
-    # detector = YOLODetector(yolo_cfg, args)
-
-    det_loader = DetectionLoader(image, get_detector(args), cfg, args).start()
-    #det_worker = det_loader.start()
-
-    # Load pose model
-    pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
-
-    print(f'Loading pose model from {args.checkpoint}...')
-    pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
-    pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
-
-    pose_model.to(args.device)
-    pose_model.eval()
-
-    # Init data writer
-    writer = DataWriter(cfg, args)
-
-    try:
-        with torch.no_grad():
-            (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = det_loader.read()
-            if orig_img is None:
-                raise Exception("no image is given")
-            if boxes is None or boxes.nelement() == 0:
-                writer.save(None, None, None, None, None, orig_img, im_name)
-            else:
-                # Pose Estimation
-                inps = inps.to(args.device)
-                hm = pose_model(inps)
-                hm = hm.cpu()
-                writer.save(boxes, scores, ids, hm, cropped_boxes, orig_img, im_name)
-            writer.start()
-
-        print('===========================> Finish Model Running.')
-    except Exception as e:
-        print(repr(e))
-        print('An error as above occurs when processing the images, please check it')
-        pass
-    except KeyboardInterrupt:
-        print('===========================> Finish Model Running.')
-        # Thread won't be killed when press Ctrl+C
-        det_loader.terminate()
-        writer.stop()
-
+    example()
