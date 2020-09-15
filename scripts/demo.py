@@ -26,7 +26,7 @@ from detector.yolo_api import YOLODetector
 from detector.yolo_cfg import cfg as yolo_cfg
 
 """----------------------------- Demo options -----------------------------"""
-parser = argparse.ArgumentParser(description='AlphaPose Single Demo')
+parser = argparse.ArgumentParser(description='AlphaPose Single-Image Demo')
 parser.add_argument('--cfg', type=str, required=True,
                     help='experiment configure file name')
 parser.add_argument('--checkpoint', type=str, required=True,
@@ -43,8 +43,6 @@ parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
 parser.add_argument('--showbox', default=False, action='store_true',
                     help='visualize human bbox')
-parser.add_argument('--format', type=str,
-                    help='save in the format of cmu or coco or openpose, option: coco/cmu/open')
 parser.add_argument('--min_box_area', type=int, default=0,
                     help='min box area to filter out')
 parser.add_argument('--eval', dest='eval', default=False, action='store_true',
@@ -55,7 +53,7 @@ parser.add_argument('--gpus', type=str, dest='gpus', default="0",
 args = parser.parse_args()
 cfg = update_config(args.cfg)
 
-args.gpus = [int(i) for i in args.gpus.split(',')] if torch.cuda.device_count() >= 1 else [-1]
+args.gpus = [int(args.gpus[0])] if torch.cuda.device_count() >= 1 else [-1]
 args.device = torch.device("cuda:" + str(args.gpus[0]) if args.gpus[0] >= 0 else "cpu")
 
 class DetectionLoader():
@@ -199,7 +197,7 @@ class DataWriter():
         (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name) = self.item
         if orig_img is None:
             # if the thread indicator variable is set (img is None), stop the thread
-            write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval)
+            write_json(final_result, self.opt.outputpath, for_eval=self.opt.eval)
             print("Results have been written to json.")
             return
         # image channel RGB->BGR
@@ -251,7 +249,7 @@ class DataWriter():
             if self.opt.save_img or self.opt.vis:
                 img = vis_frame_fast(orig_img, result, self.opt)
                 self.write_image(img, im_name, stream=None)
-        write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval)
+        write_json(final_result, self.opt.outputpath, for_eval=self.opt.eval)
         print("Results have been written to json.")
 
     def write_image(self, img, im_name, stream=None):
