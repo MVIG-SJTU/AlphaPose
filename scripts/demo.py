@@ -61,11 +61,8 @@ class DetectionLoader():
         self.cfg = cfg
         self.opt = opt
         self.device = opt.device
-
         self.input_image = input_image
-
         self.detector = detector
-
         self.num_batches = 1
 
         self._input_size = cfg.DATA_PRESET.IMAGE_SIZE
@@ -85,7 +82,7 @@ class DetectionLoader():
         self._stopped = False
         self.image = (None, None, None, None)
         self.det = (None, None, None, None, None, None, None)
-        self.pose = None
+        self.pose = (None, None, None, None, None, None, None)
 
     def start(self):
         # start to pre process images for object detection
@@ -271,11 +268,6 @@ class DataWriter():
     def terminate(self):
         # directly terminate
         self.result_worker.terminate()
-
-    def results(self):
-        # return final result
-        print(self.final_result)
-        return self.final_result
 
 def vis_frame_fast(frame, im_res, opt):
     '''
