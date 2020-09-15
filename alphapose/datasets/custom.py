@@ -6,10 +6,10 @@
 """Custum training dataset."""
 import copy
 import os
+import cv2
 import pickle as pk
 from abc import abstractmethod, abstractproperty
 
-import scipy.misc
 import torch.utils.data as data
 from pycocotools.coco import COCO
 
@@ -125,7 +125,7 @@ class CustomDataset(data.Dataset):
 
         # load ground truth, including bbox, keypoints, image size
         label = copy.deepcopy(self._labels[idx])
-        img = scipy.misc.imread(img_path, mode='RGB')
+        img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) #scipy.misc.imread(img_path, mode='RGB') is depreciated
 
         if source == 'frei': # hand
             label['bbox'] = list(label['bbox'])

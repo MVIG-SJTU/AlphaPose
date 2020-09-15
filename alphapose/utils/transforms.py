@@ -9,7 +9,6 @@ import random
 
 import cv2
 import numpy as np
-import scipy.misc
 import torch
 from torch.nn import functional as F
 
@@ -115,7 +114,7 @@ def torch_to_im(img):
 
 def load_image(img_path):
     # H x W x C => C x H x W
-    return im_to_torch(scipy.misc.imread(img_path, mode='RGB'))
+    return im_to_torch(cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB))#scipy.misc.imread(img_path, mode='RGB'))
 
 
 def to_numpy(tensor):
@@ -622,8 +621,11 @@ def heatmap_to_coord_simple(hms, bbox, hms_flip=None, **kwargs):
 
 def heatmap_to_coord_simple_regress(preds, bbox, hm_shape, norm_type, hms_flip=None):
     def integral_op(hm_1d):
-        hm_1d = hm_1d * torch.cuda.comm.broadcast(torch.arange(hm_1d.shape[-1]).type(
-            torch.cuda.FloatTensor), devices=[hm_1d.device.index])[0]
+        if hm_1d.device.index is not None:
+            hm_1d = hm_1d * torch.cuda.comm.broadcast(torch.arange(hm_1d.shape[-1]).type(
+                torch.cuda.FloatTensor), devices=[hm_1d.device.index])[0]
+        else:
+            hm_1d = hm_1d * torch.arange(hm_1d.shape[-1]).type(torch.FloatTensor)
         return hm_1d
 
     if preds.dim() == 3:
@@ -650,9 +652,9 @@ def heatmap_to_coord_simple_regress(preds, bbox, hm_shape, norm_type, hms_flip=N
         pred_scores = pred_scores.unsqueeze(0)
 
     coords = pred_jts.cpu().numpy()
-    coords = coords.astype(float)
+    coords = coords.astype(np.float32)
     pred_scores = pred_scores.cpu().numpy()
-    pred_scores = pred_scores.astype(float)
+    pred_scores = pred_scores.astype(np.float32)
 
     coords[:, :, 0] = (coords[:, :, 0] + 0.5) * hm_width
     coords[:, :, 1] = (coords[:, :, 1] + 0.5) * hm_height

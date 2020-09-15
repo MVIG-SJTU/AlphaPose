@@ -63,6 +63,8 @@ class DataWriter():
 
     def update(self):
         final_result = []
+        norm_type = self.cfg.LOSS.get('NORM_TYPE', None)
+        hm_size = self.cfg.DATA_PRESET.HEATMAP_SIZE
         if self.save_video:
             # initialize the file video stream, adapt ouput video resolution to original video
             stream = cv2.VideoWriter(*[self.video_save_opt[k] for k in ['savepath', 'fourcc', 'fps', 'frameSize']])
@@ -93,7 +95,7 @@ class DataWriter():
             else:
                 # location prediction (n, kp, 2) | score prediction (n, kp, 1)
                 assert hm_data.dim() == 4
-                pred = hm_data.cpu().data.numpy()
+                #pred = hm_data.cpu().data.numpy()
 
                 if hm_data.size()[1] == 136:
                     self.eval_joints = [*range(0,136)]
@@ -103,7 +105,7 @@ class DataWriter():
                 pose_scores = []
                 for i in range(hm_data.shape[0]):
                     bbox = cropped_boxes[i].tolist()
-                    pose_coord, pose_score = self.heatmap_to_coord(pred[i][self.eval_joints], bbox)
+                    pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox, hm_shape=hm_size, norm_type=norm_type)
                     pose_coords.append(torch.from_numpy(pose_coord).unsqueeze(0))
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)
