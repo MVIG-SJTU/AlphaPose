@@ -32,10 +32,6 @@ parser.add_argument('--checkpoint', type=str, required=True,
                     help='checkpoint file name')
 parser.add_argument('--detector', dest='detector',
                     help='detector name', default="yolo")
-parser.add_argument('--detfile', dest='detfile',
-                    help='detection result file', default="")
-parser.add_argument('--list', dest='inputlist',
-                    help='image-list', default="")
 parser.add_argument('--image', dest='inputimg',
                     help='image-name', default="")
 parser.add_argument('--save_img', default=False, action='store_true',
