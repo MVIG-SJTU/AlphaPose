@@ -178,7 +178,7 @@ if __name__ == "__main__":
     # Load pose model
     pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
 
-    print(f'Loading pose model from {args.checkpoint}...')
+    print('Loading pose model from %s...' % (args.checkpoint,))
     pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
     pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
     if args.pose_track:
