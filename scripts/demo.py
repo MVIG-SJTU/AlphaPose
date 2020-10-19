@@ -70,11 +70,10 @@ args.device = torch.device("cuda:" + str(args.gpus[0]) if args.gpus[0] >= 0 else
 args.tracking = args.pose_track or args.pose_flow or args.detector=='tracker'
 
 class DetectionLoader():
-    def __init__(self, input_image, detector, cfg, opt):
+    def __init__(self, detector, cfg, opt):
         self.cfg = cfg
         self.opt = opt
         self.device = opt.device
-        self.input_image = input_image
         self.detector = detector
 
         self._input_size = cfg.DATA_PRESET.IMAGE_SIZE
@@ -95,25 +94,24 @@ class DetectionLoader():
         self.det = (None, None, None, None, None, None, None)
         self.pose = (None, None, None, None, None, None, None)
 
-    def start(self):
+    def process(self, im_name, image):
         # start to pre process images for object detection
-        self.image_preprocess()
+        self.image_preprocess(im_name, image)
         # start to detect human in images
         self.image_detection()
         # start to post process cropped human image for pose estimation
         self.image_postprocess()
         return self
 
-    def image_preprocess(self):
-        im_name = self.input_image
+    def image_preprocess(self, image, im_name):
         # expected image shape like (1,3,h,w) or (3,h,w)
-        img = self.detector.image_preprocess(im_name)
+        img = self.detector.frame_preprocess(image)
         if isinstance(img, np.ndarray):
             img = torch.from_numpy(img)
         # add one dimension at the front for batch if image shape (3,h,w)
         if img.dim() == 3:
             img = img.unsqueeze(0)
-        orig_img = cv2.cvtColor(cv2.imread(im_name), cv2.COLOR_BGR2RGB) # scipy.misc.imread(im_name_k, mode='RGB') is depreciated
+        orig_img = image # scipy.misc.imread(im_name_k, mode='RGB') is depreciated
         im_dim = orig_img.shape[1], orig_img.shape[0]
 
         im_name = os.path.basename(im_name)
@@ -247,7 +245,7 @@ class DataWriter():
     def save(self, boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name):
         self.item = (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name)
 
-class SimgleImageAlphaPose():
+class SingleImageAlphaPose():
     def __init__(self, args, cfg):
         self.args = args
         self.cfg = cfg
@@ -261,9 +259,10 @@ class SimgleImageAlphaPose():
 
         self.pose_model.to(args.device)
         self.pose_model.eval()
+        
+        self.det_loader = DetectionLoader(get_detector(self.args), self.cfg, self.args)
 
-    def process(self, image):
-        det_loader = DetectionLoader(image, get_detector(self.args), self.cfg, self.args)
+    def process(self, im_name, image):
         # Init data writer
         self.writer = DataWriter(self.cfg, self.args)
 
@@ -276,7 +275,7 @@ class SimgleImageAlphaPose():
         try:
             start_time = getTime()
             with torch.no_grad():
-                (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = det_loader.start().read()
+                (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = self.det_loader.process(im_name, image).read()
                 if orig_img is None:
                     raise Exception("no image is given")
                 if boxes is None or boxes.nelement() == 0:
@@ -346,12 +345,13 @@ def example():
     if not os.path.exists(outputpath + '/vis'):
         os.mkdir(outputpath + '/vis')
 
-    demo = SimgleImageAlphaPose(args, cfg)
-    image = args.inputimg    # the path to the target image
-    pose = demo.process(image)
+    demo = SingleImageAlphaPose(args, cfg)
+    im_name = args.inputimg    # the path to the target image
+    image = cv2.cvtColor(cv2.imread(im_name), cv2.COLOR_BGR2RGB)
+    pose = demo.process(im_name, image)
     img = demo.getImg()     # or you can just use: img = cv2.imread(image)
     img = demo.vis(img, pose)   # visulize the pose result
-    cv2.imwrite(os.path.join(outputpath, 'vis', os.path.basename(image)), img)
+    cv2.imwrite(os.path.join(outputpath, 'vis', os.path.basename(im_name)), img)
     
     # if you want to vis the img:
     # cv2.imshow("AlphaPose Demo", img)
