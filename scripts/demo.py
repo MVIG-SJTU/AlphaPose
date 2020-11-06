@@ -103,7 +103,7 @@ class DetectionLoader():
         self.image_postprocess()
         return self
 
-    def image_preprocess(self, image, im_name):
+    def image_preprocess(self, im_name, image):
         # expected image shape like (1,3,h,w) or (3,h,w)
         img = self.detector.frame_preprocess(image)
         if isinstance(img, np.ndarray):
