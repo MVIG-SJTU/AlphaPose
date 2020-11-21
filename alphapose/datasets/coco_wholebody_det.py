@@ -7,7 +7,7 @@
 import json
 import os
 
-import scipy.misc
+import cv2
 import torch
 import torch.utils.data as data
 from tqdm import tqdm
@@ -71,7 +71,7 @@ class coco_wholebody_det(data.Dataset):
         img_path = '/DATA1/Benchmark/coco/val2017/%012d.jpg' % img_id
 
         # Load image
-        image = scipy.misc.imread(img_path, mode='RGB')
+        image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) #scipy.misc.imread(img_path, mode='RGB')
 
         imght, imgwidth = image.shape[1], image.shape[2]
         x1, y1, w, h = det_res['bbox']
