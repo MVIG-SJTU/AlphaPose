@@ -15,7 +15,6 @@ from pycocotools.coco import COCO
 
 from alphapose.utils.presets import SimpleTransform
 
-
 import json
 import numpy as np
 import random
@@ -31,11 +30,11 @@ def get_bgimg(bgim, box_h, box_w):
     _bgim = [x for x in bgim if ((x['width'] > box_w) and (x['height'] > box_h))]
     if len(_bgim) == 0:
         bgimgpath = random.choice(bgim)['file_name']
-        img = scipy.misc.imread(bgimgpath, mode='RGB')
+        img = cv2.cvtColor(cv2.imread(bgimgpath), cv2.COLOR_BGR2RGB)
         oversize = True
     else:
         bgimgpath = random.choice(_bgim)
-        img = scipy.misc.imread(bgimgpath['file_name'], mode='RGB')
+        img = cv2.cvtColor(cv2.imread(bgimgpath['file_name']), cv2.COLOR_BGR2RGB)
         oversize = False
     return img, oversize
 
