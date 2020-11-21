@@ -103,15 +103,22 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/pe
     if silence:
         sys.stdout = oldstdout  # enable output
     
-    stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
-                   'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
-    parts = ['body', 'face', 'hand', 'fullbody']
+    if isinstance(cocoEval.stats[0], dic):
+        stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
+                       'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
+        parts = ['body', 'face', 'hand', 'fullbody']
 
-    info = {}
-    for i, part in enumerate(parts):
-        info[part] = cocoEval.stats[i][part][0]
-
-    return info
+        info = {}
+        for i, part in enumerate(parts):
+            info[part] = cocoEval.stats[i][part][0]
+        return info
+    else:
+        stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
+                       'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
+        info_str = {}
+        for ind, name in enumerate(stats_names):
+            info_str[name] = cocoEval.stats[ind]
+        return info_str['AP']
 
 
 def calc_accuracy(preds, labels):
