@@ -6,7 +6,6 @@
 """Custum training dataset."""
 import copy
 import os
-import cv2
 import pickle as pk
 from abc import abstractmethod, abstractproperty
 
@@ -15,26 +14,50 @@ from pycocotools.coco import COCO
 
 from alphapose.utils.presets import SimpleTransform
 
+import cv2
 import json
 import numpy as np
 import random
 
-def skip_augmentation():
+bgim = json.load(open('/home/group3/background.json','r'))
+
+def motion_blur(image, degree=12, angle=45):
+    image = np.array(image)
+ 
+    M = cv2.getRotationMatrix2D((degree / 2, degree / 2), angle, 1)
+    motion_blur_kernel = np.diag(np.ones(degree))
+    motion_blur_kernel = cv2.warpAffine(motion_blur_kernel, M, (degree, degree))
+ 
+    motion_blur_kernel = motion_blur_kernel / degree
+    blurred = cv2.filter2D(image, -1, motion_blur_kernel)
+ 
+    # convert to uint8
+    cv2.normalize(blurred, blurred, 0, 255, cv2.NORM_MINMAX)
+    blurred = np.array(blurred, dtype=np.uint8)
+    return blurred
+
+def skip_augmentation(p):
     x = np.random.rand()
-    if x < 0.3:
+    if x < p:
         return True
     else:
         return False
 
-def get_bgimg(bgim, box_h, box_w):
-    _bgim = [x for x in bgim if ((x['width'] > box_w) and (x['height'] > box_h))]
+def get_bgimg(box_h, box_w):
+    _bgim = [x for x in bgim if ((x['width'] > box_h) and (x['height'] > box_w))]
     if len(_bgim) == 0:
-        bgimgpath = random.choice(bgim)['file_name']
-        img = cv2.cvtColor(cv2.imread(bgimgpath), cv2.COLOR_BGR2RGB)
+        # bgimgpath = random.choice(bgim)['file_name']
+        img = None
         oversize = True
     else:
         bgimgpath = random.choice(_bgim)
-        img = cv2.cvtColor(cv2.imread(bgimgpath['file_name']), cv2.COLOR_BGR2RGB)
+        file_name = bgimgpath['file_name']
+        img_name = file_name.split('/')[-1]
+        img_path = '/home/group3/coco/train2017/' + img_name
+        img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+        trans_img = cv2.transpose(img)
+        img = cv2.flip(trans_img, 1)
+        assert img.shape[0] == bgimgpath['width'] and img.shape[1] == bgimgpath['height']
         oversize = False
     return img, oversize
 
@@ -61,6 +84,8 @@ class CustomDataset(data.Dataset):
                  skip_empty=True,
                  lazy_import=False,
                  **cfg):
+
+        # self.bgim = json.load(open('/home/group3/background.json','r'))
 
         self._cfg = cfg
         self._preset_cfg = cfg['PRESET']
@@ -124,13 +149,16 @@ class CustomDataset(data.Dataset):
 
         # load ground truth, including bbox, keypoints, image size
         label = copy.deepcopy(self._labels[idx])
-        img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) #scipy.misc.imread(img_path, mode='RGB') is depreciated
-
-        if source == 'frei': # hand
+        img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+        
+        if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'hand_labels_synth' or source == 'hand143_panopticdb' or source == 'RHD_published_v2' or source == 'interhand': # hand
+            if not skip_augmentation(0.8):
+                img = motion_blur(img)
+            flag = True
             label['bbox'] = list(label['bbox'])
             # print(img_path, 'hand augmentation')
-            if not skip_augmentation():
-                bgim = json.load(open('/home/group3/background.json','r'))
+            if not skip_augmentation(0.28):
+                # bgim = json.load(open('/home/group3/background.json','r'))
                 handkp = label['joints_3d'][:,0:2,0][115:136,:]
                 assert handkp.shape == (21, 2)
 
@@ -139,20 +167,23 @@ class CustomDataset(data.Dataset):
                 boxw_time, boxh_time = float(np.random.random_sample(1)*2+4), float(np.random.random_sample(1)*4+5)
                 box_w, box_h = max(int((hand_xmax - hand_xmin)*boxw_time), w+1), max(int((hand_ymax - hand_ymin)*boxh_time),h+1)
                 
-                background, oversize = get_bgimg(bgim, box_h, box_w)
+                background, oversize = get_bgimg(box_h, box_w)
                 if oversize:
-                    background, _ = get_bgimg(bgim, h, w)
-                    box_h, box_w = background.shape[0:2]
-                    x, y = int(np.random.randint(0,int(box_w - w),size=1)), int(np.random.randint(0,int(box_h - h), size=1))
-                    hd = copy.deepcopy(img)
-                    new_image = copy.deepcopy(background)
-                    new_image[y:y+h, x:x+w, :] = hd
-                    handkp[:,0] = handkp[:,0] + x
-                    handkp[:,1] = handkp[:,1] + y
-                    label['bbox'][0] = label['bbox'][0] + x
-                    label['bbox'][1] = label['bbox'][1] + y
-                    label['bbox'][2] = label['bbox'][2] + x
-                    label['bbox'][3] = label['bbox'][3] + y
+                    background, _oversize = get_bgimg(h, w)
+                    if not _oversize:
+                        box_h, box_w = background.shape[0:2]
+                        x, y = int(np.random.randint(0,int(box_w - w),size=1)), int(np.random.randint(0,int(box_h - h), size=1))
+                        hd = copy.deepcopy(img)
+                        new_image = copy.deepcopy(background)
+                        new_image[y:y+h, x:x+w, :] = hd
+                        handkp[(handkp[:, 0] + handkp[:, 1] > 0)] += [x, y]
+                        
+                        label['bbox'][0] = label['bbox'][0] + x
+                        label['bbox'][1] = label['bbox'][1] + y
+                        label['bbox'][2] = label['bbox'][2] + x
+                        label['bbox'][3] = label['bbox'][3] + y
+                    else:
+                        flag = False
                 else:
                     bh, bw, bc = background.shape
 
@@ -161,11 +192,9 @@ class CustomDataset(data.Dataset):
                     new_image = copy.deepcopy(background)
                     ralative_x, ralative_y = int(np.random.randint(0,int(box_w-w),size=1)), int(np.random.randint(0,int(box_h-h), size=1))
                     new_loc_x, new_loc_y = x + ralative_x, y + ralative_y
-                    assert  new_loc_x+w < x+box_w
-                    assert  new_loc_y+h < y+box_h
+                    assert  (new_loc_x+w < x+box_w) and (new_loc_y+h < y+box_h)
 
-                    handkp[:,0] = handkp[:,0] + new_loc_x
-                    handkp[:, 1] = handkp[:,1] + new_loc_y
+                    handkp[(handkp[:, 0] + handkp[:, 1]) > 0] += [new_loc_x, new_loc_y]
 
                     if new_loc_x < 0:
                         hd = hd[:,-new_loc_x:,:]
@@ -183,11 +212,13 @@ class CustomDataset(data.Dataset):
                     label['bbox'][1] = label['bbox'][1] + new_loc_y
                     label['bbox'][2] = label['bbox'][2] + new_loc_x
                     label['bbox'][3] = label['bbox'][3] + new_loc_y
-                label['joints_3d'][:,0:2,0][115:136,:] = handkp
-                img = new_image
-                label['height'], label['width'] = img.shape[0:2]
+                if flag:
+                    label['joints_3d'][:,0:2,0][115:136,:] = handkp
+                    img = new_image
+                    label['height'], label['width'] = img.shape[0:2]
+                    # cv2.imwrite('/home/group3/hand_aug/' + source + '_' + str(np.random.randint(0, 200)) + '.jpg', img)
             label['bbox'] = tuple(label['bbox'])
-
+        
         # transform ground truth into training label and apply data augmentation
         img, label, label_mask, bbox = self.transformation(img, label, source)
         return img, label, label_mask, img_id, bbox
