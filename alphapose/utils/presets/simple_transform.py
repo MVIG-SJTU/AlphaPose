@@ -213,7 +213,7 @@ class SimpleTransform(object):
 
         # rotation
         if self._train:
-            if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'RHD_published_v2' or source == 'interhand':
+            if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'interhand':
                 rf = 180
             else:
                 rf = self._rot
