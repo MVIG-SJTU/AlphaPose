@@ -73,7 +73,7 @@ class L1JointRegression(nn.Module):
 
         _assert_no_grad(gt_joints)
         _assert_no_grad(gt_joints_vis)
-        return weighted_l1_loss(pred_jts, gt_joints, gt_joints_vis, self.size_average)
+        return weighted_l1_loss(pred_jts, pred_scores, gt_joints, gt_joints_vis, self.size_average)
 
 
 def _assert_no_grad(tensor):
@@ -82,13 +82,16 @@ def _assert_no_grad(tensor):
         "mark these tensors as not requiring gradients"
 
 
-def weighted_l1_loss(input, target, weights, size_average):
+def weighted_l1_loss(input, scores, target, weights, size_average):
     out = torch.abs(input - target)
     out = out * weights
+    out_of_scores = torch.abs(scores - torch.ones_like(scores))
+    out_of_scores = out_of_scores.reshape((out_of_scores.shape[0], -1))
+    out_of_scores = out_of_scores * weights[:, 0::2]
     if size_average:
-        return out.sum() / len(input)
+        return (out.sum() + out_of_scores.sum()) / len(input)
     else:
-        return out.sum()
+        return (out.sum() + out_of_scores.sum())
 
 
 LOSS.register_module(torch.nn.MSELoss)

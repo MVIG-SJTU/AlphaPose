@@ -206,4 +206,3 @@ class DataWriter():
         else:
             print("Unknow video format {}, will use .mp4 instead of it".format(ext))
             return cv2.VideoWriter_fourcc(*'mp4v'), '.mp4'
-
