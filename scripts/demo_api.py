@@ -1,6 +1,6 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by HaoyiZhu
+# Written by Haoyi Zhu,Hao-Shu Fang
 # -----------------------------------------------------
 
 """Script for single-image demo."""
