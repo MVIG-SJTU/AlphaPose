@@ -1,6 +1,6 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
+# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com), Haoyi Zhu
 # -----------------------------------------------------
 
 import platform
@@ -213,7 +213,7 @@ class SimpleTransform(object):
 
         # rotation
         if self._train:
-            if source == 'frei':
+            if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'RHD_published_v2' or source == 'interhand':
                 rf = 180
             else:
                 rf = self._rot
