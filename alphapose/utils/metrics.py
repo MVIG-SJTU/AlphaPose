@@ -1,6 +1,6 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
+# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com), Haoyi Zhu
 # -----------------------------------------------------
 
 import os
