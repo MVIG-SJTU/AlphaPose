@@ -111,8 +111,12 @@ class CustomDataset(data.Dataset):
         label = copy.deepcopy(self._labels[idx])
         img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
         
-        if self.bgim and (source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'RHD_published_v2' or source == 'interhand'): # hand
+        if self.bgim and (source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'interhand'): # hand
             img, label = self.hand_augmentation(img, label)
+            
+        if source == 'hand_labels_synth' or source == 'hand143_panopticdb': # hand
+            if not self.skip_augmentation(0.8):
+                img = self.motion_blur(img)
         
         # transform ground truth into training label and apply data augmentation
         img, label, label_mask, bbox = self.transformation(img, label, source)
