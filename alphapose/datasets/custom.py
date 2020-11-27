@@ -18,8 +18,6 @@ import cv2
 import json
 import numpy as np
 import random
-import time
-
 
 class CustomDataset(data.Dataset):
     """Custom dataset.
