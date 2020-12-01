@@ -82,6 +82,8 @@ Please check out [docs/INSTALL.md](docs/INSTALL.md)
 Please check out [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md)
 
 ## Quick Start
+- **Colab**: We provide a [colab example](https://colab.research.google.com/drive/14Zgotr2_F0LfvcpRi03uQdMvUbLQSgok?usp=sharing) for your quick start.
+
 - **Inference**: Inference demo
 ``` bash
 ./scripts/inference.sh ${CONFIG} ${CHECKPOINT} ${VIDEO_NAME} # ${OUTPUT_DIR}, optional
