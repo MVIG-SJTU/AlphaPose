@@ -133,7 +133,7 @@ The main contributors are listed in [doc/contributors.md](docs/contributors.md).
 - [x] Crowdpose support
 - [ ] Speed up PoseFlow
 - [ ] Add stronger/light detectors and the [mobile pose](https://github.com/YuliangXiu/MobilePose-pytorch)
-- [ ] High level API
+- [x] High level API
 
 We would really appreciate if you can offer any help and be the [contributor](docs/contributors.md) of AlphaPose.
 
