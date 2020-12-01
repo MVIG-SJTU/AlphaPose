@@ -135,6 +135,7 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
         if opt.showbox:
             if 'box' in human.keys():
                 bbox = human['box']
+                bbox = [bbox[0], bbox[0]+bbox[2], bbox[1], bbox[1]+bbox[3]]#xmin,xmax,ymin,ymax
             else:
                 from trackers.PoseFlow.poseflow_infer import get_box
                 keypoints = []
