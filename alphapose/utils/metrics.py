@@ -1,6 +1,6 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
+# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com), Haoyi Zhu
 # -----------------------------------------------------
 
 import os
@@ -66,7 +66,7 @@ def mask_cross_entropy(pred, target):
         pred, target, reduction='mean')[None]
 
 
-def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017.json', silence=True):
+def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/person_keypoints_val2017.json', silence=True):
     """Evaluate mAP result for coco dataset.
 
     Parameters
@@ -85,7 +85,7 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017.j
         def write(self, arg):
             pass
 
-    ann_file = os.path.join('./data/coco/annotations/', ann_file)
+    # ann_file = os.path.join('./data/coco/annotations/', ann_file)
 
     if silence:
         nullwrite = NullWriter()
@@ -102,14 +102,23 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='person_keypoints_val2017.j
 
     if silence:
         sys.stdout = oldstdout  # enable output
+    
+    if isinstance(cocoEval.stats[0], dict):
+        stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
+                       'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
+        parts = ['body', 'face', 'hand', 'fullbody']
 
-    stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
-                   'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
-    info_str = {}
-    for ind, name in enumerate(stats_names):
-        info_str[name] = cocoEval.stats[ind]
-
-    return info_str
+        info = {}
+        for i, part in enumerate(parts):
+            info[part] = cocoEval.stats[i][part][0]
+        return info
+    else:
+        stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
+                       'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
+        info_str = {}
+        for ind, name in enumerate(stats_names):
+            info_str[name] = cocoEval.stats[ind]
+        return info_str['AP']
 
 
 def calc_accuracy(preds, labels):

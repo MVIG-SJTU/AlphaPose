@@ -57,8 +57,8 @@ python setup.py build develop --user
 ```
 
 #### Windows
-Windows users should install Visual Studio due to the problem mentioned [here](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L121).
-If you do not want to install Visual Studio and want to use AlphaPose, you can refer to our [previous version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch#installation) that do not require Visual Studio.
+The installation process is same as above. But note that Windows users may face problem when installing cuda extension. Thus we disable the cuda extension in the setup.py by default. The affect is that models ended with "-dcn" is not supported. If you force to make cuda extension by modify [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L124) to True, you should install Visual Studio due to the problem mentioned [here](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L121).
+We recommend Windows users to run models like FastPose, FastPose-duc, etc., as they also provide good accuracy and speed.
 
 For Windows user, if you meet error with PyYaml, you can download and install it manually from here: https://pyyaml.org/wiki/PyYAML.
 If your OS platform is `Windows`, make sure that Windows C++ build tool like visual studio 15+ or visual c++ 2015+ is installed for training.

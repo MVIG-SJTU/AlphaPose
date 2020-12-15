@@ -36,7 +36,7 @@ class Halpe_136(CustomDataset):
     """Joint pairs which defines the pairs of joint to be swapped
         when the image is flipped horizontally."""
     joint_pairs =  [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], #17 body keypoints
-         [20, 21], [22, 23], [24, 25], [26, 42], [27, 41], [28, 40], [29, 39], [30, 38], 
+        [20, 21], [22, 23], [24, 25], [26, 42], [27, 41], [28, 40], [29, 39], [30, 38], 
         [31, 37], [32, 36], [33, 35], [43, 52], [44, 51], [45, 50],[46, 49], [47, 48], 
         [62, 71], [63, 70], [64, 69], [65, 68], [66, 73], [67, 72], [57, 61], [58, 60],
         [74, 80], [75, 79], [76, 78], [87, 89], [93, 91], [86, 90], [85, 81], [84, 82],
@@ -94,7 +94,10 @@ class Halpe_136(CustomDataset):
                         for obj in label:
                             items.append({'path': abs_path, 'id': entry['id'], 'source':source})
                             labels.append(obj)
-                    
+                elif source == 'frei':
+                    for obj in label:
+                        items.append({'path': abs_path, 'id': entry['id'], 'source':source})
+                        labels.append(obj)
                 for obj in label:
                     items.append({'path': abs_path, 'id': entry['id'], 'source':source})
                     labels.append(obj)

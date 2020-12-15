@@ -1,6 +1,6 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
+# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com), Haoyi Zhu
 # -----------------------------------------------------
 
 import platform
@@ -175,7 +175,7 @@ class SimpleTransform(object):
         target_weight = target_weight.reshape((-1))
         return target, target_weight
 
-    def __call__(self, src, label):
+    def __call__(self, src, label, source=None):
         bbox = list(label['bbox'])
         gt_joints = label['joints_3d']
 
@@ -213,7 +213,10 @@ class SimpleTransform(object):
 
         # rotation
         if self._train:
-            rf = self._rot
+            if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'interhand':
+                rf = 180
+            else:
+                rf = self._rot
             r = np.clip(np.random.randn() * rf, -rf * 2, rf * 2) if random.random() <= 0.6 else 0
         else:
             r = 0

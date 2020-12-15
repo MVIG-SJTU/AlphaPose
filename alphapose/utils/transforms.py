@@ -74,17 +74,14 @@ def addDPG(bbox, imgwidth, imght):
 
 def im_to_torch(img):
     """Transform ndarray image to torch tensor.
-
     Parameters
     ----------
     img: numpy.ndarray
         An ndarray with shape: `(H, W, 3)`.
-
     Returns
     -------
     torch.Tensor
         A tensor with shape: `(3, H, W)`.
-
     """
     img = np.transpose(img, (2, 0, 1))  # C*H*W
     img = to_torch(img).float()
@@ -95,17 +92,14 @@ def im_to_torch(img):
 
 def torch_to_im(img):
     """Transform torch tensor to ndarray image.
-
     Parameters
     ----------
     img: torch.Tensor
         A tensor with shape: `(3, H, W)`.
-
     Returns
     -------
     numpy.ndarray
         An ndarray with shape: `(H, W, 3)`.
-
     """
     img = to_numpy(img)
     img = np.transpose(img, (1, 2, 0))  # C*H*W
@@ -139,7 +133,6 @@ def to_torch(ndarray):
 
 def cv_cropBox(img, bbox, input_size):
     """Crop bbox from image by Affinetransform.
-
     Parameters
     ----------
     img: torch.Tensor
@@ -148,12 +141,10 @@ def cv_cropBox(img, bbox, input_size):
         [xmin, ymin, xmax, ymax].
     input_size: tuple
         Resulting image size, as (height, width).
-
     Returns
     -------
     torch.Tensor
         A tensor with shape: `(3, height, width)`.
-
     """
     xmin, ymin, xmax, ymax = bbox
     xmax -= 1
@@ -193,7 +184,6 @@ def cv_cropBox(img, bbox, input_size):
 
 def cv_cropBox_rot(img, bbox, input_size, rot):
     """Crop bbox from image by Affinetransform.
-
     Parameters
     ----------
     img: torch.Tensor
@@ -202,12 +192,10 @@ def cv_cropBox_rot(img, bbox, input_size, rot):
         [xmin, ymin, xmax, ymax].
     input_size: tuple
         Resulting image size, as (height, width).
-
     Returns
     -------
     torch.Tensor
         A tensor with shape: `(3, height, width)`.
-
     """
     xmin, ymin, xmax, ymax = bbox
     xmax -= 1
@@ -247,7 +235,6 @@ def cv_cropBox_rot(img, bbox, input_size, rot):
 
 def fix_cropBox(img, bbox, input_size):
     """Crop bbox from image by Affinetransform.
-
     Parameters
     ----------
     img: torch.Tensor
@@ -256,12 +243,10 @@ def fix_cropBox(img, bbox, input_size):
         [xmin, ymin, xmax, ymax].
     input_size: tuple
         Resulting image size, as (height, width).
-
     Returns
     -------
     torch.Tensor
         A tensor with shape: `(3, height, width)`.
-
     """
     xmin, ymin, xmax, ymax = bbox
     input_ratio = input_size[0] / input_size[1]
@@ -287,7 +272,6 @@ def fix_cropBox(img, bbox, input_size):
 
 def fix_cropBox_rot(img, bbox, input_size, rot):
     """Crop bbox from image by Affinetransform.
-
     Parameters
     ----------
     img: torch.Tensor
@@ -296,12 +280,10 @@ def fix_cropBox_rot(img, bbox, input_size, rot):
         [xmin, ymin, xmax, ymax].
     input_size: tuple
         Resulting image size, as (height, width).
-
     Returns
     -------
     torch.Tensor
         A tensor with shape: `(3, height, width)`.
-
     """
     xmin, ymin, xmax, ymax = bbox
     input_ratio = input_size[0] / input_size[1]
@@ -344,7 +326,6 @@ def get_dir(src_point, rot_rad):
 
 def cv_cropBoxInverse(inp, bbox, img_size, output_size):
     """Paste the cropped bbox to the original image.
-
     Parameters
     ----------
     inp: torch.Tensor
@@ -359,7 +340,6 @@ def cv_cropBoxInverse(inp, bbox, img_size, output_size):
     -------
     torch.Tensor
         A tensor with shape: `(3, img_H, img_W)`.
-
     """
     xmin, ymin, xmax, ymax = bbox
     xmax -= 1
@@ -400,7 +380,6 @@ def cv_cropBoxInverse(inp, bbox, img_size, output_size):
 
 def cv_rotate(img, rot, input_size):
     """Rotate image by Affinetransform.
-
     Parameters
     ----------
     img: torch.Tensor
@@ -409,12 +388,10 @@ def cv_rotate(img, rot, input_size):
         Rotation degree.
     input_size: tuple
         Resulting image size, as (height, width).
-
     Returns
     -------
     torch.Tensor
         A tensor with shape: `(3, height, width)`.
-
     """
     resH, resW = input_size
     center = np.array((resW - 1, resH - 1)) / 2
@@ -461,7 +438,6 @@ def count_visible(bbox, joints_3d):
 
 def drawGaussian(img, pt, sigma):
     """Draw 2d gaussian on input image.
-
     Parameters
     ----------
     img: torch.Tensor
@@ -470,12 +446,10 @@ def drawGaussian(img, pt, sigma):
         A point: (x, y).
     sigma: int
         Sigma of gaussian distribution.
-
     Returns
     -------
     torch.Tensor
         A tensor with shape: `(3, H, W)`.
-
     """
     img = to_numpy(img)
     tmpSize = 3 * sigma
@@ -515,7 +489,6 @@ def flip(x):
 
 def flip_heatmap(heatmap, joint_pairs, shift=False):
     """Flip pose heatmap according to joint pairs.
-
     Parameters
     ----------
     heatmap : numpy.ndarray
@@ -524,12 +497,10 @@ def flip_heatmap(heatmap, joint_pairs, shift=False):
         List of joint pairs.
     shift : bool
         Whether to shift the output.
-
     Returns
     -------
     numpy.ndarray
         Flipped heatmap.
-
     """
     assert (heatmap.dim() == 3 or heatmap.dim() == 4)
     out = flip(heatmap)
@@ -553,7 +524,6 @@ def flip_heatmap(heatmap, joint_pairs, shift=False):
 
 def flip_joints_3d(joints_3d, width, joint_pairs):
     """Flip 3d joints.
-
     Parameters
     ----------
     joints_3d : numpy.ndarray
@@ -562,12 +532,10 @@ def flip_joints_3d(joints_3d, width, joint_pairs):
         Image width.
     joint_pairs : list
         List of joint pairs.
-
     Returns
     -------
     numpy.ndarray
         Flipped 3d joints with shape (num_joints, 3, 2)
-
     """
     joints = joints_3d.copy()
     # flip horizontally
