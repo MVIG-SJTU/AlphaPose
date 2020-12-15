@@ -41,8 +41,10 @@ class FastPose(nn.Module):
 
         self.suffle1 = nn.PixelShuffle(2)
         self.duc1 = DUC(512, 1024, upscale_factor=2, norm_layer=norm_layer)
-        self.duc2 = DUC(256, 1024, upscale_factor=2, norm_layer=norm_layer)
-
+        if self.conv_dim == 256:
+            self.duc2 = DUC(256, 1024, upscale_factor=2, norm_layer=norm_layer)
+        else:
+            self.duc2 = DUC(256, 512, upscale_factor=2, norm_layer=norm_layer)
         self.conv_out = nn.Conv2d(
             self.conv_dim, self._preset_cfg['NUM_JOINTS'], kernel_size=3, stride=1, padding=1)
 
