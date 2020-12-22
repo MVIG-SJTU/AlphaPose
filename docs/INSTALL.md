@@ -3,7 +3,8 @@
 ### Requirements
 * Python 3.5+
 * Cython
-* PyTorch 1.1+
+* PyTorch 1.1+, for users with PyTorch 1.5 and 1.5+, please merge the pull request #592 by:
+  `git pull origin pull/592/head`
 * torchvision 0.3.0+
 * Linux, [Windows user check here](#Windows)
 * GCC<6.0, check https://github.com/facebookresearch/maskrcnn-benchmark/issues/25
@@ -23,6 +24,7 @@ conda install pytorch==1.1.0 torchvision==0.3.0
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
+# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 # 4. install
@@ -46,6 +48,7 @@ pip3 install torch==1.1.0 torchvision==0.3.0
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
+# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 # 3. install
