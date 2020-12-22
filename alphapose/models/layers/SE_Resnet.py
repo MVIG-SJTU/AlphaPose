@@ -6,7 +6,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .dcn import DeformConv, ModulatedDeformConv
 from .SE_module import SELayer
 
 
@@ -77,6 +76,7 @@ class Bottleneck(nn.Module):
             self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
                                    padding=1, bias=False)
         else:
+            from .dcn import DeformConv, ModulatedDeformConv
             self.deformable_groups = dcn.get('DEFORM_GROUP', 1)
             if not self.with_modulated_dcn:
                 conv_op = DeformConv
