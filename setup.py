@@ -169,7 +169,7 @@ def get_install_requires():
     ]
     # official pycocotools doesn't support Windows, we will install it by third-party git repository later
     if platform.system() != 'Windows':
-        install_requires.append('pycocotools')
+        install_requires.append('pycocotools==2.0.0')
     return install_requires
 
 
