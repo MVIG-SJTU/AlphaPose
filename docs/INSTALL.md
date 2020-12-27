@@ -7,7 +7,6 @@
   `git pull origin pull/592/head`
 * torchvision 0.3.0+
 * Linux, [Windows user check here](#Windows)
-* GCC<6.0, check https://github.com/facebookresearch/maskrcnn-benchmark/issues/25
 
 ### Code installation
 
@@ -69,9 +68,11 @@ If your OS platform is `Windows`, make sure that Windows C++ build tool like vis
 ### Models
 1. Download the object detection model manually: **yolov3-spp.weights**([Google Drive](https://drive.google.com/open?id=1D47msNOOiJKvPOXlnpyzdKA3k6E97NTC) | [Baidu pan](https://pan.baidu.com/s/1Zb2REEIk8tcahDa8KacPNA)). Place it into `detector/yolo/data`.
 
-2. For pose tracking, download the object tracking model manually: **JDE-1088x608-uncertainty**([Google Drive](https://drive.google.com/open?id=1nlnuYfGNuHWZztQHXwVZSL_FvfE551pA) | [Baidu pan](https://pan.baidu.com/s/1Ifgn0Y_JZE65_qSrQM2l-Q)). Place it into `detector/tracker/data`.
-
 2. Download our pose models. Place them into `pretrained_models`. All models and details are available in our [Model Zoo](./MODEL_ZOO.md).
+
+2. For pose tracking, please refer to our [tracking docments](../trackers) for model download
+
+
 
 ### Prepare dataset (optional)
 
