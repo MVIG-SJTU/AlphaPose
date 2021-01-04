@@ -162,10 +162,21 @@ class SimpleTransform(object):
 
         return target, np.expand_dims(target_weight, -1)
 
-    def _integral_target_generator(self, joints_3d, num_joints, patch_height, patch_width):
+    def _integral_target_generator(self, joints_3d, num_joints, patch_height, patch_width, source=None):
         target_weight = np.ones((num_joints, 2), dtype=np.float32)
         target_weight[:, 0] = joints_3d[:, 0, 1]
         target_weight[:, 1] = joints_3d[:, 0, 1]
+        if num_joints == 136:
+            target_weight[:26, :] = target_weight[:26, :] * 2
+        elif num_joints == 133:
+            target_weight[:23, :] = target_weight[:23, :] * 2
+        
+        if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'hand_labels_synth' \
+        or source == 'hand143_panopticdb' or source == 'RHD_published_v2' or source == 'interhand':
+            if target_weight[-21:,:].sum() > 0 and target_weight[-42:-21].sum() == 0:
+                target_weight[-42:-21] += 1
+            elif target_weight[-21:,:].sum() == 0 and target_weight[-42:-21].sum() > 0:
+                target_weight[-21:,:] += 1
 
         target = np.zeros((num_joints, 2), dtype=np.float32)
         target[:, 0] = joints_3d[:, 0, 0] / patch_width - 0.5
@@ -244,7 +255,7 @@ class SimpleTransform(object):
         if self._loss_type == 'MSELoss':
             target, target_weight = self._target_generator(joints, self.num_joints)
         elif 'JointRegression' in self._loss_type:
-            target, target_weight = self._integral_target_generator(joints, self.num_joints, inp_h, inp_w)
+            target, target_weight = self._integral_target_generator(joints, self.num_joints, inp_h, inp_w, source)
 
         bbox = _center_scale_to_box(center, scale)
 
