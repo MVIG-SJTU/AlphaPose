@@ -105,7 +105,7 @@ class DetectionLoader():
 
     def image_preprocess(self, im_name, image):
         # expected image shape like (1,3,h,w) or (3,h,w)
-        img = self.detector.frame_preprocess(image)
+        img = self.detector.image_preprocess(image)
         if isinstance(img, np.ndarray):
             img = torch.from_numpy(img)
         # add one dimension at the front for batch if image shape (3,h,w)
