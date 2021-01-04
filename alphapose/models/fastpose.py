@@ -12,12 +12,14 @@ from .layers.SE_Resnet import SEResnet
 
 @SPPE.register_module
 class FastPose(nn.Module):
-    conv_dim = 128
 
     def __init__(self, norm_layer=nn.BatchNorm2d, **cfg):
         super(FastPose, self).__init__()
         self._preset_cfg = cfg['PRESET']
-
+        if 'CONV_DIM' in cfg.keys():
+            self.conv_dim = cfg['CONV_DIM']
+        else:
+            self.conv_dim = 128
         if 'DCN' in cfg.keys():
             stage_with_dcn = cfg['STAGE_WITH_DCN']
             dcn = cfg['DCN']
@@ -39,8 +41,10 @@ class FastPose(nn.Module):
 
         self.suffle1 = nn.PixelShuffle(2)
         self.duc1 = DUC(512, 1024, upscale_factor=2, norm_layer=norm_layer)
-        self.duc2 = DUC(256, 512, upscale_factor=2, norm_layer=norm_layer)
-
+        if self.conv_dim == 256:
+            self.duc2 = DUC(256, 1024, upscale_factor=2, norm_layer=norm_layer)
+        else:
+            self.duc2 = DUC(256, 512, upscale_factor=2, norm_layer=norm_layer)
         self.conv_out = nn.Conv2d(
             self.conv_dim, self._preset_cfg['NUM_JOINTS'], kernel_size=3, stride=1, padding=1)
 

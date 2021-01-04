@@ -3,10 +3,10 @@
 ### Requirements
 * Python 3.5+
 * Cython
-* PyTorch 1.1+
+* PyTorch 1.1+, for users with PyTorch 1.5 and 1.5+, please merge the pull request #592 by:
+  `git pull origin pull/592/head`
 * torchvision 0.3.0+
 * Linux, [Windows user check here](#Windows)
-* GCC<6.0, check https://github.com/facebookresearch/maskrcnn-benchmark/issues/25
 
 ### Code installation
 
@@ -23,6 +23,7 @@ conda install pytorch==1.1.0 torchvision==0.3.0
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
+# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 # 4. install
@@ -46,6 +47,7 @@ pip3 install torch==1.1.0 torchvision==0.3.0
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
+# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 # 3. install
@@ -57,8 +59,8 @@ python setup.py build develop --user
 ```
 
 #### Windows
-Windows users should install Visual Studio due to the problem mentioned [here](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L121).
-If you do not want to install Visual Studio and want to use AlphaPose, you can refer to our [previous version](https://github.com/MVIG-SJTU/AlphaPose/tree/pytorch#installation) that do not require Visual Studio.
+The installation process is same as above. But note that Windows users may face problem when installing cuda extension. Thus we disable the cuda extension in the setup.py by default. The affect is that models ended with "-dcn" is not supported. If you force to make cuda extension by modify [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L124) to True, you should install Visual Studio due to the problem mentioned [here](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L121).
+We recommend Windows users to run models like FastPose, FastPose-duc, etc., as they also provide good accuracy and speed.
 
 For Windows user, if you meet error with PyYaml, you can download and install it manually from here: https://pyyaml.org/wiki/PyYAML.
 If your OS platform is `Windows`, make sure that Windows C++ build tool like visual studio 15+ or visual c++ 2015+ is installed for training.
@@ -66,9 +68,11 @@ If your OS platform is `Windows`, make sure that Windows C++ build tool like vis
 ### Models
 1. Download the object detection model manually: **yolov3-spp.weights**([Google Drive](https://drive.google.com/open?id=1D47msNOOiJKvPOXlnpyzdKA3k6E97NTC) | [Baidu pan](https://pan.baidu.com/s/1Zb2REEIk8tcahDa8KacPNA)). Place it into `detector/yolo/data`.
 
-2. For pose tracking, download the object tracking model manually: **JDE-1088x608-uncertainty**([Google Drive](https://drive.google.com/open?id=1nlnuYfGNuHWZztQHXwVZSL_FvfE551pA) | [Baidu pan](https://pan.baidu.com/s/1Ifgn0Y_JZE65_qSrQM2l-Q)). Place it into `detector/tracker/data`.
-
 2. Download our pose models. Place them into `pretrained_models`. All models and details are available in our [Model Zoo](./MODEL_ZOO.md).
+
+2. For pose tracking, please refer to our [tracking docments](../trackers) for model download
+
+
 
 ### Prepare dataset (optional)
 

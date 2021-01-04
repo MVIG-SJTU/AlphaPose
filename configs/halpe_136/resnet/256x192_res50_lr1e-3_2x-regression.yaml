@@ -1,0 +1,69 @@
+DATASET:
+  TRAIN:
+    TYPE: 'Halpe_136'
+    ROOT: ''
+    IMG_PREFIX: 'train2017'
+    ANN: '/home/group3/hico-coco.json'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.35
+      NUM_JOINTS_HALF_BODY: 8
+      PROB_HALF_BODY: 0.3
+  VAL:
+    TYPE: 'Halpe_136'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'val2017'
+    ANN: 'coco_val_full_finetuned.json'
+  TEST:
+    TYPE: 'Halpe_136_det'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'val2017'
+    DET_FILE: './exp/json/test_det_yolo.json'
+    ANN: 'coco_val_full_finetuned.json'
+DATA_PRESET:
+  TYPE: 'simple'
+  LOSS_TYPE: 'L1JointRegression'
+  SIGMA: 2
+  NUM_JOINTS: 136
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+MODEL:
+  TYPE: 'FastPose'
+  PRETRAINED: '/home/group3/newrepo/AlphaPose/exp/hico-coco-_regression-256x192_res50_lr1e-3_2x-regression-frei.yaml/model_3.pth'
+  TRY_LOAD: ''
+  NUM_DECONV_FILTERS:
+  - 256
+  - 256
+  - 256
+  NUM_LAYERS: 50
+  CONV_DIM: 256
+LOSS:
+  TYPE: 'L1JointRegression'
+  NORM_TYPE: 'sigmoid'
+  OUTPUT_3D: False
+DETECTOR:
+  NAME: 'yolo'
+  CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
+  WEIGHTS: 'detector/yolo/data/yolov3-spp.weights'
+  NMS_THRES: 0.6
+  CONFIDENCE: 0.05
+TRAIN:
+  WORLD_SIZE: 4
+  BATCH_SIZE: 48
+  BEGIN_EPOCH: 5
+  END_EPOCH: 270
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 170
+  - 200
+  DPG_MILESTONE: 210
+  DPG_STEP:
+  - 230
+  - 250

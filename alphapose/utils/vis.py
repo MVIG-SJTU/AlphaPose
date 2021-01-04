@@ -135,6 +135,7 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
         if opt.showbox:
             if 'box' in human.keys():
                 bbox = human['box']
+                bbox = [bbox[0], bbox[0]+bbox[2], bbox[1], bbox[1]+bbox[3]]#xmin,xmax,ymin,ymax
             else:
                 from trackers.PoseFlow.poseflow_infer import get_box
                 keypoints = []
@@ -148,8 +149,9 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
             if opt.tracking:
                 cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
+        vis_thres = 0.05 if kp_num == 136 else 0.4
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= 0.4:
+            if kp_scores[n] <= vis_thres:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
             part_line[n] = (cor_x, cor_y)
@@ -297,8 +299,9 @@ def vis_frame(frame, im_res, opt, format='coco'):
                 cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
 
         # Draw keypoints
+        vis_thres = 0.05 if kp_num == 136 else 0.4
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= 0.4:
+            if kp_scores[n] <= vis_thres:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
             part_line[n] = (int(cor_x), int(cor_y))
@@ -311,7 +314,10 @@ def vis_frame(frame, im_res, opt, format='coco'):
             else:
                 cv2.circle(bg, (int(cor_x), int(cor_y)), 1, (255,255,255), 2)
             # Now create a mask of logo and create its inverse mask also
-            transparency = float(max(0, min(1, kp_scores[n])))
+            if n < len(p_color):
+                transparency = float(max(0, min(1, kp_scores[n])))
+            else:
+                transparency = float(max(0, min(1, kp_scores[n]*2)))
             img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
         # Draw limbs
         for i, (start_p, end_p) in enumerate(l_pair):
@@ -335,7 +341,12 @@ def vis_frame(frame, im_res, opt, format='coco'):
                         cv2.fillConvexPoly(bg, polygon, line_color[i])
                 else:
                     cv2.line(bg, start_xy, end_xy, (255,255,255), 1)
-                transparency = float(max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p])-0.1)))
+                if n < len(p_color):
+                    transparency = float(max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p])-0.1)))
+                else:
+                    transparency = float(max(0, min(1, (kp_scores[start_p] + kp_scores[end_p]))))
+
+                #transparency = float(max(0, min(1, 0.5 * (kp_scores[start_p] + kp_scores[end_p])-0.1)))
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
     return img
 
