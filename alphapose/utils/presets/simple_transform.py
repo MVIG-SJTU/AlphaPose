@@ -162,7 +162,7 @@ class SimpleTransform(object):
 
         return target, np.expand_dims(target_weight, -1)
 
-    def _integral_target_generator(self, joints_3d, num_joints, patch_height, patch_width, source):
+    def _integral_target_generator(self, joints_3d, num_joints, patch_height, patch_width, source=None):
         target_weight = np.ones((num_joints, 2), dtype=np.float32)
         target_weight[:, 0] = joints_3d[:, 0, 1]
         target_weight[:, 1] = joints_3d[:, 0, 1]
