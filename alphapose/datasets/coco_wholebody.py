@@ -85,10 +85,11 @@ class coco_wholebody(CustomDataset):
 
         for obj in objs:
             #obj['keypoints'].extend([0,0,0, 0,0,0, 0,0,0])
-            obj['keypoints'].extend(obj['foot_kpts'])
-            obj['keypoints'].extend(obj['face_kpts'])
-            obj['keypoints'].extend(obj['lefthand_kpts'])
-            obj['keypoints'].extend(obj['righthand_kpts'])
+            if 'foot_kpts' in obj and 'face_kpts' in obj and 'lefthand_kpts' in obj and 'righthand_kpts' in obj:
+                obj['keypoints'].extend(obj['foot_kpts'])
+                obj['keypoints'].extend(obj['face_kpts'])
+                obj['keypoints'].extend(obj['lefthand_kpts'])
+                obj['keypoints'].extend(obj['righthand_kpts'])
             contiguous_cid = self.json_id_to_contiguous[obj['category_id']]
             if contiguous_cid >= self.num_class:
                 # not class of interest
