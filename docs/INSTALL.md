@@ -47,8 +47,7 @@ python setup.py build develop
 # 1. Install PyTorch
 pip3 install torch==1.1.0 torchvision==0.3.0
 
-# Check torch environment:
-python3 -m torch.utils.collect_env
+# Check torch environment by:  python3 -m torch.utils.collect_env
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
