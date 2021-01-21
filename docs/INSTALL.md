@@ -1,14 +1,14 @@
 ## Installation
 
 ### Requirements
-* Nvidia device with CUDA [Ubuntu install instructions here](https://linuxconfig.org/how-to-install-cuda-on-ubuntu-20-04-focal-fossa-linux)
+* Nvidia device with CUDA, [example for Ubuntu 20.04](https://linuxconfig.org/how-to-install-cuda-on-ubuntu-20-04-focal-fossa-linux)
+(if you have no nvidia device, delete [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L211) from setup.py
 * Python 3.5+
 * Cython
 * PyTorch 1.1+
 * torchvision 0.3.0+
 * numpy 
 * Linux, [Windows user check here](#Windows)
-* GCC<6.0, check https://github.com/facebookresearch/maskrcnn-benchmark/issues/25
 
 ### Code installation
 
@@ -23,8 +23,6 @@ conda install -c anaconda cudatoolkit==9.0
 
 # 2. Install PyTorch
 conda install pytorch==1.1.0 torchvision==0.3.0
-# and optionally dependencies used in demo script:
-conda install opencv natsort matplotlib  PyYAML
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
@@ -49,12 +47,7 @@ python setup.py build develop
 ```shell
 # 1. Install PyTorch
 pip3 install torch==1.1.0 torchvision==0.3.0
-# and optionally other libraries that are used in the demo:
-pip3 install natsort
-pip3 install matplotlib
-pip3 install cython_bbox
-pip3 install easydict
-pip3 install PyYAML
+
 # Check torch environment:
 python -m torch.utils.collect_env
 
