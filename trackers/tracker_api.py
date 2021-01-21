@@ -201,10 +201,9 @@ class Tracker(object):
             m = resnet50_fc512(num_classes=1,pretrained=False)
         elif self.opt.arch == "osnet_ain":
             m = osnet_ain_x1_0(num_classes=1,pretrained=False)
-        if len(args.gpus) > 1:
-            self.model = nn.DataParallel(m,device_ids=args.gpus).to(args.device).eval()
-        else:
-            self.model = nn.DataParallel(m).to(args.device).eval()
+        
+        self.model = nn.DataParallel(m,device_ids=args.gpus).to(args.device).eval()
+        
         load_pretrained_weights(self.model,self.opt.loadmodel)
         self.tracked_stracks = []  # type: list[STrack]
         self.lost_stracks = []  # type: list[STrack]
