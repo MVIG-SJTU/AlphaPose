@@ -19,7 +19,6 @@ Install conda from [here](https://repo.anaconda.com/miniconda/), Miniconda3-late
 # 1. Create a conda virtual environment.
 conda create -n alphapose python=3.6 -y
 conda activate alphapose
-conda install -c anaconda cudatoolkit==9.0
 
 # 2. Install PyTorch
 conda install pytorch==1.1.0 torchvision==0.3.0
@@ -49,7 +48,7 @@ python setup.py build develop
 pip3 install torch==1.1.0 torchvision==0.3.0
 
 # Check torch environment:
-python -m torch.utils.collect_env
+python3 -m torch.utils.collect_env
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
