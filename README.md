@@ -30,6 +30,10 @@ AlphaPose supports both Linux and **Windows!**
     <img src="docs/alphapose_136.gif", width="400"alt><br>
     <b><a href="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a></b> + tracking
 </div>
+<div align="center">
+    <img src="docs/coco_wholebody.gif", width="400"alt><br>
+    <b><a href="https://github.com/jin-s13/COCO-WholeBody">Coco_wholebody 133 keypoints</a></b>
+</div>
 
 
 ## Results
