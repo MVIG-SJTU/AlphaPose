@@ -43,8 +43,6 @@ class coco_wholebody(CustomDataset):
         [94-3, 115-3], [95-3, 116-3], [96-3, 117-3], [97-3, 118-3], [98-3, 119-3], [99-3, 120-3], [100-3, 121-3],
         [101-3, 122-3], [102-3, 123-3], [103-3, 124-3], [104-3, 125-3], [105-3, 126-3], [106-3, 127-3], [107-3, 128-3],
         [108-3, 129-3], [109-3, 130-3], [110-3, 131-3], [111-3, 132-3], [112-3, 133-3], [113-3, 134-3], [114-3, 135-3]]
-                
-
     def _load_jsons(self):
         """Load all image paths and labels from JSON annotation files into buffer."""
         items = []
@@ -62,7 +60,7 @@ class coco_wholebody(CustomDataset):
         image_ids = sorted(_coco.getImgIds())
         for entry in _coco.loadImgs(image_ids):
             dirname, filename = entry['coco_url'].split('/')[-2:]
-            abs_path = os.path.join('/DATA1/Benchmark/coco', dirname, filename)
+            abs_path = os.path.join('/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/data/coco', dirname, filename)
             if not os.path.exists(abs_path):
                 raise IOError('Image: {} not exists.'.format(abs_path))
             label = self._check_load_keypoints(_coco, entry)
