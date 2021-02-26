@@ -45,5 +45,16 @@ You can run with:
 python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml --checkpoint pretrained_models/halpe136_fast_res50_256x192.pth --indir examples/demo/ --save_img
 ```
 
+## [Coco-wholebody dataset](https://github.com/jin-s13/COCO-WholeBody) (133 keypoints)
+
+| Model                    | Backbone | Detector | Input Size | Speed |  Download | Config | Training Log |  
+|--------------------------|----------|----------|------------|-------|-----------|--------|--------------|
+|[Fast Pose](../configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml)    | ResNet50           | YOLOv3 | 256x192      | 3.54 iter/s | [Google](https://drive.google.com/file/d/1XYYQ4Japo0xdTWs5i2F83tr0czXQlaRE/view?usp=sharing) | [cfg](../configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml)    | [log](logs/256x192_res50_lr1e-3_1x.log) |
+
+You can run with:
+```
+cd scripts
+python3 demo_inference.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --indir {IMAGE_DIR-PATH} --save_img
+```
 #### Notes
 - More models coming soon!
