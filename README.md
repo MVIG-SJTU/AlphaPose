@@ -138,7 +138,7 @@ Images can be downloaded from [COCO 2017 website](https://cocodataset.org/#keypo
 COCO-WholeBody annotations for [Train](https://drive.google.com/file/d/1thErEToRbmM9uLNi1JXXfOsaS5VK2FXf/view?usp=sharing) / [Validation](https://drive.google.com/file/d/1N6VgwKnj8DeyGXCvp1eYgNbRmw6jdfrb/view?usp=sharing) (Google Drive).
 
 ### Training from scratch
-* Change the dataset path in this file.<internal link of config file here>
+* Change the dataset path in [this](configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml) file.
 * Run the following script :
 
 ```bash
