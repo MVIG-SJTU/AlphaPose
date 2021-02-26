@@ -56,6 +56,22 @@ Results on MPII full test set:
 
 </center>
 
+Results on CocoWholebody validation set:
+<center>
+
+**gt mAP**
+| Method | Body | Foot | Face | Hand | Fullbody |
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
+| **AlphaPose** | 52.5 | 36.8 | 69.1 | 3.7 | 32.1 |
+
+<center>
+
+**rcnn mAP**
+| Method | Body | Foot | Face | Hand | Fullbody |
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
+| **AlphaPose** | 51.5 | 36.8 | 67.8 | 3.7 | 31.1 |
+
+
 More results and models are available in the [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md).
 
 ### Pose Tracking
@@ -127,7 +143,7 @@ COCO-WholeBody annotations for [Train](https://drive.google.com/file/d/1thErEToR
 
 ```bash
 cd scripts 
-python3 train.py --cfg <cfg-file> --exp-id 2
+python3 train.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --exp-id 2
 ```
 
 ### Validation 
@@ -135,23 +151,23 @@ Validate your model on coco_wholebody dataset
 Run the following script:
 ```bash
  cd scripts
- python3 validate.py --cfg <cfg-file> --checkpoint <ckpt-file-path> --batch 64
+ python3 validate.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --batch 64
 ```
 ### Inference
 * For a single image:
 ```bash
 cd scripts
-python3 demo_inference.py --cfg <cfg-file> --checkpoint <ckpt-file-path> --image <image path> --gpus <gpu-ids> 
+python3 demo_inference.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --image {IMAGE-PATH}  
 ```
 * For image directory:
 ```bash
 cd scripts
-python3 demo_inference.py --cfg <cfg-file> --checkpoint <ckpt-file-path> --indir <image directory path> --gpus <gpu-ids> 
+python3 demo_inference.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --indir {IMAGE_DIR-PATH}  
 ```
 * For a video:
 ```bash
 cd scripts
-python3 demo_inference.py --cfg <cfg-file> --checkpoint <ckpt-file-path> --video <video path> --gpus <gpu-ids> 
+python3 demo_inference.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --video {VIDEO-PATH} 
 ```
 
 ## Common issue & FAQ
