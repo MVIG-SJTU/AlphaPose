@@ -106,7 +106,7 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/pe
     if isinstance(cocoEval.stats[0], dict):
         stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
                        'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
-        parts = ['body', 'face', 'hand', 'fullbody']
+        parts = ['body', 'foot', 'face',  'hand', 'fullbody']
 
         info = {}
         for i, part in enumerate(parts):
