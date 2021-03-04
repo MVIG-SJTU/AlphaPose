@@ -85,13 +85,13 @@ def _assert_no_grad(tensor):
 def weighted_l1_loss(input, scores, target, weights, size_average):
     out = torch.abs(input - target)
     out = out * weights
-    out_of_scores = torch.abs(scores - torch.ones_like(scores))
-    out_of_scores = out_of_scores.reshape((out_of_scores.shape[0], -1))
-    out_of_scores = out_of_scores * weights[:, 0::2]
+    #out_of_scores = torch.abs(scores - torch.ones_like(scores))
+    #out_of_scores = out_of_scores.reshape((out_of_scores.shape[0], -1))
+    #out_of_scores = out_of_scores * weights[:, 0::2]
     if size_average:
-        return (out.sum() + out_of_scores.sum()) / len(input)
+        return out.sum() / len(input)
     else:
-        return (out.sum() + out_of_scores.sum())
+        return out.sum()
 
 
 LOSS.register_module(torch.nn.MSELoss)
