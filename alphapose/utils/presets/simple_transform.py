@@ -256,6 +256,9 @@ class SimpleTransform(object):
             target, target_weight = self._target_generator(joints, self.num_joints)
         elif 'JointRegression' in self._loss_type:
             target, target_weight = self._integral_target_generator(joints, self.num_joints, inp_h, inp_w, source)
+        elif self._loss_type == 'Combined':
+            target_mse, target_weight_mse = self._target_generator(joints[:-110,:,:], self.num_joints-110)
+            target_inter, target_weight_inter = self._integral_target_generator(joints[-110:,:,:], 110, inp_h, inp_w, source)
 
         bbox = _center_scale_to_box(center, scale)
 
@@ -263,8 +266,11 @@ class SimpleTransform(object):
         img[0].add_(-0.406)
         img[1].add_(-0.457)
         img[2].add_(-0.480)
-
-        return img, torch.from_numpy(target), torch.from_numpy(target_weight), torch.Tensor(bbox)
+        
+        if self._loss_type == 'Combined':
+        	return img, [torch.from_numpy(target_mse), torch.from_numpy(target_inter)], [torch.from_numpy(target_weight_mse), torch.from_numpy(target_weight_inter)], torch.Tensor(bbox)
+        else:
+            return img, torch.from_numpy(target), torch.from_numpy(target_weight), torch.Tensor(bbox)
 
     def half_body_transform(self, joints, joints_vis):
         upper_joints = []

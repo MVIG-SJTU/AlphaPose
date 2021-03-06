@@ -101,11 +101,21 @@ class DataWriter():
                     self.eval_joints = [*range(0,136)]
                 elif hm_data.size()[1] == 26:
                     self.eval_joints = [*range(0,26)]
+                elif hm_data.size()[1] == 133:
+                    self.eval_joints = [*range(0,133)]
                 pose_coords = []
                 pose_scores = []
                 for i in range(hm_data.shape[0]):
                     bbox = cropped_boxes[i].tolist()
-                    pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    if isinstance(self.heatmap_to_coord, list):
+                        pose_coords_body_foot, pose_scores_body_foot = self.heatmap_to_coord[0](
+                            hm_data[i][self.eval_joints[:-110]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                        pose_coords_face_hand, pose_scores_face_hand = self.heatmap_to_coord[1](
+                            hm_data[i][self.eval_joints[-110:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                        pose_coord = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
+                        pose_score = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
+                    else:
+                        pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox, hm_shape=hm_size, norm_type=norm_type)
                     pose_coords.append(torch.from_numpy(pose_coord).unsqueeze(0))
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)

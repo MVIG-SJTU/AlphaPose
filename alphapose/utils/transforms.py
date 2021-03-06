@@ -806,5 +806,7 @@ def get_func_heatmap_to_coord(cfg):
             return heatmap_to_coord_simple
         elif cfg.LOSS.TYPE == 'L1JointRegression':
             return heatmap_to_coord_simple_regress
+        elif cfg.LOSS.TYPE == 'Combined':
+            return [heatmap_to_coord_simple, heatmap_to_coord_simple_regress]
     else:
         raise NotImplementedError
