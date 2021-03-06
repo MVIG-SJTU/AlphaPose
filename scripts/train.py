@@ -234,8 +234,8 @@ def main():
 
     combined_loss = (cfg.LOSS.get('TYPE') == 'Combined')
     if combined_loss:
-        criterion1 = builder.build_loss(cfg.LOSS.LOSS1).cuda()
-        criterion2 = builder.build_loss(cfg.LOSS.LOSS2).cuda()
+        criterion1 = builder.build_loss(cfg.LOSS.LOSS_1).cuda()
+        criterion2 = builder.build_loss(cfg.LOSS.LOSS_2).cuda()
         criterion = [criterion1, criterion2]
     else:
         criterion = builder.build_loss(cfg.LOSS).cuda()
