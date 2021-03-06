@@ -56,6 +56,7 @@ def validate(m, heatmap_to_coord, batch_size=20):
 
     norm_type = cfg.LOSS.get('NORM_TYPE', None)
     hm_size = cfg.DATA_PRESET.HEATMAP_SIZE
+    combined_loss = (cfg.LOSS.get('TYPE') == 'Combined')
 
     for inps, crop_bboxes, bboxes, img_ids, scores, imghts, imgwds in tqdm(det_loader, dynamic_ncols=True):
         if isinstance(inps, list):
@@ -79,12 +80,16 @@ def validate(m, heatmap_to_coord, batch_size=20):
 
         for i in range(output.shape[0]):
             bbox = crop_bboxes[i].tolist()
-            if pred_flip is None:
-              pose_coords, pose_scores = heatmap_to_coord(
-                pred[i], bbox, hm_shape=hm_size, norm_type=norm_type)
+            if combined_loss:
+                pose_coords_body_foot, pose_scores_body_foot = heatmap_to_coord[0](
+                    pred[i][det_dataset.EVAL_JOINTS[:-110]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                pose_coords_face_hand, pose_scores_face_hand = heatmap_to_coord[1](
+                    pred[i][det_dataset.EVAL_JOINTS[-110:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                pose_coords = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
+                pose_scores = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
             else:
-              pose_coords, pose_scores = heatmap_to_coord(
-                pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
+                pose_coords, pose_scores = heatmap_to_coord(
+                    pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
 
             keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
@@ -119,6 +124,7 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
 
     norm_type = cfg.LOSS.get('NORM_TYPE', None)
     hm_size = cfg.DATA_PRESET.HEATMAP_SIZE
+    combined_loss = (cfg.LOSS.get('TYPE') == 'Combined')
 
     for inps, labels, label_masks, img_ids, bboxes in tqdm(gt_val_loader, dynamic_ncols=True):
         if isinstance(inps, list):
@@ -142,12 +148,16 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
 
         for i in range(output.shape[0]):
             bbox = bboxes[i].tolist()
-            if pred_flip is None:
-              pose_coords, pose_scores = heatmap_to_coord(
-                pred[i], bbox, hm_shape=hm_size, norm_type=norm_type)
+            if combined_loss:
+                pose_coords_body_foot, pose_scores_body_foot = heatmap_to_coord[0](
+                    pred[i][gt_val_dataset.EVAL_JOINTS[:-110]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                pose_coords_face_hand, pose_scores_face_hand = heatmap_to_coord[1](
+                    pred[i][gt_val_dataset.EVAL_JOINTS[-110:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                pose_coords = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
+                pose_scores = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
             else:
-              pose_coords, pose_scores = heatmap_to_coord(
-                pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
+                pose_coords, pose_scores = heatmap_to_coord(
+                    pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
 
             keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
