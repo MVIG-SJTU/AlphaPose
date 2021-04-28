@@ -73,7 +73,7 @@ class Mscoco_det(data.Dataset):
         # Load image
         image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) #scipy.misc.imread(img_path, mode='RGB')
 
-        imght, imgwidth = image.shape[1], image.shape[2]
+        imght, imgwidth = image.shape[0], image.shape[1]
         x1, y1, w, h = det_res['bbox']
         bbox = [x1, y1, x1 + w, y1 + h]
         inp, bbox = self.transformation.test_transform(image, bbox)
