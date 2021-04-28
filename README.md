@@ -3,6 +3,9 @@
     <img src="docs/logo.jpg", width="400">
 </div>
 
+a google colab link to test
+https://colab.research.google.com/drive/1o9RhThxyxHr4P3n6a19UGmc5LTRn5zfp?usp=sharing
+
 
 ## News!
 - Aug 2020: [**v0.4.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Stronger tracking! Include whole body(face,hand,foot) keypoints! [Colab](https://colab.research.google.com/drive/14Zgotr2_F0LfvcpRi03uQdMvUbLQSgok?usp=sharing) now available.
