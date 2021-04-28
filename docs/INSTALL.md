@@ -9,6 +9,7 @@
   `git pull origin pull/592/head`
 * torchvision 0.3.0+
 * numpy 
+* python-package setuptools >= 40.0, reported by [this issue](https://github.com/MVIG-SJTU/AlphaPose/issues/838)
 * Linux, [Windows user check here](#Windows)
 
 ### Code installation
