@@ -15,6 +15,8 @@ We would also like to thank the following people who have highly contributed to 
 
 [Chao Xu](): AlphaPose pytorch 0.3.0 version contributor
 
+[Misha Mishra](https://github.com/mishamishra) , [Ankita Mandal](https://github.com/Ankita18Mandal), [Siddhaant Priyam](https://github.com/sid0407) : Alphapose for Coco Wholebody dataset
+
 [Haoyi Zhu](): AlphaPose whole-body keypoints developer
 
 [Chenxi Wang](): AlphaPose mxnet version main developer

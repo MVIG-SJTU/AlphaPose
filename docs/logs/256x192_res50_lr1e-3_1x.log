@@ -1,0 +1,164 @@
+******************************
+Namespace(board=True, cfg='/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/configs/halpe_136/resnet/256x192_res50_lr1e-3_1x.yaml', debug=False, detector='yolo', device=device(type='cuda', index=0), dist_backend='nccl', dist_url='tcp://192.168.1.214:23345', exp_id='2', gpus=[0], launcher='none', map=True, nThreads=60, rank=-1, snapshot=2, sync=False, work_dir='./exp/2-256x192_res50_lr1e-3_1x.yaml/', world_size=4)
+******************************
+{'DATASET': {'TRAIN': {'TYPE': 'coco_wholebody', 'ROOT': '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/data/coco/', 'IMG_PREFIX': 'train2017', 'ANN': 'annotations/coco_wholebody_train_v1.0.json', 'AUG': {'FLIP': True, 'ROT_FACTOR': 40, 'SCALE_FACTOR': 0.3, 'NUM_JOINTS_HALF_BODY': 8, 'PROB_HALF_BODY': -1}}, 'VAL': {'TYPE': 'coco_wholebody', 'ROOT': '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/data/coco/', 'IMG_PREFIX': 'val2017', 'ANN': 'annotations/coco_wholebody_val_v1.0.json'}, 'TEST': {'TYPE': 'coco_wholebody_det', 'ROOT': '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/data/coco/', 'IMG_PREFIX': 'val2017', 'DET_FILE': '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/exp/json/test_det_yolo.json', 'ANN': 'annotations/coco_wholebody_val_v1.0.json'}}, 'DATA_PRESET': {'TYPE': 'simple', 'SIGMA': 2, 'NUM_JOINTS': 133, 'IMAGE_SIZE': [256, 192], 'HEATMAP_SIZE': [64, 48]}, 'MODEL': {'TYPE': 'FastPose', 'PRETRAINED': '', 'TRY_LOAD': '', 'NUM_DECONV_FILTERS': [256, 256, 256], 'NUM_LAYERS': 50}, 'LOSS': {'TYPE': 'MSELoss'}, 'DETECTOR': {'NAME': 'yolo', 'CONFIG': '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/detector/yolo/cfg/yolov3-spp.cfg', 'WEIGHTS': '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/detector/yolo/data/yolov3-spp.weights', 'NMS_THRES': 0.6, 'CONFIDENCE': 0.05}, 'TRAIN': {'WORLD_SIZE': 4, 'BATCH_SIZE': 4, 'BEGIN_EPOCH': 0, 'END_EPOCH': 500, 'OPTIMIZER': 'adam', 'LR': 0.001, 'LR_FACTOR': 0.1, 'LR_STEP': [90, 120], 'DPG_MILESTONE': 140, 'DPG_STEP': [20, 50]}, 'FILE_NAME': '256x192_res50_lr1e-3_1x.yaml'}
+******************************
+Create new model
+=> init weights
+############# Starting Epoch 0 | LR: 0.001 #############
+Train-0 epoch | loss:0.00042584 | acc:0.4465
+############# Starting Epoch 1 | LR: 0.001 #############
+Train-1 epoch | loss:0.00032140 | acc:0.5981
+############# Starting Epoch 2 | LR: 0.001 #############
+Train-2 epoch | loss:0.00028311 | acc:0.6502
+############# Starting Epoch 3 | LR: 0.001 #############
+Train-3 epoch | loss:0.00026163 | acc:0.6840
+############# Starting Epoch 4 | LR: 0.001 #############
+Train-4 epoch | loss:0.00024682 | acc:0.7034
+##### Epoch 4 | gt mAP: {'body': 0.2611184790343089, 'foot': 0.14065244523219597, 'face': 0.4705397873089641, 'hand': 0.008243826643149469, 'fullbody': 0.1297827634705916} | rcnn mAP: {'body': 0.2590230215556039, 'foot': 0.14059973265534484, 'face': 0.46803834008868467, 'hand': 0.004554596405604014, 'fullbody': 0.12452902811313858} #####
+############# Starting Epoch 5 | LR: 0.001 #############
+Train-5 epoch | loss:0.00023572 | acc:0.7213
+############# Starting Epoch 6 | LR: 0.001 #############
+Train-6 epoch | loss:0.00022678 | acc:0.7327
+############# Starting Epoch 7 | LR: 0.001 #############
+Train-7 epoch | loss:0.00021974 | acc:0.7425
+############# Starting Epoch 8 | LR: 0.001 #############
+Train-8 epoch | loss:0.00021472 | acc:0.7516
+############# Starting Epoch 9 | LR: 0.001 #############
+Train-9 epoch | loss:0.00020886 | acc:0.7590
+##### Epoch 9 | gt mAP: {'body': 0.3458333709043604, 'foot': 0.18415774751691338, 'face': 0.5645446332437162, 'hand': 0.012953176298103861, 'fullbody': 0.18881314614479275} | rcnn mAP: {'body': 0.3398019081848982, 'foot': 0.19000028725813217, 'face': 0.5477085631262136, 'hand': 0.012688081891821178, 'fullbody': 0.18165779062046467} #####
+############# Starting Epoch 10 | LR: 0.001 #############
+Train-10 epoch | loss:0.00020493 | acc:0.7641
+############# Starting Epoch 11 | LR: 0.001 #############
+Train-11 epoch | loss:0.00020109 | acc:0.7697
+############# Starting Epoch 12 | LR: 0.001 #############
+Train-12 epoch | loss:0.00019795 | acc:0.7751
+############# Starting Epoch 13 | LR: 0.001 #############
+Train-13 epoch | loss:0.00019379 | acc:0.7803
+############# Starting Epoch 14 | LR: 0.001 #############
+Train-14 epoch | loss:0.00019144 | acc:0.7841
+##### Epoch 14 | gt mAP: {'body': 0.37802395739450284, 'foot': 0.21524578383007442, 'face': 0.5915947465129183, 'hand': 0.012154810379172211, 'fullbody': 0.20617711632219907} | rcnn mAP: {'body': 0.3714109080730503, 'foot': 0.20902000182782324, 'face': 0.5762134509215283, 'hand': 0.011823884695371538, 'fullbody': 0.19860477060042664} #####
+############# Starting Epoch 15 | LR: 0.001 #############
+Train-15 epoch | loss:0.00018830 | acc:0.7880
+############# Starting Epoch 16 | LR: 0.001 #############
+Train-16 epoch | loss:0.00018640 | acc:0.7910
+############# Starting Epoch 17 | LR: 0.001 #############
+Train-17 epoch | loss:0.00018420 | acc:0.7936
+############# Starting Epoch 18 | LR: 0.001 #############
+Train-18 epoch | loss:0.00018194 | acc:0.7965
+############# Starting Epoch 19 | LR: 0.001 #############
+Train-19 epoch | loss:0.00018091 | acc:0.7994
+##### Epoch 19 | gt mAP: {'body': 0.41211502474185685, 'foot': 0.21014635857545777, 'face': 0.6111014644812635, 'hand': 0.017741335149311015, 'fullbody': 0.23195201026386855} | rcnn mAP: {'body': 0.40760311153067424, 'foot': 0.2200136039032431, 'face': 0.601613441225318, 'hand': 0.01629997570672256, 'fullbody': 0.2255620775855732} #####
+############# Starting Epoch 20 | LR: 0.001 #############
+Train-20 epoch | loss:0.00017851 | acc:0.8017
+############# Starting Epoch 21 | LR: 0.001 #############
+Train-21 epoch | loss:0.00017686 | acc:0.8048
+############# Starting Epoch 22 | LR: 0.001 #############
+Train-22 epoch | loss:0.00017498 | acc:0.8069
+############# Starting Epoch 23 | LR: 0.001 #############
+Train-23 epoch | loss:0.00017332 | acc:0.8087
+############# Starting Epoch 24 | LR: 0.001 #############
+Train-24 epoch | loss:0.00017133 | acc:0.8129
+##### Epoch 24 | gt mAP: {'body': 0.4276539075365526, 'foot': 0.22838222506854958, 'face': 0.626231224905326, 'hand': 0.019284406870249283, 'fullbody': 0.24430495306655708} | rcnn mAP: {'body': 0.4184170470039018, 'foot': 0.2352515194801056, 'face': 0.6145585721215053, 'hand': 0.01828315223484765, 'fullbody': 0.23443575402937297} #####
+############# Starting Epoch 25 | LR: 0.001 #############
+Train-25 epoch | loss:0.00017024 | acc:0.8144
+############# Starting Epoch 26 | LR: 0.001 #############
+Train-26 epoch | loss:0.00016879 | acc:0.8182
+############# Starting Epoch 27 | LR: 0.001 #############
+Train-27 epoch | loss:0.00016783 | acc:0.8188
+############# Starting Epoch 28 | LR: 0.001 #############
+Train-28 epoch | loss:0.00016587 | acc:0.8200
+############# Starting Epoch 29 | LR: 0.001 #############
+Train-29 epoch | loss:0.00016550 | acc:0.8214
+##### Epoch 29 | gt mAP: {'body': 0.45933951659752476, 'foot': 0.27041060947442086, 'face': 0.6428499981700427, 'hand': 0.0224893179123515, 'fullbody': 0.2681564628420533} | rcnn mAP: {'body': 0.4499931228527808, 'foot': 0.26815952478563776, 'face': 0.6297539662661295, 'hand': 0.022358481652666393, 'fullbody': 0.25709747284308054} #####
+############# Starting Epoch 30 | LR: 0.001 #############
+Train-30 epoch | loss:0.00016420 | acc:0.8238
+############# Starting Epoch 31 | LR: 0.001 #############
+Train-31 epoch | loss:0.00016322 | acc:0.8247
+############# Starting Epoch 32 | LR: 0.001 #############
+Train-32 epoch | loss:0.00016176 | acc:0.8264
+############# Starting Epoch 33 | LR: 0.001 #############
+Train-33 epoch | loss:0.00016097 | acc:0.8278
+############# Starting Epoch 34 | LR: 0.001 #############
+Train-34 epoch | loss:0.00016037 | acc:0.8289
+##### Epoch 34 | gt mAP: {'body': 0.4457051463987056, 'foot': 0.2757085912470693, 'face': 0.647969727556129, 'hand': 0.023501630612155495, 'fullbody': 0.26020511912642635} | rcnn mAP: {'body': 0.4386505006525895, 'foot': 0.2778581057972307, 'face': 0.6301086144431842, 'hand': 0.022099538800629797, 'fullbody': 0.2497454634856043} #####
+############# Starting Epoch 35 | LR: 0.001 #############
+Train-35 epoch | loss:0.00016055 | acc:0.8281
+############# Starting Epoch 36 | LR: 0.001 #############
+Train-36 epoch | loss:0.00015970 | acc:0.8304
+############# Starting Epoch 37 | LR: 0.001 #############
+Train-37 epoch | loss:0.00015732 | acc:0.8341
+############# Starting Epoch 38 | LR: 0.001 #############
+Train-38 epoch | loss:0.00015636 | acc:0.8339
+############# Starting Epoch 39 | LR: 0.001 #############
+Train-39 epoch | loss:0.00015602 | acc:0.8347
+##### Epoch 39 | gt mAP: {'body': 0.47994468646745736, 'foot': 0.299963533169908, 'face': 0.6608788112590019, 'hand': 0.025522584104684675, 'fullbody': 0.28169117729469595} | rcnn mAP: {'body': 0.4703173671255162, 'foot': 0.2986783588840098, 'face': 0.6421897893889202, 'hand': 0.02412096984423797, 'fullbody': 0.2729210103341973} #####
+############# Starting Epoch 40 | LR: 0.001 #############
+Train-40 epoch | loss:0.00015493 | acc:0.8362
+############# Starting Epoch 41 | LR: 0.001 #############
+Train-41 epoch | loss:0.00015427 | acc:0.8378
+############# Starting Epoch 42 | LR: 0.001 #############
+Train-42 epoch | loss:0.00015380 | acc:0.8382
+############# Starting Epoch 43 | LR: 0.001 #############
+Train-43 epoch | loss:0.00015273 | acc:0.8403
+############# Starting Epoch 44 | LR: 0.001 #############
+Train-44 epoch | loss:0.00015240 | acc:0.8399
+##### Epoch 44 | gt mAP: {'body': 0.4883435323190265, 'foot': 0.3279011211594151, 'face': 0.6636081330694203, 'hand': 0.030642224314176635, 'fullbody': 0.29270828302151836} | rcnn mAP: {'body': 0.4821432715052952, 'foot': 0.3267261986531283, 'face': 0.6492209658348987, 'hand': 0.029921346219908895, 'fullbody': 0.2868828628460996} #####
+############# Starting Epoch 45 | LR: 0.001 #############
+Train-45 epoch | loss:0.00015164 | acc:0.8406
+############# Starting Epoch 46 | LR: 0.001 #############
+Train-46 epoch | loss:0.00015095 | acc:0.8405
+############# Starting Epoch 47 | LR: 0.001 #############
+Train-47 epoch | loss:0.00014951 | acc:0.8436
+############# Starting Epoch 48 | LR: 0.001 #############
+Train-48 epoch | loss:0.00014956 | acc:0.8431
+############# Starting Epoch 49 | LR: 0.001 #############
+Train-49 epoch | loss:0.00014878 | acc:0.8459
+##### Epoch 49 | gt mAP: {'body': 0.48659061775849716, 'foot': 0.3169588748404941, 'face': 0.6620576570548038, 'hand': 0.029545025303935733, 'fullbody': 0.2879484322768464} | rcnn mAP: {'body': 0.4759073458094862, 'foot': 0.31957264613861, 'face': 0.6519986401492479, 'hand': 0.02682802665463378, 'fullbody': 0.277859315445696} #####
+############# Starting Epoch 50 | LR: 0.001 #############
+Train-50 epoch | loss:0.00014809 | acc:0.8460
+############# Starting Epoch 51 | LR: 0.001 #############
+Train-51 epoch | loss:0.00014763 | acc:0.8472
+############# Starting Epoch 52 | LR: 0.001 #############
+Train-52 epoch | loss:0.00014724 | acc:0.8476
+############# Starting Epoch 53 | LR: 0.001 #############
+Train-53 epoch | loss:0.00014653 | acc:0.8487
+############# Starting Epoch 54 | LR: 0.001 #############
+Train-54 epoch | loss:0.00014547 | acc:0.8502
+##### Epoch 54 | gt mAP: {'body': 0.5080816356730968, 'foot': 0.34173436558541725, 'face': 0.671667161270306, 'hand': 0.03484338325542, 'fullbody': 0.30223329251050396} | rcnn mAP: {'body': 0.4951872348036459, 'foot': 0.3393493422180321, 'face': 0.663454954028158, 'hand': 0.031132872741960565, 'fullbody': 0.2928869765615378} #####
+############# Starting Epoch 55 | LR: 0.001 #############
+Train-55 epoch | loss:0.00014528 | acc:0.8493
+############# Starting Epoch 56 | LR: 0.001 #############
+Train-56 epoch | loss:0.00014513 | acc:0.8499
+############# Starting Epoch 57 | LR: 0.001 #############
+Train-57 epoch | loss:0.00014451 | acc:0.8505
+############# Starting Epoch 58 | LR: 0.001 #############
+Train-58 epoch | loss:0.00014416 | acc:0.8517
+############# Starting Epoch 59 | LR: 0.001 #############
+Train-59 epoch | loss:0.00014358 | acc:0.8526
+##### Epoch 59 | gt mAP: {'body': 0.506154153392858, 'foot': 0.3494080853566289, 'face': 0.6705412563915636, 'hand': 0.034519851422644195, 'fullbody': 0.3030057942522708} | rcnn mAP: {'body': 0.49649195872189694, 'foot': 0.34648564068939364, 'face': 0.6603740670777476, 'hand': 0.03298771197091247, 'fullbody': 0.2963154399580232} #####
+############# Starting Epoch 60 | LR: 0.001 #############
+Train-60 epoch | loss:0.00014287 | acc:0.8533
+############# Starting Epoch 61 | LR: 0.001 #############
+Train-61 epoch | loss:0.00014215 | acc:0.8537
+############# Starting Epoch 62 | LR: 0.001 #############
+Train-62 epoch | loss:0.00014241 | acc:0.8538
+############# Starting Epoch 63 | LR: 0.001 #############
+Train-63 epoch | loss:0.00014158 | acc:0.8548
+############# Starting Epoch 64 | LR: 0.001 #############
+Train-64 epoch | loss:0.00014129 | acc:0.8559
+##### Epoch 64 | gt mAP: {'body': 0.5192413182898795, 'foot': 0.3637961509266523, 'face': 0.6870552556637417, 'hand': 0.0348888307485746, 'fullbody': 0.3163821203762446} | rcnn mAP: {'body': 0.5110235386384568, 'foot': 0.36722550441864527, 'face': 0.6756308890862178, 'hand': 0.037524149159396704, 'fullbody': 0.3102966107534294} #####
+############# Starting Epoch 65 | LR: 0.001 #############
+Train-65 epoch | loss:0.00014111 | acc:0.8563
+############# Starting Epoch 66 | LR: 0.001 #############
+Train-66 epoch | loss:0.00014021 | acc:0.8576
+############# Starting Epoch 67 | LR: 0.001 #############
+Train-67 epoch | loss:0.00013952 | acc:0.8581
+############# Starting Epoch 68 | LR: 0.001 #############
+Train-68 epoch | loss:0.00013932 | acc:0.8585
+############# Starting Epoch 69 | LR: 0.001 #############
+Train-69 epoch | loss:0.00013847 | acc:0.8593
+##### Epoch 69 | gt mAP: {'body': 0.5252094427862177, 'foot': 0.3684598076643353, 'face': 0.6906776420045243, 'hand': 0.0370325375149504, 'fullbody': 0.3207745459887368} | rcnn mAP: {'body': 0.5151881281188019, 'foot': 0.3679986238725186, 'face': 0.6784770738747579, 'hand': 0.037044738807933256, 'fullbody': 0.3109299821587894} #####
+############# Starting Epoch 70 | LR: 0.001 #############
+Train-70 epoch | loss:0.00013859 | acc:0.8597
+############# Starting Epoch 71 | LR: 0.001 #############

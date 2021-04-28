@@ -68,7 +68,7 @@ class coco_wholebody_det(data.Dataset):
             img_id = int(img_id)
         else:
             img_id = det_res['image_id']
-        img_path = '/DATA1/Benchmark/coco/val2017/%012d.jpg' % img_id
+        img_path = '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/data/coco/val2017/%012d.jpg' % img_id
 
         # Load image
         image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) #scipy.misc.imread(img_path, mode='RGB')
@@ -92,7 +92,7 @@ class coco_wholebody_det(data.Dataset):
         dets = []
         for entry in tqdm(_coco.loadImgs(image_ids)):
             abs_path = os.path.join(
-                '/DATA1/Benchmark/coco', self._img_prefix, entry['file_name'])
+                '/mnt/project2/home/ee318062/AlphaPose-master/AlphaPose/data/coco', self._img_prefix, entry['file_name'])
             det = det_model.detect_one_img(abs_path)
             if det:
                 dets += det

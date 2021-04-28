@@ -30,6 +30,10 @@ AlphaPose supports both Linux and **Windows!**
     <img src="docs/alphapose_136.gif", width="400"alt><br>
     <b><a href="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a></b> + tracking
 </div>
+<div align="center">
+    <img src="docs/coco_wholebody.gif", width="400"alt><br>
+    <b><a href="https://github.com/jin-s13/COCO-WholeBody">Coco_wholebody 133 keypoints</a></b>
+</div>
 
 
 ## Results
@@ -55,6 +59,22 @@ Results on MPII full test set:
 | **AlphaPose** | 91.3 | **90.5** | **84.0** | **76.4** | **80.3** | **79.9** | **72.4** | **82.1** |
 
 </center>
+
+Results on CocoWholebody validation set:
+<center>
+
+**gt mAP**
+| Method | Body | Foot | Face | Hand | Fullbody |
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
+| **AlphaPose** | 52.5 | 36.8 | 69.1 | 3.7 | 32.1 |
+
+<center>
+
+**rcnn mAP**
+| Method | Body | Foot | Face | Hand | Fullbody |
+|:-------|:-----:|:-------:|:-------:|:-------:|:-------:|
+| **AlphaPose** | 51.5 | 36.8 | 67.8 | 3.7 | 31.1 |
+
 
 More results and models are available in the [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md).
 
@@ -115,9 +135,48 @@ Train `FastPose` on mscoco dataset.
 
 More detailed inference options and examples, please refer to [GETTING_STARTED.md](docs/GETTING_STARTED.md)
 
+## Coco_wholebody Dataset
+### Downloading 
+Images can be downloaded from [COCO 2017 website](https://cocodataset.org/#keypoints-2017)
+
+COCO-WholeBody annotations for [Train](https://drive.google.com/file/d/1thErEToRbmM9uLNi1JXXfOsaS5VK2FXf/view?usp=sharing) / [Validation](https://drive.google.com/file/d/1N6VgwKnj8DeyGXCvp1eYgNbRmw6jdfrb/view?usp=sharing) (Google Drive).
+
+### Training from scratch
+* Change the dataset path in [this](configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml) file.
+* Run the following script :
+
+```bash
+cd scripts 
+python3 train.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --exp-id 2
+```
+
+### Validation 
+Validate your model on coco_wholebody dataset
+Run the following script:
+```bash
+ cd scripts
+ python3 validate.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --batch 64
+```
+### Inference
+* For a single image:
+```bash
+cd scripts
+python3 demo_inference.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --image {IMAGE-PATH}  
+```
+* For image directory:
+```bash
+cd scripts
+python3 demo_inference.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --indir {IMAGE_DIR-PATH}  
+```
+* For a video:
+```bash
+cd scripts
+python3 demo_inference.py --cfg configs/coco_wholebody/resnet/256x192_res50_lr1e-3_1x.yaml --checkpoint {CHECKPOINT-PATH} --video {VIDEO-PATH} 
+```
 
 ## Common issue & FAQ
 Check out [faq.md](docs/faq.md) for faq. If it can not solve your problems or if you find any bugs, don't hesitate to comment on GitHub or make a pull request!
+
 
 ## Contributors
 AlphaPose is based on RMPE(ICCV'17), authored by [Hao-Shu Fang](https://fang-haoshu.github.io/), Shuqin Xie, [Yu-Wing Tai](https://scholar.google.com/citations?user=nFhLmFkAAAAJ&hl=en) and [Cewu Lu](http://www.mvig.org/), [Cewu Lu](http://mvig.sjtu.edu.cn/) is the corresponding author. Currently, it is maintained by [Jiefeng Li\*](http://jeff-leaf.site/), [Hao-shu Fang\*](https://fang-haoshu.github.io/),  [Yuliang Xiu](http://xiuyuliang.cn/about/) and [Chao Xu](http://www.isdas.cn/). 
@@ -162,6 +221,13 @@ Please cite these papers in your publications if it helps your research:
       title = {{Pose Flow}: Efficient Online Pose Tracking},
       booktitle={BMVC},
       year = {2018}
+    }
+    
+    @inproceedings{jin2020whole,
+    title={Whole-Body Human Pose Estimation in the Wild},
+    author={Jin, Sheng and Xu, Lumin and Xu, Jin and Wang, Can and Liu, Wentao and Qian, Chen and Ouyang, Wanli and Luo, Ping},
+    booktitle={Proceedings of the European Conference on Computer Vision (ECCV)},    
+    year={2020}
     }
 
 
