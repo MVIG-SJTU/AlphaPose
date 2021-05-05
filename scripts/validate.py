@@ -80,7 +80,7 @@ def validate(m, heatmap_to_coord, batch_size=20):
         for i in range(output.shape[0]):
             bbox = crop_bboxes[i].tolist()
             pose_coords, pose_scores = heatmap_to_coord(
-                pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
+                pred[i], bbox, hms_flip=pred_flip[i] if opt.flip_test else None, hm_shape=hm_size, norm_type=norm_type)
 
             keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
@@ -139,7 +139,7 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
         for i in range(output.shape[0]):
             bbox = bboxes[i].tolist()
             pose_coords, pose_scores = heatmap_to_coord(
-                pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
+                pred[i], bbox, hms_flip=pred_flip[i] if opt.flip_test else None, hm_shape=hm_size, norm_type=norm_type)
 
             keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
