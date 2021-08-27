@@ -35,8 +35,6 @@ def train(opt, train_loader, m, criterion, optimizer, writer):
     train_loader = tqdm(train_loader, dynamic_ncols=True)
 
     for i, (inps, labels, label_masks, _, bboxes) in enumerate(train_loader):
-        if i > 3:
-            break
         if isinstance(inps, list):
             inps = [inp.cuda().requires_grad_() for inp in inps]
         else:

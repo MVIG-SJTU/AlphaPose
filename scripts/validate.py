@@ -216,7 +216,6 @@ if __name__ == "__main__":
     heatmap_to_coord = get_func_heatmap_to_coord(cfg)
 
     with torch.no_grad():
-        # gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
-        gt_AP = 0.0
+        gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
         detbox_AP = validate(m, heatmap_to_coord, opt.batch)
     print('##### gt box: {} mAP | det box: {} mAP #####'.format(gt_AP, detbox_AP))
