@@ -44,7 +44,7 @@ python scripts/demo_inference.py --cfg configs/halpe_26/resnet/256x192_res50_lr1
 |[Fast Pose (DCN)](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-regression.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Symmetric Integral | 46.2        | 16.58 iter/s | [Google](halpe136_fast50_dcn_regression_256x192.pth) [Baidu](halpe136_fast50_dcn_regression_256x192.pth) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-regression.yaml)    |
 |[Fast Pose (DCN)](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Combined | 45.4        | 10.07 iter/s | [Google](halpe136_fast50_dcn_combined_256x192.pth) [Baidu](halpe136_fast50_dcn_combined_256x192.pth) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    |
 |[Fast Pose (DCN)](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Combined (10 hand weight) | 47.2        | 10.07 iter/s | [Google](halpe136_fast50_dcn_combined_256x192_10handweight.pth) [Baidu](halpe136_fast50_dcn_combined_256x192_10handweight.pth) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    |
-|[Fast Pose (DUC)](../configs/halpe_136/resnet/256x192_res152_lr1e-3_1x-duc.yaml)    | ResNet152           | YOLOv3 | 256x192            | Symmetric Integral | 45.1        | 16.17 iter/s | [Google](halpe136_fast152_duc_regression_256x192.pth) [Baidu](halpe136_fast152_duc_regression_256x192.pth) | [cfg](../configs/halpe_136/256x192_res152_lr1e-3_1x-duc.yaml)    |
+|[Fast Pose (DUC)](../configs/halpe_136/resnet/256x192_res152_lr1e-3_1x-duc.yaml)    | ResNet152           | YOLOv3 | 256x192            | Symmetric Integral | 45.1        | 16.17 iter/s | [Google](halpe136_fast152_duc_regression_256x192.pth) [Baidu](halpe136_fast152_duc_regression_256x192.pth) | [cfg](../configs/halpe_136/resnet/256x192_res152_lr1e-3_1x-duc.yaml)    |
 
 For example, you can run with:
 ```
@@ -73,19 +73,19 @@ python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr
 - The APs are tested under COCO WholeBody's criterion, with flip test on and without NMS.
 - The speed is tested on COCO val2017 on a single NVIDIA GeForce RTX 3090 gpu, with `batch_size=64` in each iteration and offline yolov3 human detection results.
 
-## Multi Domain Models (Strongly Recommended)
+## Multi Domain Models **(Strongly Recommended)**
 | Model                    | Backbone | Detector | Input Size | Loss Type |     AP     | Speed |  Download | Config | #keypoints |  
 |--------------------------|----------|----------|------------|------------|------------|-------|-----------|--------|--------------|
 |[Fast Pose](../configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | ResNet50           | YOLOv3 | 256x192            | Symmetric Integral | 50.3        | 16.28 iter/s | [Google](multi_domain_fast50_regression_256x192.pth) [Baidu](multi_domain_fast50_regression_256x192.pth) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | 136 |
 |[Fast Pose (DCN)](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Combined (10 hand weight) | 49.8        | 10.35 iter/s | [Google](multi_domain_fast50_dcn_combined_256x192.pth) [Baidu](multi_domain_fast50_dcn_combined_256x192.pth) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | 136 |
 |[Fast Pose (DCN)](../configs/halpe_68_noface/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Combined | -        | 13.88 iter/s | [Google](noface_fast50_dcn_combined_256x192.pth) [Baidu](noface_fast50_dcn_combined_256x192.pth) | [cfg](../configs/halpe_68_noface/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | 68 (no face) |
-|[Fast Pose (DCN)](../configs/single_hand/resnet/256x192_res50_lr1e-3_2x-dcn-regression.yaml)    | ResNet50 - dcn           | - | 256x192            | Symmetric Integral | -        | 30.20 iter/s | [Google](singlehand_fast50_dcn_regression_256x192.pth) [Baidu](singlehand_fast50_dcn_regression_256x192.pth) | [cfg](../configs/single_hand/resnet/256x192_res50_lr1e-3_2x-dcn_regression.yaml)    | 21 (single hand) |
+|[Fast Pose (DCN)](../configs/single_hand/resnet/256x192_res50_lr1e-3_2x-dcn-regression.yaml)    | ResNet50 - dcn           | - | 256x192            | Symmetric Integral | -        | 30.20 iter/s | [Google](singlehand_fast50_dcn_regression_256x192.pth) [Baidu](singlehand_fast50_dcn_regression_256x192.pth) | [cfg](../configs/single_hand/resnet/256x192_res50_lr1e-3_2x-dcn-regression.yaml)    | 21 (single hand) |
 
 For the most accurate wholebody pose estimation, you can run with:
 ```
 python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml --checkpoint pretrained_models/multi_domain_fast50_dcn_combined_256x192.pth --indir examples/demo/ --save_img
 ```
-or, you can run with (this version is a little faster and more accurate on body keypoints, but its performance on hand keypoints are worser):
+or, you can run with (this version is a little faster and more accurate on body keypoints, but its performance on hand keypoints is worser):
 ```
 python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml --checkpoint pretrained_models/multi_domain_fast50_regression_256x192.pth --indir examples/demo/ --save_img
 ```
@@ -94,5 +94,5 @@ python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr
 - These models are strongly recommended because they are more accurate and flexible.
 - These models are trained with multi-domain knowledge distillation (MDKD, see our [paper]() for more details).
 - The APs are tested under Halpe's criterion, with flip test on and without NMS.
-- If you want to use the single hand model, you should give the rough bounding box of a single hand instead of that of a whole person.
+- If you want to use the single hand model, you should give the rough bounding box of **a single hand** instead of that of a whole person.
 - The speed is tested on COCO val2017 on a single NVIDIA GeForce RTX 3090 gpu, with `batch_size=64` in each iteration and offline yolov3 human detection results.
