@@ -1,9 +1,9 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Haoyi Zhu and Hao-Shu Fang
+# Written by Haoyi Zhu
 # -----------------------------------------------------
 
-"""Coco WholeBody (133 points) Human keypoint dataset."""
+"""Halpe without face (68 keypoints) Human keypoint dataset."""
 import os
 
 import numpy as np
@@ -16,8 +16,8 @@ from .custom import CustomDataset
 
 
 @DATASET.register_module
-class coco_wholebody(CustomDataset):
-    """ Coco WholeBody (133 points) Person dataset.
+class Halpe_68_noface(CustomDataset):
+    """ Halpe Full-Body without face (68 keypoints) Person dataset.
 
     Parameters
     ----------
@@ -30,20 +30,15 @@ class coco_wholebody(CustomDataset):
         If true, will activate `dpg` for data augmentation.
     """
     CLASSES = ['person']
-    EVAL_JOINTS = list(range(133))
-    num_joints = 133
-    CustomDataset.lower_body_ids = (11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+    EVAL_JOINTS = list(range(68))
+    num_joints = 68
+    CustomDataset.lower_body_ids = (11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 25)
     """Joint pairs which defines the pairs of joint to be swapped
         when the image is flipped horizontally."""
     joint_pairs =  [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], 
-                    [17, 20], [18, 21], [19, 22], [23, 39], [24, 38], [25, 37], [26, 36], 
-                    [27, 35], [28, 34], [29, 33], [30, 32], [40, 49], [41, 48], [42, 47], 
-                    [43, 46], [44, 45], [59, 68], [60, 67], [61, 66], [62, 65], [63, 70], 
-                    [64, 69], [54, 58], [55, 57], [71, 77], [72, 76], [73, 75], [84, 86], 
-                    [90, 88], [83, 87], [82, 78], [81, 79], [91, 112], [92, 113], [93, 114], 
-                    [94, 115], [95, 116], [96, 117], [97, 118], [98, 119], [99, 120], 
-                    [100, 121], [101, 122], [102, 123], [103, 124], [104, 125], [105, 126], 
-                    [106, 127], [107, 128], [108, 129], [109, 130], [110, 131], [111, 132]]
+                    [20, 21], [22, 23], [24, 25], [26, 47], [27, 48], [28, 49], [29, 50], [30, 51], 
+                    [31, 52], [32, 53], [33, 54], [34, 55], [35, 56], [36, 57], [37, 58], [38, 59], 
+                    [39, 60], [40, 61], [41, 62], [42, 63], [43, 64], [44, 65], [45, 66], [46, 67]]
                 
 
     def _load_jsons(self):
@@ -62,15 +57,17 @@ class coco_wholebody(CustomDataset):
         # iterate through the annotations
         image_ids = sorted(_coco.getImgIds())
         for entry in _coco.loadImgs(image_ids):
-            dirname, filename = entry['coco_url'].split('/')[-2:]
-            abs_path = os.path.join(self._root, dirname, filename)
+            abs_path = os.path.join(self._root, self._img_prefix, entry['file_name'])
+
             if not os.path.exists(abs_path):
                 raise IOError('Image: {} not exists.'.format(abs_path))
             label = self._check_load_keypoints(_coco, entry)
             if not label:
                 continue
+
+            # num of items are relative to person, not image
             for obj in label:
-                items.append(abs_path)
+                items.append({'path': abs_path, 'id': entry['id']})
                 labels.append(obj)
 
         return items, labels
@@ -85,11 +82,8 @@ class coco_wholebody(CustomDataset):
         height = entry['height']
 
         for obj in objs:
-            if 'foot_kpts' in obj and 'face_kpts' in obj and 'lefthand_kpts' in obj and 'righthand_kpts' in obj:
-                obj['keypoints'].extend(obj['foot_kpts'])
-                obj['keypoints'].extend(obj['face_kpts'])
-                obj['keypoints'].extend(obj['lefthand_kpts'])
-                obj['keypoints'].extend(obj['righthand_kpts'])
+            obj['keypoints'] = obj['keypoints'][:26*3] + obj['keypoints'][-42*3:]
+            
             contiguous_cid = self.json_id_to_contiguous[obj['category_id']]
             if contiguous_cid >= self.num_class:
                 # not class of interest
@@ -97,18 +91,22 @@ class coco_wholebody(CustomDataset):
             if max(obj['keypoints']) == 0:
                 continue
             # convert from (x, y, w, h) to (xmin, ymin, xmax, ymax) and clip bound
+            if 'bbox' not in obj:
+                obj['bbox'] = [1, 1, width-1, height-1]
             xmin, ymin, xmax, ymax = bbox_clip_xyxy(bbox_xywh_to_xyxy(obj['bbox']), width, height)
+
             # require non-zero box area
             if (xmax - xmin) * (ymax - ymin) <= 0 or xmax <= xmin or ymax <= ymin:
                 continue
             if 'num_keypoints' in obj and obj['num_keypoints'] == 0:
                 continue
+                
             # joints 3d: (num_joints, 3, 2); 3 is for x, y, z; 2 is for position, visibility
             joints_3d = np.zeros((self.num_joints, 3, 2), dtype=np.float32)
             for i in range(self.num_joints):
                 joints_3d[i, 0, 0] = obj['keypoints'][i * 3 + 0]
                 joints_3d[i, 1, 0] = obj['keypoints'][i * 3 + 1]
-                if obj['keypoints'][i * 3 + 2] >= 0.35:
+                if obj['keypoints'][i * 3 + 2] >= 0.25:
                     visible = 1
                 else:
                     visible = 0

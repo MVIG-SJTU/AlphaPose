@@ -1,9 +1,9 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Haoyi Zhu
+# Written by HaoyiZhu
 # -----------------------------------------------------
 
-"""Coco WholeBody Human Detection Box dataset."""
+"""Halpe without face (68 keypoints) Human Detection Box dataset."""
 import json
 import os
 
@@ -18,11 +18,11 @@ from alphapose.models.builder import DATASET
 
 
 @DATASET.register_module
-class coco_wholebody_det(data.Dataset):
-    """ Coco WholeBody human detection box dataset.
+class Halpe_68_noface_det(data.Dataset):
+    """ Halpe Full-Body without face (68 keypoints) human detection box dataset.
 
     """
-    EVAL_JOINTS = list(range(133))
+    EVAL_JOINTS = list(range(68))
 
     def __init__(self,
                  det_file=None,
@@ -104,11 +104,6 @@ class coco_wholebody_det(data.Dataset):
         """Joint pairs which defines the pairs of joint to be swapped
         when the image is flipped horizontally."""
         return [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], 
-                [17, 20], [18, 21], [19, 22], [23, 39], [24, 38], [25, 37], [26, 36], 
-                [27, 35], [28, 34], [29, 33], [30, 32], [40, 49], [41, 48], [42, 47], 
-                [43, 46], [44, 45], [59, 68], [60, 67], [61, 66], [62, 65], [63, 70], 
-                [64, 69], [54, 58], [55, 57], [71, 77], [72, 76], [73, 75], [84, 86], 
-                [90, 88], [83, 87], [82, 78], [81, 79], [91, 112], [92, 113], [93, 114], 
-                [94, 115], [95, 116], [96, 117], [97, 118], [98, 119], [99, 120], 
-                [100, 121], [101, 122], [102, 123], [103, 124], [104, 125], [105, 126], 
-                [106, 127], [107, 128], [108, 129], [109, 130], [110, 131], [111, 132]]
+                [20, 21], [22, 23], [24, 25], [26, 47], [27, 48], [28, 49], [29, 50], [30, 51], 
+                [31, 52], [32, 53], [33, 54], [34, 55], [35, 56], [36, 57], [37, 58], [38, 59], 
+                [39, 60], [40, 61], [41, 62], [42, 63], [43, 64], [44, 65], [45, 66], [46, 67]]

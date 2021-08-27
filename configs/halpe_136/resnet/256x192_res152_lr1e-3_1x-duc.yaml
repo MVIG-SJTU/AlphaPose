@@ -1,29 +1,29 @@
 DATASET:
   TRAIN:
     TYPE: 'Halpe_136'
-    ROOT: './data/hico_20160224_det/'
-    IMG_PREFIX: 'images'
-    ANN: 'halpe/halpe_train_v1.json'
+    ROOT: './data/halpe/'
+    IMG_PREFIX: 'images/train2015'
+    ANN: 'annotations/halpe_train_v1.json'
     AUG:
       FLIP: true
-      ROT_FACTOR: 45
-      SCALE_FACTOR: 0.35
+      ROT_FACTOR: 40
+      SCALE_FACTOR: 0.3
       NUM_JOINTS_HALF_BODY: 8
-      PROB_HALF_BODY: 0.3
+      PROB_HALF_BODY: -1
   VAL:
     TYPE: 'Halpe_136'
-    ROOT: './data/coco/'
-    IMG_PREFIX: 'val2017'
-    ANN: 'halpe/halpe_val_v1.json'
+    ROOT: './data/halpe/'
+    IMG_PREFIX: 'images/val2017'
+    ANN: 'annotations/halpe_val_v1.json'
   TEST:
     TYPE: 'Halpe_136_det'
-    ROOT: './data/coco/'
-    IMG_PREFIX: 'val2017'
+    ROOT: './data/halpe/'
+    IMG_PREFIX: 'images/val2017'
     DET_FILE: './exp/json/test_det_yolo.json'
-    ANN: 'halpe/halpe_val_v1.json'
+    ANN: 'annotations/halpe_val_v1.json'
 DATA_PRESET:
   TYPE: 'simple'
-  LOSS_TYPE: 'Combined'
+  LOSS_TYPE: 'L1JointRegression'
   SIGMA: 2
   NUM_JOINTS: 136
   IMAGE_SIZE:
@@ -34,33 +34,26 @@ DATA_PRESET:
   - 48
 MODEL:
   TYPE: 'FastPose'
+  BACKBONE: 'se-resnet'
   PRETRAINED: ''
   TRY_LOAD: ''
   NUM_DECONV_FILTERS:
   - 256
   - 256
   - 256
+  NUM_LAYERS: 152
   CONV_DIM: 256
-  NUM_LAYERS: 50
-  DCN:
-    MODULATED: false
-    DEFORM_GROUP: 1
-    FALLBACK_ON_STRIDE: false
-  STAGE_WITH_DCN:
-  - false
-  - true
-  - true
-  - true
+  FINAL_CONV_KERNEL: 1
+  STAGE1:
+    NUM_CONV: 4
+  STAGE2:
+    NUM_CONV: 2
+  STAGE3:
+    NUM_CONV: 1
 LOSS:
-  TYPE: 'Combined'
+  TYPE: 'L1JointRegression'
   NORM_TYPE: 'sigmoid'
   OUTPUT_3D: False
-  LOSS_1:
-    TYPE: 'MSELoss'
-  LOSS_2:
-    TYPE: 'L1JointRegression'
-    NORM_TYPE: 'sigmoid'
-    OUTPUT_3D: False
 DETECTOR:
   NAME: 'yolo'
   CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
@@ -69,16 +62,16 @@ DETECTOR:
   CONFIDENCE: 0.05
 TRAIN:
   WORLD_SIZE: 4
-  BATCH_SIZE: 48
+  BATCH_SIZE: 32
   BEGIN_EPOCH: 0
-  END_EPOCH: 320
+  END_EPOCH: 270
   OPTIMIZER: 'adam'
   LR: 0.001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 190
-  - 220
-  DPG_MILESTONE: 230
+  - 170
+  - 200
+  DPG_MILESTONE: 210
   DPG_STEP:
-  - 260
-  - 280
+  - 230
+  - 250

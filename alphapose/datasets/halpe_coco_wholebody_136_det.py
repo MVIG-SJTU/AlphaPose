@@ -3,7 +3,7 @@
 # Written by Haoyi Zhu
 # -----------------------------------------------------
 
-"""Coco WholeBody Human Detection Box dataset."""
+"""Halpe Full-Body plus coco wholebody (136 points) Human Detection Box dataset."""
 import json
 import os
 
@@ -18,11 +18,11 @@ from alphapose.models.builder import DATASET
 
 
 @DATASET.register_module
-class coco_wholebody_det(data.Dataset):
-    """ Coco WholeBody human detection box dataset.
+class Halpe_coco_wholebody_136_det(data.Dataset):
+    """ Halpe Full-Body plus coco wholebody (136 points) human detection box dataset.
 
     """
-    EVAL_JOINTS = list(range(133))
+    EVAL_JOINTS = list(range(136))
 
     def __init__(self,
                  det_file=None,
@@ -103,12 +103,11 @@ class coco_wholebody_det(data.Dataset):
     def joint_pairs(self):
         """Joint pairs which defines the pairs of joint to be swapped
         when the image is flipped horizontally."""
-        return [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], 
-                [17, 20], [18, 21], [19, 22], [23, 39], [24, 38], [25, 37], [26, 36], 
-                [27, 35], [28, 34], [29, 33], [30, 32], [40, 49], [41, 48], [42, 47], 
-                [43, 46], [44, 45], [59, 68], [60, 67], [61, 66], [62, 65], [63, 70], 
-                [64, 69], [54, 58], [55, 57], [71, 77], [72, 76], [73, 75], [84, 86], 
-                [90, 88], [83, 87], [82, 78], [81, 79], [91, 112], [92, 113], [93, 114], 
-                [94, 115], [95, 116], [96, 117], [97, 118], [98, 119], [99, 120], 
-                [100, 121], [101, 122], [102, 123], [103, 124], [104, 125], [105, 126], 
-                [106, 127], [107, 128], [108, 129], [109, 130], [110, 131], [111, 132]]
+        return[[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], 
+        [20, 21], [22, 23], [24, 25], [26, 42], [27, 41], [28, 40], [29, 39], [30, 38], 
+        [31, 37], [32, 36], [33, 35], [43, 52], [44, 51], [45, 50],[46, 49], [47, 48], 
+        [62, 71], [63, 70], [64, 69], [65, 68], [66, 73], [67, 72], [57, 61], [58, 60],
+        [74, 80], [75, 79], [76, 78], [87, 89], [93, 91], [86, 90], [85, 81], [84, 82],
+        [94, 115], [95, 116], [96, 117], [97, 118], [98, 119], [99, 120], [100, 121],
+        [101, 122], [102, 123], [103, 124], [104, 125], [105, 126], [106, 127], [107, 128],
+        [108, 129], [109, 130], [110, 131], [111, 132], [112, 133], [113, 134], [114, 135]]

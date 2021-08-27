@@ -1,6 +1,6 @@
 DATASET:
   TRAIN:
-    TYPE: 'Halpe_136'
+    TYPE: 'Halpe_26'
     ROOT: './data/halpe/'
     IMG_PREFIX: 'images/train2015'
     ANN: 'annotations/halpe_train_v1.json'
@@ -11,12 +11,12 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 8
       PROB_HALF_BODY: 0.3
   VAL:
-    TYPE: 'Halpe_136'
+    TYPE: 'Halpe_26'
     ROOT: './data/halpe/'
     IMG_PREFIX: 'images/val2017'
     ANN: 'annotations/halpe_val_v1.json'
   TEST:
-    TYPE: 'Halpe_136_det'
+    TYPE: 'Halpe_26_det'
     ROOT: './data/halpe/'
     IMG_PREFIX: 'images/val2017'
     DET_FILE: './exp/json/test_det_yolo.json'
@@ -25,7 +25,7 @@ DATA_PRESET:
   TYPE: 'simple'
   LOSS_TYPE: 'L1JointRegression'
   SIGMA: 2
-  NUM_JOINTS: 136
+  NUM_JOINTS: 26
   IMAGE_SIZE:
   - 256
   - 192

@@ -25,17 +25,28 @@ parser.add_argument('--checkpoint',
                     type=str)
 parser.add_argument('--gpus',
                     help='gpus',
+                    default='0',
                     type=str)
 parser.add_argument('--batch',
                     help='validation batch size',
+                    default=32,
                     type=int)
 parser.add_argument('--flip-test',
-                    default=False,
+                    default=True,
                     dest='flip_test',
                     help='flip test',
-                    action='store_true')
+                    type=bool)
 parser.add_argument('--detector', dest='detector',
                     help='detector name', default="yolo")
+parser.add_argument('--oks-nms',
+                    default=False,
+                    dest='oks_nms',
+                    help='use oks nms',
+                    action='store_true')
+parser.add_argument('--silence',
+                    default=False,
+                    help='whether to silence output',
+                    action='store_true')
 
 opt = parser.parse_args()
 cfg = update_config(opt.cfg)
@@ -78,18 +89,26 @@ def validate(m, heatmap_to_coord, batch_size=20):
         assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
+        if output.size()[1] == 68:
+            face_hand_num = 42
+        else:
+            face_hand_num = 110
+
         for i in range(output.shape[0]):
             bbox = crop_bboxes[i].tolist()
             if combined_loss:
                 pose_coords_body_foot, pose_scores_body_foot = heatmap_to_coord[0](
-                    pred[i][det_dataset.EVAL_JOINTS[:-110]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][det_dataset.EVAL_JOINTS[:-face_hand_num]], bbox, hm_shape=hm_size, norm_type=norm_type, 
+                    hms_flip=pred_flip[i][det_dataset.EVAL_JOINTS[:-face_hand_num]] if pred_flip is not None else None)
                 pose_coords_face_hand, pose_scores_face_hand = heatmap_to_coord[1](
-                    pred[i][det_dataset.EVAL_JOINTS[-110:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][det_dataset.EVAL_JOINTS[-face_hand_num:]], bbox, hm_shape=hm_size, norm_type=norm_type, 
+                    hms_flip=pred_flip[i][det_dataset.EVAL_JOINTS[-face_hand_num:]] if pred_flip is not None else None)
                 pose_coords = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
                 pose_scores = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
             else:
                 pose_coords, pose_scores = heatmap_to_coord(
-                    pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][det_dataset.EVAL_JOINTS], bbox, hm_shape=hm_size, norm_type=norm_type, 
+                    hms_flip=pred_flip[i][det_dataset.EVAL_JOINTS] if pred_flip is not None else None)
 
             keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
@@ -98,19 +117,20 @@ def validate(m, heatmap_to_coord, batch_size=20):
             data['bbox'] = bboxes[i, 0].tolist()
             data['image_id'] = int(img_ids[i])
             data['area'] = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
-            # data['score'] = float(scores[i] + np.mean(pose_scores) + np.max(pose_scores))
-            data['score'] = float(scores[i])
+            data['score'] = float(scores[i] + np.mean(pose_scores) + np.max(pose_scores))
+            # data['score'] = float(scores[i])
             data['category_id'] = 1
             data['keypoints'] = keypoints
 
             kpt_json.append(data)
 
-    kpt_json = oks_pose_nms(kpt_json)
+    if opt.oks_nms:
+        kpt_json = oks_pose_nms(kpt_json)
 
     with open('./exp/json/validate_rcnn_kpt.json', 'w') as fid:
         json.dump(kpt_json, fid)
-    res = evaluate_mAP('./exp/json/validate_rcnn_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.VAL.ROOT, cfg.DATASET.VAL.ANN))
-    return res['AP']
+    res = evaluate_mAP('./exp/json/validate_rcnn_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.TEST.ROOT, cfg.DATASET.TEST.ANN), silence=opt.silence)
+    return res
 
 
 def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
@@ -141,23 +161,32 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
             pred_flip = output_flip[:, eval_joints, :, :]
         else:
             output_flip = None
+            pred_flip = None
 
         pred = output
         assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
+        if output.size()[1] == 68:
+            face_hand_num = 42
+        else:
+            face_hand_num = 110
+
         for i in range(output.shape[0]):
             bbox = bboxes[i].tolist()
             if combined_loss:
                 pose_coords_body_foot, pose_scores_body_foot = heatmap_to_coord[0](
-                    pred[i][gt_val_dataset.EVAL_JOINTS[:-110]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][gt_val_dataset.EVAL_JOINTS[:-face_hand_num]], bbox, hm_shape=hm_size, norm_type=norm_type, 
+                    hms_flip=pred_flip[i][gt_val_dataset.EVAL_JOINTS[:-face_hand_num]] if pred_flip is not None else None)
                 pose_coords_face_hand, pose_scores_face_hand = heatmap_to_coord[1](
-                    pred[i][gt_val_dataset.EVAL_JOINTS[-110:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][gt_val_dataset.EVAL_JOINTS[-face_hand_num:]], bbox, hm_shape=hm_size, norm_type=norm_type, 
+                    hms_flip=pred_flip[i][gt_val_dataset.EVAL_JOINTS[-face_hand_num:]] if pred_flip is not None else None)
                 pose_coords = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
                 pose_scores = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
             else:
                 pose_coords, pose_scores = heatmap_to_coord(
-                    pred[i], bbox, hms_flip=pred_flip[i], hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][gt_val_dataset.EVAL_JOINTS], bbox, hm_shape=hm_size, norm_type=norm_type, 
+                    hms_flip=pred_flip[i][gt_val_dataset.EVAL_JOINTS] if pred_flip is not None else None)
 
             keypoints = np.concatenate((pose_coords, pose_scores), axis=1)
             keypoints = keypoints.reshape(-1).tolist()
@@ -173,8 +202,8 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
 
     with open('./exp/json/validate_gt_kpt.json', 'w') as fid:
         json.dump(kpt_json, fid)
-    res = evaluate_mAP('./exp/json/validate_gt_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.VAL.ROOT, cfg.DATASET.VAL.ANN))
-    return res['AP']
+    res = evaluate_mAP('./exp/json/validate_gt_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.VAL.ROOT, cfg.DATASET.VAL.ANN), silence=opt.silence)
+    return res
 
 
 if __name__ == "__main__":
@@ -187,6 +216,7 @@ if __name__ == "__main__":
     heatmap_to_coord = get_func_heatmap_to_coord(cfg)
 
     with torch.no_grad():
-        gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
+        # gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
+        gt_AP = 0.0
         detbox_AP = validate(m, heatmap_to_coord, opt.batch)
     print('##### gt box: {} mAP | det box: {} mAP #####'.format(gt_AP, detbox_AP))

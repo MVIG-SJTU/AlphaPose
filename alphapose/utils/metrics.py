@@ -1,6 +1,6 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com), Haoyi Zhu
+# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
 import os
@@ -100,13 +100,10 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/pe
     cocoEval.accumulate()
     cocoEval.summarize()
 
-    if silence:
-        sys.stdout = oldstdout  # enable output
-    
     if isinstance(cocoEval.stats[0], dict):
         stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
                        'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
-        parts = ['body', 'face', 'hand', 'fullbody']
+        parts = ['body', 'foot', 'face', 'hand', 'fullbody']
 
         info = {}
         for i, part in enumerate(parts):

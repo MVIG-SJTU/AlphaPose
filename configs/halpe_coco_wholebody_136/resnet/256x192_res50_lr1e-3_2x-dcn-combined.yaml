@@ -1,0 +1,90 @@
+DATASET:
+  TRAIN:
+    TYPE: 'Halpe_coco_wholebody_136'
+    ROOT: 
+      - './data/halpe/'
+      - './data/coco/'
+    IMG_PREFIX: 
+      - 'images/train2015'
+      - 'train2017'
+    ANN: 
+      - 'annotations/halpe_train_v1.json'
+      - 'annotations/coco_wholebody_train_v1.0.json'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.35
+      NUM_JOINTS_HALF_BODY: 8
+      PROB_HALF_BODY: 0.3
+  VAL:
+    TYPE: 'Halpe_136'
+    ROOT: './data/halpe/'
+    IMG_PREFIX: 'images/val2017'
+    ANN: 'annotations/halpe_val_v1.json'
+  TEST:
+    TYPE: 'Halpe_136_det'
+    ROOT: './data/halpe/'
+    IMG_PREFIX: 'images/val2017'
+    DET_FILE: './exp/json/test_det_yolo.json'
+    ANN: 'annotations/halpe_val_v1.json'
+DATA_PRESET:
+  TYPE: 'simple'
+  LOSS_TYPE: 'Combined'
+  SIGMA: 2
+  NUM_JOINTS: 136
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+MODEL:
+  TYPE: 'FastPose'
+  PRETRAINED: ''
+  TRY_LOAD: ''
+  NUM_DECONV_FILTERS:
+  - 256
+  - 256
+  - 256
+  NUM_LAYERS: 50
+  CONV_DIM: 256
+  DCN:
+    MODULATED: false
+    DEFORM_GROUP: 1
+    FALLBACK_ON_STRIDE: false
+  STAGE_WITH_DCN:
+  - false
+  - true
+  - true
+  - true
+LOSS:
+  TYPE: 'Combined'
+  NORM_TYPE: 'sigmoid'
+  OUTPUT_3D: False
+  LOSS_1:
+    TYPE: 'MSELoss'
+  LOSS_2:
+    TYPE: 'L1JointRegression'
+    NORM_TYPE: 'sigmoid'
+    OUTPUT_3D: False
+DETECTOR:
+  NAME: 'yolo'
+  CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
+  WEIGHTS: 'detector/yolo/data/yolov3-spp.weights'
+  NMS_THRES: 0.6
+  CONFIDENCE: 0.05
+TRAIN:
+  WORLD_SIZE: 4
+  BATCH_SIZE: 48
+  BEGIN_EPOCH: 0
+  END_EPOCH: 270
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 170
+  - 200
+  DPG_MILESTONE: 210
+  DPG_STEP:
+  - 230
+  - 250

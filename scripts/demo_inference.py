@@ -17,6 +17,7 @@ from trackers import track
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
+from alphapose.utils.file_detector import FileDetectionLoader
 from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader

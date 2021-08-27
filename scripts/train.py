@@ -35,6 +35,8 @@ def train(opt, train_loader, m, criterion, optimizer, writer):
     train_loader = tqdm(train_loader, dynamic_ncols=True)
 
     for i, (inps, labels, label_masks, _, bboxes) in enumerate(train_loader):
+        if i > 3:
+            break
         if isinstance(inps, list):
             inps = [inp.cuda().requires_grad_() for inp in inps]
         else:
@@ -52,8 +54,13 @@ def train(opt, train_loader, m, criterion, optimizer, writer):
             loss = 0.5 * criterion(output.mul(label_masks), labels.mul(label_masks))
             acc = calc_accuracy(output.mul(label_masks), labels.mul(label_masks))
         elif cfg.LOSS.get('TYPE') == 'Combined':
-            output_body_foot = output[:, :-110, :, :]
-            output_face_hand = output[:, -110:, :, :]
+            if output.size()[1] == 68:
+                face_hand_num = 42
+            else:
+                face_hand_num = 110
+
+            output_body_foot = output[:, :-face_hand_num, :, :]
+            output_face_hand = output[:, -face_hand_num:, :, :]
             num_body_foot = output_body_foot.shape[1]
             num_face_hand = output_face_hand.shape[1]
 
@@ -135,13 +142,18 @@ def validate(m, opt, heatmap_to_coord, batch_size=20):
         assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
+        if output.size()[1] == 68:
+            face_hand_num = 42
+        else:
+            face_hand_num = 110
+
         for i in range(output.shape[0]):
             bbox = crop_bboxes[i].tolist()
             if combined_loss:
                 pose_coords_body_foot, pose_scores_body_foot = heatmap_to_coord[0](
-                    pred[i][det_dataset.EVAL_JOINTS[:-110]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][det_dataset.EVAL_JOINTS[:-face_hand_num]], bbox, hm_shape=hm_size, norm_type=norm_type)
                 pose_coords_face_hand, pose_scores_face_hand = heatmap_to_coord[1](
-                    pred[i][det_dataset.EVAL_JOINTS[-110:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][det_dataset.EVAL_JOINTS[-face_hand_num:]], bbox, hm_shape=hm_size, norm_type=norm_type)
                 pose_coords = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
                 pose_scores = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
             else:
@@ -190,13 +202,18 @@ def validate_gt(m, opt, cfg, heatmap_to_coord, batch_size=20):
         assert pred.dim() == 4
         pred = pred[:, eval_joints, :, :]
 
+        if output.size()[1] == 68:
+            face_hand_num = 42
+        else:
+            face_hand_num = 110
+
         for i in range(output.shape[0]):
             bbox = bboxes[i].tolist()
             if combined_loss:
                 pose_coords_body_foot, pose_scores_body_foot = heatmap_to_coord[0](
-                    pred[i][gt_val_dataset.EVAL_JOINTS[:-110]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][gt_val_dataset.EVAL_JOINTS[:-face_hand_num]], bbox, hm_shape=hm_size, norm_type=norm_type)
                 pose_coords_face_hand, pose_scores_face_hand = heatmap_to_coord[1](
-                    pred[i][gt_val_dataset.EVAL_JOINTS[-110:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    pred[i][gt_val_dataset.EVAL_JOINTS[-face_hand_num:]], bbox, hm_shape=hm_size, norm_type=norm_type)
                 pose_coords = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
                 pose_scores = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
             else:

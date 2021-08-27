@@ -1,9 +1,15 @@
 DATASET:
   TRAIN:
-    TYPE: 'Halpe_136'
-    ROOT: './data/halpe/'
-    IMG_PREFIX: 'images/train2015'
-    ANN: 'annotations/halpe_train_v1.json'
+    TYPE: 'Halpe_coco_wholebody_136'
+    ROOT: 
+      - './data/halpe/'
+      - './data/coco/'
+    IMG_PREFIX: 
+      - 'images/train2015'
+      - 'train2017'
+    ANN: 
+      - 'annotations/halpe_train_v1.json'
+      - 'annotations/coco_wholebody_train_v1.0.json'
     AUG:
       FLIP: true
       ROT_FACTOR: 45
@@ -41,7 +47,6 @@ MODEL:
   - 256
   - 256
   NUM_LAYERS: 50
-  CONV_DIM: 256
 LOSS:
   TYPE: 'L1JointRegression'
   NORM_TYPE: 'sigmoid'
