@@ -47,6 +47,20 @@ class DataWriter():
             from trackers.PoseFlow.poseflow_infer import PoseFlowWrapper
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
 
+        if self.opt.save_img or self.save_video or self.opt.vis:
+            loss_type = self.cfg.DATA_PRESET.LOSS_TYPE
+            num_joints = self.cfg.DATA_PRESET.NUM_JOINTS
+            if loss_type == 'MSELoss':
+                self.vis_thres = [0.4] * num_joints
+            elif 'JointRegression' in loss_type:
+                self.vis_thres = [0.05] * num_joints
+            elif loss_type == 'Combined':
+                if num_joints == 68:
+                    hand_face_num = 42
+                else:
+                    hand_face_num = 110
+                self.vis_thres = [0.4] * (num_joints - hand_face_num) + [0.05] * hand_face_num
+
     def start_worker(self, target):
         if self.opt.sp:
             p = Thread(target=target, args=())
@@ -160,7 +174,7 @@ class DataWriter():
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame
-                    img = vis_frame(orig_img, result, self.opt)
+                    img = vis_frame(orig_img, result, self.opt, self.vis_thres)
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):

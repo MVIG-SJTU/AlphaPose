@@ -32,7 +32,7 @@ def get_color_fast(idx):
     return color
 
 
-def vis_frame_fast(frame, im_res, opt, format='coco'):
+def vis_frame_fast(frame, im_res, opt, vis_thres, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
@@ -219,9 +219,8 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
             if opt.tracking:
                 cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
         # Draw keypoints
-        vis_thres = 0.05 if kp_num >= 21 else 0.4
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= vis_thres:
+            if kp_scores[n] <= vis_thres[n]:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
             part_line[n] = (cor_x, cor_y)
@@ -248,7 +247,7 @@ def vis_frame_fast(frame, im_res, opt, format='coco'):
     return img
 
 
-def vis_frame(frame, im_res, opt, format='coco'):
+def vis_frame(frame, im_res, opt, vis_thres, format='coco'):
     '''
     frame: frame image
     im_res: im_res of predictions
@@ -439,9 +438,8 @@ def vis_frame(frame, im_res, opt, format='coco'):
                 cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
 
         # Draw keypoints
-        vis_thres = 0.05 if kp_num >= 21 else 0.4
         for n in range(kp_scores.shape[0]):
-            if kp_scores[n] <= vis_thres:
+            if kp_scores[n] <= vis_thres[n]:
                 continue
             cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
             part_line[n] = (int(cor_x), int(cor_y))
