@@ -53,7 +53,7 @@ python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr
 
 #### Notes
 - All of above models are trained only on Halpe Full-body dataset.
-- The APs are tested under Halpe's criterion, with flip test on and without NMS.
+- The APs are tested under Halpe's criterion, with flip test on.
 - Combined loss means we use heatmap loss (mse loss) on body and foot keypoints and use symmetric integral loss (l1 joint regression loss) on face and hand keypoints.
 - There are two FastPose-DCN models with combined loss. The second one uses ten times of weight of hand keypoints, so it is more accurate on hand keypoints but less accurate on the other keypoints.
 - The speed is tested on COCO val2017 on a single NVIDIA GeForce RTX 3090 gpu, with `batch_size=64` in each iteration and offline yolov3 human detection results.
@@ -70,7 +70,7 @@ python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr
 
 #### Notes
 - All of above models are trained only on COCO WholeBody dataset.
-- The APs are tested under COCO WholeBody's criterion, with flip test on and without NMS.
+- The APs are tested under COCO WholeBody's criterion, with flip test on.
 - The speed is tested on COCO val2017 on a single NVIDIA GeForce RTX 3090 gpu, with `batch_size=64` in each iteration and offline yolov3 human detection results.
 
 ## Multi Domain Models **(Strongly Recommended)**
@@ -93,6 +93,6 @@ python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr
 #### Notes
 - These models are strongly recommended because they are more accurate and flexible.
 - These models are trained with multi-domain knowledge distillation (MDKD, see our [paper]() for more details).
-- The APs are tested under Halpe's criterion, with flip test on and without NMS.
+- The APs are tested under Halpe's criterion, with flip test on.
 - If you want to use the single hand model, you should give the rough bounding box of **a single hand** instead of that of a whole person.
 - The speed is tested on COCO val2017 on a single NVIDIA GeForce RTX 3090 gpu, with `batch_size=64` in each iteration and offline yolov3 human detection results.
