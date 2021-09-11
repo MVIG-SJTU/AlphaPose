@@ -284,7 +284,7 @@ def pose_nms_body(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaTh
 
         # Delete humans who have more than matchThreds keypoints overlap and high similarity
         delete_ids = torch.from_numpy(np.arange(human_scores[tensor_mask].shape[0]))[((simi > gamma) | (num_match_keypoints >= matchThreds))]
-        delete_ids = torch.from_numpy(np.array([]))
+        
         if delete_ids.shape[0] == 0:
             delete_ids = pick_id
 
