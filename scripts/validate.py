@@ -5,6 +5,7 @@ import os
 import numpy as np
 import torch
 from tqdm import tqdm
+import sys
 
 from alphapose.models import builder
 from alphapose.utils.config import update_config
@@ -32,20 +33,16 @@ parser.add_argument('--batch',
                     default=32,
                     type=int)
 parser.add_argument('--flip-test',
-                    default=True,
+                    default=False,
                     dest='flip_test',
                     help='flip test',
-                    type=bool)
+                    action='store_true')
 parser.add_argument('--detector', dest='detector',
                     help='detector name', default="yolo")
 parser.add_argument('--oks-nms',
                     default=False,
                     dest='oks_nms',
                     help='use oks nms',
-                    action='store_true')
-parser.add_argument('--silence',
-                    default=False,
-                    help='whether to silence output',
                     action='store_true')
 
 opt = parser.parse_args()
@@ -119,7 +116,7 @@ def validate(m, heatmap_to_coord, batch_size=20):
             data['bbox'] = bboxes[i, 0].tolist()
             data['image_id'] = int(img_ids[i])
             data['area'] = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
-            data['score'] = float(scores[i] + np.mean(pose_scores) + np.max(pose_scores))
+            data['score'] = float(scores[i] + np.mean(pose_scores) + 1.25 * np.max(pose_scores))
             # data['score'] = float(scores[i])
             data['category_id'] = 1
             data['keypoints'] = keypoints
@@ -129,9 +126,11 @@ def validate(m, heatmap_to_coord, batch_size=20):
     if opt.oks_nms:
         kpt_json = oks_pose_nms(kpt_json)
 
+    sysout = sys.stdout
     with open('./exp/json/validate_rcnn_kpt.json', 'w') as fid:
         json.dump(kpt_json, fid)
-    res = evaluate_mAP('./exp/json/validate_rcnn_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.TEST.ROOT, cfg.DATASET.TEST.ANN), silence=opt.silence, halpe=halpe)
+    res = evaluate_mAP('./exp/json/validate_rcnn_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.TEST.ROOT, cfg.DATASET.TEST.ANN), halpe=halpe)
+    sys.stdout = sysout
     return res
 
 
@@ -198,15 +197,17 @@ def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
             data = dict()
             data['bbox'] = bboxes[i].tolist()
             data['image_id'] = int(img_ids[i])
-            data['score'] = float(np.mean(pose_scores) + np.max(pose_scores))
+            data['score'] = float(np.mean(pose_scores) + 1.25 * np.max(pose_scores))
             data['category_id'] = 1
             data['keypoints'] = keypoints
 
             kpt_json.append(data)
 
+    sysout = sys.stdout
     with open('./exp/json/validate_gt_kpt.json', 'w') as fid:
         json.dump(kpt_json, fid)
-    res = evaluate_mAP('./exp/json/validate_gt_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.VAL.ROOT, cfg.DATASET.VAL.ANN), silence=opt.silence, halpe=halpe)
+    res = evaluate_mAP('./exp/json/validate_gt_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.VAL.ROOT, cfg.DATASET.VAL.ANN), halpe=halpe)
+    sys.stdout = sysout
     return res
 
 

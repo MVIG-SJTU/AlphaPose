@@ -1,6 +1,7 @@
 """Script for multi-gpu training."""
 import json
 import os
+import sys
 
 import numpy as np
 import torch
@@ -166,15 +167,17 @@ def validate(m, opt, heatmap_to_coord, batch_size=20):
             data = dict()
             data['bbox'] = bboxes[i, 0].tolist()
             data['image_id'] = int(img_ids[i])
-            data['score'] = float(scores[i] + np.mean(pose_scores) + np.max(pose_scores))
+            data['score'] = float(scores[i] + np.mean(pose_scores) + 1.25 * np.max(pose_scores))
             data['category_id'] = 1
             data['keypoints'] = keypoints
 
             kpt_json.append(data)
 
+    sysout = sys.stdout
     with open(os.path.join(opt.work_dir, 'test_kpt.json'), 'w') as fid:
         json.dump(kpt_json, fid)
     res = evaluate_mAP(os.path.join(opt.work_dir, 'test_kpt.json'), ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.VAL.ROOT, cfg.DATASET.VAL.ANN), halpe=halpe)
+    sys.stdout = sysout
     return res
 
 
@@ -228,15 +231,17 @@ def validate_gt(m, opt, cfg, heatmap_to_coord, batch_size=20):
             data = dict()
             data['bbox'] = bboxes[i].tolist()
             data['image_id'] = int(img_ids[i])
-            data['score'] = float(np.mean(pose_scores) + np.max(pose_scores))
+            data['score'] = float(np.mean(pose_scores) + 1.25 * np.max(pose_scores))
             data['category_id'] = 1
             data['keypoints'] = keypoints
 
             kpt_json.append(data)
 
+    sysout = sys.stdout
     with open(os.path.join(opt.work_dir, 'test_gt_kpt.json'), 'w') as fid:
         json.dump(kpt_json, fid)
     res = evaluate_mAP(os.path.join(opt.work_dir, 'test_gt_kpt.json'), ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.VAL.ROOT, cfg.DATASET.VAL.ANN), halpe=halpe)
+    sys.stdout = sysout
     return res
 
 
