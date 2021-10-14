@@ -210,7 +210,8 @@ def vis_frame(frame, im_res, format='coco'):
                 length = ((Y[0] - Y[1]) ** 2 + (X[0] - X[1]) ** 2) ** 0.5
                 angle = math.degrees(math.atan2(Y[0] - Y[1], X[0] - X[1]))
                 stickwidth = (kp_scores[start_p] + kp_scores[end_p]) + 1
-                polygon = cv2.ellipse2Poly((int(mX),int(mY)), (int(length/2), stickwidth), int(angle), 0, 360, 1)
+                polygon = cv2.ellipse2Poly((int(mX),int(mY)), (int(length/2), int(stickwidth)), int(angle), 0, 360, 1) #stickwidth
+                #ellipse2Poly(Point center, Size axes, int angle, int startAngle, int endAngle, int delta, vector<Point>& pts)
                 cv2.fillConvexPoly(bg, polygon, line_color[i])
                 #cv2.line(bg, start_xy, end_xy, line_color[i], (2 * (kp_scores[start_p] + kp_scores[end_p])) + 1)
                 transparency = float(max(0, min(1, 0.5*(kp_scores[start_p] + kp_scores[end_p]))))
