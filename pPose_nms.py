@@ -302,13 +302,14 @@ def write_json(all_results, outputpath, for_eval=False):
             kp_scores = human['kp_score']
             pro_scores = human['proposal_score']
             for n in range(kp_scores.shape[0]):
-                keypoints.append(float(kp_preds[n, 0]))
-                keypoints.append(float(kp_preds[n, 1]))
-                keypoints.append(float(kp_scores[n]))
+                keypoints.append(round(float(kp_preds[n, 0]),3))
+                keypoints.append(round(float(kp_preds[n, 1]),3))
+                keypoints.append(round(float(kp_scores[n]),6))
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
 
             if form == 'cmu': # the form of CMU-Pose
+                print("CMUPose")
                 if result['image_id'] not in json_results_cmu.keys():
                     json_results_cmu[result['image_id']]={}
                     json_results_cmu[result['image_id']]['version']="AlphaPose v0.2"
@@ -324,6 +325,7 @@ def write_json(all_results, outputpath, for_eval=False):
                     tmp['joints'].append(result['keypoints'][i+2])
                 json_results_cmu[result['image_id']]['bodies'].append(tmp)
             elif form == 'open': # the form of OpenPose
+                print("OpenPose")
                 if result['image_id'] not in json_results_cmu.keys():
                     json_results_cmu[result['image_id']]={}
                     json_results_cmu[result['image_id']]['version']="AlphaPose v0.2"
@@ -342,6 +344,7 @@ def write_json(all_results, outputpath, for_eval=False):
                 json_results.append(result)
 
     if form == 'cmu': # the form of CMU-Pose
+        print("CMUPose")
         with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
             json_file.write(json.dumps(json_results_cmu))
             if not os.path.exists(os.path.join(outputpath,'sep-json')):
@@ -350,6 +353,7 @@ def write_json(all_results, outputpath, for_eval=False):
                 with open(os.path.join(outputpath,'sep-json',name.split('.')[0]+'.json'),'w') as json_file:
                     json_file.write(json.dumps(json_results_cmu[name]))
     elif form == 'open': # the form of OpenPose
+        print("OpenPose")
         with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
             json_file.write(json.dumps(json_results_cmu))
             if not os.path.exists(os.path.join(outputpath,'sep-json')):
