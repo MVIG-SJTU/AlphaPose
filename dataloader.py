@@ -321,9 +321,14 @@ class DetectionLoader:
                 # Human Detection
                 img = img.cuda()
                 prediction = self.det_model(img, CUDA=True)
+                #print(prediction)
+                #print(len(prediction[0]))
+                #print(prediction[0][0])
                 # NMS process
                 dets = dynamic_write_results(prediction, opt.confidence,
                                     opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
+
+                #何も検出していないとき?
                 if isinstance(dets, int) or dets.shape[0] == 0:
                     for k in range(len(orig_img)):
                         if self.Q.full():
@@ -331,13 +336,13 @@ class DetectionLoader:
                         self.Q.put((orig_img[k], im_name[k], None, None, None, None, None))
                     continue
                 dets = dets.cpu()
+                print("dets2:",dets)
                 im_dim_list = torch.index_select(im_dim_list,0, dets[:, 0].long())
                 scaling_factor = torch.min(self.det_inp_dim / im_dim_list, 1)[0].view(-1, 1)
 
                 # coordinate transfer
                 dets[:, [1, 3]] -= (self.det_inp_dim - scaling_factor * im_dim_list[:, 0].view(-1, 1)) / 2
                 dets[:, [2, 4]] -= (self.det_inp_dim - scaling_factor * im_dim_list[:, 1].view(-1, 1)) / 2
-
                 
                 dets[:, 1:5] /= scaling_factor
                 for j in range(dets.shape[0]):
@@ -358,7 +363,7 @@ class DetectionLoader:
                 pt2 = torch.zeros(boxes_k.size(0), 2)
                 if self.Q.full():
                     time.sleep(2)
-                self.Q.put((orig_img[k], im_name[k], boxes_k, scores[dets[:,0]==k], inps, pt1, pt2))
+                self.Q.put((orig_img[k], im_name[k], boxes_k, scores[dets[:,0]==k], inps, pt1, pt2))#検出結果をqueueにput
 
     def read(self):
         # return next frame in the queue
@@ -657,6 +662,7 @@ class DataWriter:
                             self.stream.write(img)
                 else:
                     # location prediction (n, kp, 2) | score prediction (n, kp, 1)
+                    #検出結果をpose_nmsに渡してSPPE
                     if opt.matching:
                         preds = getMultiPeakPrediction(
                             hm_data, pt1.numpy(), pt2.numpy(), opt.inputResH, opt.inputResW, opt.outputResH, opt.outputResW)
@@ -672,7 +678,7 @@ class DataWriter:
                     }
                     self.final_result.append(result)
                     if opt.save_img or opt.save_video or opt.vis:
-                        img = vis_frame(orig_img, result)
+                        img = vis_frame(orig_img, result)#色をつける
                         if opt.vis:
                             cv2.imshow("AlphaPose Demo", img)
                             cv2.waitKey(30)

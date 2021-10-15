@@ -65,7 +65,6 @@ if __name__ == "__main__":
     # Data writer
     save_path = os.path.join(args.outputpath, 'AlphaPose_'+ntpath.basename(videofile).split('.')[0]+'.avi')
     writer = DataWriter(args.save_video, save_path, cv2.VideoWriter_fourcc(*'XVID'), fps, frameSize).start()
-
     im_names_desc =  tqdm(range(data_loader.length()))
     batchSize = args.posebatch
     for i in im_names_desc:

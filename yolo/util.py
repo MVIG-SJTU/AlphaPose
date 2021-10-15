@@ -115,7 +115,8 @@ def dynamic_write_results(prediction, confidence, num_classes, nms=True, nms_con
 
 
 def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
-    conf_mask = (prediction[:, :, 4] > confidence).float().float().unsqueeze(2)
+    conf_mask = (prediction[:, :, 4] > confidence).float().float().unsqueeze(2)#4は物体の存在確率
+    #print('conf_mask:',conf_mask)
     prediction = prediction * conf_mask
 
     try:
@@ -124,8 +125,8 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
         return 0
 
     box_a = prediction.new(prediction.shape)
-    box_a[:,:,0] = (prediction[:,:,0] - prediction[:,:,2]/2)
-    box_a[:,:,1] = (prediction[:,:,1] - prediction[:,:,3]/2)
+    box_a[:,:,0] = (prediction[:,:,0] - prediction[:,:,2]/2)#オフセット座標を修正
+    box_a[:,:,1] = (prediction[:,:,1] - prediction[:,:,3]/2)#0-3は座標
     box_a[:,:,2] = (prediction[:,:,0] + prediction[:,:,2]/2) 
     box_a[:,:,3] = (prediction[:,:,1] + prediction[:,:,3]/2)
     prediction[:,:,:4] = box_a[:,:,:4]
@@ -136,45 +137,63 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
     write = False
     num = 0
     for ind in range(batch_size):
+        print("----------------------------------")
         #select the image from the batch
         image_pred = prediction[ind]
-
+        
         #Get the class having maximum score, and the index of that class
         #Get rid of num_classes softmax scores 
         #Add the class index and the class score of class having maximum score
-        max_conf, max_conf_score = torch.max(image_pred[:,5:5+ num_classes], 1)
+        max_conf, max_conf_score = torch.max(image_pred[:,5:5+ num_classes], 1)#80クラスの中から
+        #print("max_conf:",image_pred[:,5:5+ num_classes])
         max_conf = max_conf.float().unsqueeze(1)
         max_conf_score = max_conf_score.float().unsqueeze(1)
-        seq = (image_pred[:,:5], max_conf, max_conf_score)
+        
+        seq = (image_pred[:,:5], max_conf, max_conf_score)#座標，物体の存在確率，values，indices．長さ７
+
         image_pred = torch.cat(seq, 1)
 
         #Get rid of the zero entries
-        non_zero_ind =  (torch.nonzero(image_pred[:,4]))
+        non_zero_ind =  (torch.nonzero(image_pred[:,4]))#0でないindexを返す
+        print("non_zero_ind:",non_zero_ind.squeeze())
 
-        image_pred_ = image_pred[non_zero_ind.squeeze(),:].view(-1,7)
+        image_pred_ = image_pred[non_zero_ind.squeeze(),:].view(-1,7)#なにかしら存在している
+        print("image_pred_:",image_pred_[:,-3:-1])
 
         #Get the various classes detected in the image
         try:
-            img_classes = unique(image_pred_[:,-1])
+            img_classes = unique(image_pred_[:,-1])#-1:index
+            print("img_classes:",img_classes)
         except:
             continue
 
         #WE will do NMS classwise
-        #print(img_classes)
         for cls in img_classes:
-            if cls != 0:
+            if cls==1:
                 continue
-            #get the detections with one particular class
-            cls_mask = image_pred_*(image_pred_[:,-1] == cls).float().unsqueeze(1)
-            class_mask_ind = torch.nonzero(cls_mask[:,-2]).squeeze()
+            if cls != 0:
+                #class=0じゃないとき，つまりpersonではないときにスルーする
+                continue
+            
 
+            #get the detections with one particular class
+            print("======================================")
+            print("cls:",cls)
+            cls_mask = image_pred_*(image_pred_[:,-1] == cls).float().unsqueeze(1)
+            print('cls_mask:',cls_mask)
+            class_mask_ind = torch.nonzero(cls_mask[:,-2]).squeeze()
+            
             image_pred_class = image_pred_[class_mask_ind].view(-1,7)
+            print("image_pred_class1: ",image_pred_class)
+            
 
             #sort the detections such that the entry with the maximum objectness
             #confidence is at the top
             conf_sort_index = torch.sort(image_pred_class[:,4], descending = True )[1]
             image_pred_class = image_pred_class[conf_sort_index]
-            idx = image_pred_class.size(0)
+            idx = image_pred_class.size(0)#0方向のサイズ
+            print("idx:",idx)
+            print("======================================")
 
             #if nms has to be done
             if nms:
@@ -201,17 +220,24 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
             #batch is identified by extra batch column
 
             batch_ind = image_pred_class.new(image_pred_class.size(0), 1).fill_(ind)
+            print("image_pred_class.size(0):",image_pred_class.size(0))
             seq = batch_ind, image_pred_class
+            print("seq:",seq)
+            print("image_pred_class2: ",image_pred_class)
+            
             if not write:
                 output = torch.cat(seq,1)
+                print("output:",output)
                 write = True
             else:
                 out = torch.cat(seq,1)
+                print("out:",out)
                 output = torch.cat((output,out))
             num += 1
     
     if not num:
         return 0
+    print("----------------------------------")
 
     return output
 

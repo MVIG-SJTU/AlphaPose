@@ -28,7 +28,7 @@ def pose_nms(bboxes, bbox_scores, pose_preds, pose_scores):
     pose_preds:     pose locations list (n, 17, 2)
     pose_scores:    pose scores list    (n, 17, 1)
     '''
-    #global ori_pose_preds, ori_pose_scores, ref_dists
+    global ori_pose_preds, ori_pose_scores, ref_dists #コメントアウトされてた
 
     pose_scores[pose_scores == 0] = 1e-5
 
@@ -302,9 +302,9 @@ def write_json(all_results, outputpath, for_eval=False):
             kp_scores = human['kp_score']
             pro_scores = human['proposal_score']
             for n in range(kp_scores.shape[0]):
-                keypoints.append(round(float(kp_preds[n, 0]),3))
-                keypoints.append(round(float(kp_preds[n, 1]),3))
-                keypoints.append(round(float(kp_scores[n]),6))
+                keypoints.append(round(float(kp_preds[n, 0]),2))
+                keypoints.append(round(float(kp_preds[n, 1]),2))
+                keypoints.append(round(float(kp_scores[n]),2))
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
 
