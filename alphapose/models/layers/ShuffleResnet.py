@@ -6,7 +6,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .dcn import DCN
 from .PixelUnshuffle import PixelUnshuffle
 from .SE_module import SELayer
 
@@ -81,6 +80,7 @@ class Bottleneck(nn.Module):
                 conv_layers.append(nn.Conv2d(planes * 4, planes, kernel_size=3, stride=1,
                                              padding=1, bias=False))
             else:
+                from .dcn import DCN
                 conv_layers.append(DCN(planes * 4, planes, dcn, kernel_size=3, stride=1,
                                        padding=1, bias=False))
             self.conv2 = nn.Sequential(*conv_layers)
@@ -89,6 +89,7 @@ class Bottleneck(nn.Module):
                 self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
                                        padding=1, bias=False)
             else:
+                from .dcn import DCN
                 self.conv2 = DCN(planes, planes, dcn, kernel_size=3, stride=stride,
                                  padding=1, bias=False)
 
