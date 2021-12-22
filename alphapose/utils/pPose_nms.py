@@ -219,14 +219,14 @@ def _rescore(overlap, scores, thr, type='gaussian'):
     return scores
 
 def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0):
-    if pose_preds.size()[1] == 136 or 133:
+    if pose_preds.size()[1] == 136 or pose_preds.size()[1] == 133:
         global delta1, mu, delta2, gamma, scoreThreds, matchThreds, alpha
         delta1 = 0.8
         mu = 1.7
         delta2 = 2.22
         gamma = 22.3
         scoreThreds = 0.02
-        matchThreds = 38
+        matchThreds = 5
         alpha = 0.1
         return pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres)
     else:
@@ -293,7 +293,6 @@ def pose_nms_body(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaTh
         newmask[delete_ids] = False
         mask[mask] = newmask
 
-
     assert len(merge_ids) == len(pick)
     preds_pick = ori_pose_preds[pick]
     scores_pick = ori_pose_scores[pick]
@@ -337,8 +336,6 @@ def pose_nms_body(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaTh
         res_pose_scores.append(merge_score)
         res_pick_ids.append(pick[j])
 
- 
-
     return res_bboxes, res_bbox_scores, res_bbox_ids, res_pose_preds, res_pose_scores, res_pick_ids
 
 def pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0):
@@ -353,6 +350,7 @@ def pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, ar
     #global ori_pose_preds, ori_pose_scores, ref_dists
 
     pose_scores[pose_scores == 0] = 1e-5
+
     kp_nums = pose_preds.size()[1] - 110
     res_bboxes, res_bbox_scores, res_bbox_ids, res_pose_preds, res_pose_scores, res_pick_ids = [],[],[],[],[],[]
     
@@ -401,7 +399,6 @@ def pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, ar
         newmask = mask[mask]
         newmask[delete_ids] = False
         mask[mask] = newmask
-
 
     assert len(merge_ids) == len(pick)
     preds_pick = ori_pose_preds[pick]
