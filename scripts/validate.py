@@ -12,7 +12,6 @@ from alphapose.utils.config import update_config
 from alphapose.utils.metrics import evaluate_mAP
 from alphapose.utils.transforms import (flip, flip_heatmap,
                                         get_func_heatmap_to_coord)
-from alphapose.utils.pPose_nms import oks_pose_nms
 
 
 parser = argparse.ArgumentParser(description='AlphaPose Validate')
@@ -43,6 +42,11 @@ parser.add_argument('--oks-nms',
                     default=False,
                     dest='oks_nms',
                     help='use oks nms',
+                    action='store_true')
+parser.add_argument('--ppose-nms',
+                    default=False,
+                    dest='ppose_nms',
+                    help='use pPose nms, recommended',
                     action='store_true')
 
 opt = parser.parse_args()
@@ -83,6 +87,7 @@ def validate(m, heatmap_to_coord, batch_size=20):
             pred_flip = output_flip[:, eval_joints, :, :]
         else:
             output_flip = None
+            pred_flip = None
 
         pred = output
         assert pred.dim() == 4
@@ -123,12 +128,43 @@ def validate(m, heatmap_to_coord, batch_size=20):
 
             kpt_json.append(data)
 
-    if opt.oks_nms:
-        kpt_json = oks_pose_nms(kpt_json)
+    if opt.ppose_nms:
+        from alphapose.utils.pPose_nms import ppose_nms_validate_preprocess, pose_nms, write_json
+        final_result = []
+        tmp_data = ppose_nms_validate_preprocess(kpt_json)
+        for key in tmp_data:
+            boxes, scores, ids, preds_img, preds_scores = tmp_data[key]
+            boxes, scores, ids, preds_img, preds_scores, pick_ids = \
+                        pose_nms(boxes, scores, ids, preds_img, preds_scores, 0, cfg.LOSS.get('TYPE') == 'MSELoss')
+
+            _result = []
+            for k in range(len(scores)):
+                _result.append(
+                    {
+                        'keypoints':preds_img[k],
+                        'kp_score':preds_scores[k],
+                        'proposal_score': torch.mean(preds_scores[k]) + scores[k] + 1.25 * max(preds_scores[k]),
+                        'idx':ids[k],
+                        'box':[boxes[k][0], boxes[k][1], boxes[k][2]-boxes[k][0],boxes[k][3]-boxes[k][1]]
+                    }
+                ) 
+            im_name = str(key).zfill(12) + '.jpg'
+            result = {
+                'imgname': im_name,
+                'result': _result
+            }
+            final_result.append(result)
+
+        write_json(final_result, './exp/json/', form='coco', for_eval=True, outputfile='validate_rcnn_kpt.json')
+    else:
+        if opt.oks_nms:
+            from alphapose.utils.pPose_nms import oks_pose_nms
+            kpt_json = oks_pose_nms(kpt_json)
+
+        with open('./exp/json/validate_rcnn_kpt.json', 'w') as fid:
+            json.dump(kpt_json, fid)
 
     sysout = sys.stdout
-    with open('./exp/json/validate_rcnn_kpt.json', 'w') as fid:
-        json.dump(kpt_json, fid)
     res = evaluate_mAP('./exp/json/validate_rcnn_kpt.json', ann_type='keypoints', ann_file=os.path.join(cfg.DATASET.TEST.ROOT, cfg.DATASET.TEST.ANN), halpe=halpe)
     sys.stdout = sysout
     return res
@@ -221,6 +257,7 @@ if __name__ == "__main__":
     heatmap_to_coord = get_func_heatmap_to_coord(cfg)
 
     with torch.no_grad():
-        gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
+        # gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
+        gt_AP = 0
         detbox_AP = validate(m, heatmap_to_coord, opt.batch)
     print('##### gt box: {} mAP | det box: {} mAP #####'.format(gt_AP, detbox_AP))

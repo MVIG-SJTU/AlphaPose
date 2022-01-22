@@ -48,7 +48,7 @@ class DataWriter():
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
 
         if self.opt.save_img or self.save_video or self.opt.vis:
-            loss_type = self.cfg.DATA_PRESET.LOSS_TYPE
+            loss_type = self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss')
             num_joints = self.cfg.DATA_PRESET.NUM_JOINTS
             if loss_type == 'MSELoss':
                 self.vis_thres = [0.4] * num_joints
@@ -60,6 +60,8 @@ class DataWriter():
                 else:
                     hand_face_num = 110
                 self.vis_thres = [0.4] * (num_joints - hand_face_num) + [0.05] * hand_face_num
+
+        self.use_heatmap_loss = (self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss') == 'MSELoss')
 
     def start_worker(self, target):
         if self.opt.sp:
@@ -109,7 +111,7 @@ class DataWriter():
             else:
                 # location prediction (n, kp, 2) | score prediction (n, kp, 1)
                 assert hm_data.dim() == 4
-                
+
                 face_hand_num = 110
                 if hm_data.size()[1] == 136:
                     self.eval_joints = [*range(0,136)]
@@ -141,7 +143,7 @@ class DataWriter():
                 preds_scores = torch.cat(pose_scores)
                 if not self.opt.pose_track:
                     boxes, scores, ids, preds_img, preds_scores, pick_ids = \
-                        pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
+                        pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area, use_heatmap_loss=self.use_heatmap_loss)
 
                 _result = []
                 for k in range(len(scores)):
