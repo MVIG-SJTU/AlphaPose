@@ -68,10 +68,10 @@ class Mscoco_det(data.Dataset):
             img_id = int(img_id)
         else:
             img_id = det_res['image_id']
-        img_path = './data/coco/val2017/%012d.jpg' % img_id
+        img_path = os.path.join(self._root, 'val2017/%012d.jpg' % img_id)
 
         # Load image
-        image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) #scipy.misc.imread(img_path, mode='RGB')
+        image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) # scipy.misc.imread(img_path, mode='RGB') is deprecated
 
         imght, imgwidth = image.shape[0], image.shape[1]
         x1, y1, w, h = det_res['bbox']

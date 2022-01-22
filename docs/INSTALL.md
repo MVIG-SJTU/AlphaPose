@@ -121,3 +121,29 @@ Download and extract them under `./data`, and make them look like this:
             |-- 045572740.jpg
             |-- ... 
 ```
+
+#### Halpe-FullBody
+If you want to train the model by yourself, please download data from [Halpe-FullBody](https://github.com/Fang-Haoshu/Halpe-FullBody). Download and extract them under `./data`, and make them look like this:
+```
+|-- json
+|-- exp
+|-- alphapose
+|-- configs
+|-- test
+|-- data
+`-- |-- halpe
+    `-- |-- annotations
+        |   |-- halpe_train_v1.json
+        |   `-- halpe_val_v1.json
+        |-- images
+        `-- |-- train2015
+             |   |-- HICO_train2015_00000001.jpg
+             |   |-- HICO_train2015_00000002.jpg
+             |   |-- HICO_train2015_00000003.jpg
+             |   |-- ... 
+             `-- val2017
+                 |-- 000000000139.jpg
+                 |-- 000000000285.jpg
+                 |-- 000000000632.jpg
+                 |-- ... 
+```

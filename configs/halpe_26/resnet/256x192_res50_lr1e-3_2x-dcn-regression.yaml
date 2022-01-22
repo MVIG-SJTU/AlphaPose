@@ -6,10 +6,10 @@ DATASET:
     ANN: 'annotations/halpe_train_v1.json'
     AUG:
       FLIP: true
-      ROT_FACTOR: 40
-      SCALE_FACTOR: 0.3
-      NUM_JOINTS_HALF_BODY: 11
-      PROB_HALF_BODY: -1
+      ROT_FACTOR: 45
+      SCALE_FACTOR: 0.35
+      NUM_JOINTS_HALF_BODY: 8
+      PROB_HALF_BODY: 0.3
   VAL:
     TYPE: 'Halpe_26'
     ROOT: './data/halpe/'
@@ -23,6 +23,7 @@ DATASET:
     ANN: 'annotations/halpe_val_v1.json'
 DATA_PRESET:
   TYPE: 'simple'
+  LOSS_TYPE: 'L1JointRegression'
   SIGMA: 2
   NUM_JOINTS: 26
   IMAGE_SIZE:
@@ -40,8 +41,20 @@ MODEL:
   - 256
   - 256
   NUM_LAYERS: 50
+  CONV_DIM: 256
+  DCN:
+    MODULATED: false
+    DEFORM_GROUP: 1
+    FALLBACK_ON_STRIDE: false
+  STAGE_WITH_DCN:
+  - false
+  - true
+  - true
+  - true
 LOSS:
-  TYPE: 'MSELoss'
+  TYPE: 'L1JointRegression'
+  NORM_TYPE: 'sigmoid'
+  OUTPUT_3D: False
 DETECTOR:
   NAME: 'yolo'
   CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
@@ -52,14 +65,14 @@ TRAIN:
   WORLD_SIZE: 4
   BATCH_SIZE: 48
   BEGIN_EPOCH: 0
-  END_EPOCH: 200
+  END_EPOCH: 270
   OPTIMIZER: 'adam'
   LR: 0.001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 50
-  - 70
-  DPG_MILESTONE: 90
+  - 170
+  - 200
+  DPG_MILESTONE: 210
   DPG_STEP:
-  - 110
-  - 130
+  - 230
+  - 250

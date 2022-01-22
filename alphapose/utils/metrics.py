@@ -1,6 +1,6 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com), Haoyi Zhu
+# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
 # -----------------------------------------------------
 
 import os
@@ -10,10 +10,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from .transforms import get_max_pred_batch, _integral_tensor
-
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
-
 
 class DataLogger(object):
     """Average data logger."""
@@ -66,7 +62,7 @@ def mask_cross_entropy(pred, target):
         pred, target, reduction='mean')[None]
 
 
-def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/person_keypoints_val2017.json', silence=True):
+def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/person_keypoints_val2017.json', silence=True, halpe=False):
     """Evaluate mAP result for coco dataset.
 
     Parameters
@@ -92,6 +88,13 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/pe
         oldstdout = sys.stdout
         sys.stdout = nullwrite  # disable output
 
+    if halpe:
+        from halpecocotools.coco import COCO
+        from halpecocotools.cocoeval import COCOeval
+    else:
+        from pycocotools.coco import COCO
+        from pycocotools.cocoeval import COCOeval
+
     cocoGt = COCO(ann_file)
     cocoDt = cocoGt.loadRes(res_file)
 
@@ -100,13 +103,10 @@ def evaluate_mAP(res_file, ann_type='bbox', ann_file='./data/coco/annotations/pe
     cocoEval.accumulate()
     cocoEval.summarize()
 
-    if silence:
-        sys.stdout = oldstdout  # enable output
-    
     if isinstance(cocoEval.stats[0], dict):
         stats_names = ['AP', 'Ap .5', 'AP .75', 'AP (M)', 'AP (L)',
                        'AR', 'AR .5', 'AR .75', 'AR (M)', 'AR (L)']
-        parts = ['body', 'face', 'hand', 'fullbody']
+        parts = ['body', 'foot', 'face', 'hand', 'fullbody']
 
         info = {}
         for i, part in enumerate(parts):

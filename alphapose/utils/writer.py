@@ -47,6 +47,22 @@ class DataWriter():
             from trackers.PoseFlow.poseflow_infer import PoseFlowWrapper
             self.pose_flow_wrapper = PoseFlowWrapper(save_path=os.path.join(opt.outputpath, 'poseflow'))
 
+        if self.opt.save_img or self.save_video or self.opt.vis:
+            loss_type = self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss')
+            num_joints = self.cfg.DATA_PRESET.NUM_JOINTS
+            if loss_type == 'MSELoss':
+                self.vis_thres = [0.4] * num_joints
+            elif 'JointRegression' in loss_type:
+                self.vis_thres = [0.05] * num_joints
+            elif loss_type == 'Combined':
+                if num_joints == 68:
+                    hand_face_num = 42
+                else:
+                    hand_face_num = 110
+                self.vis_thres = [0.4] * (num_joints - hand_face_num) + [0.05] * hand_face_num
+
+        self.use_heatmap_loss = (self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss') == 'MSELoss')
+
     def start_worker(self, target):
         if self.opt.sp:
             p = Thread(target=target, args=())
@@ -95,24 +111,39 @@ class DataWriter():
             else:
                 # location prediction (n, kp, 2) | score prediction (n, kp, 1)
                 assert hm_data.dim() == 4
-                #pred = hm_data.cpu().data.numpy()
 
+                face_hand_num = 110
                 if hm_data.size()[1] == 136:
                     self.eval_joints = [*range(0,136)]
                 elif hm_data.size()[1] == 26:
                     self.eval_joints = [*range(0,26)]
+                elif hm_data.size()[1] == 133:
+                    self.eval_joints = [*range(0,133)]
+                elif hm_data.size()[1] == 68:
+                    face_hand_num = 42
+                    self.eval_joints = [*range(0,68)]
+                elif hm_data.size()[1] == 21:
+                    self.eval_joints = [*range(0,21)]
                 pose_coords = []
                 pose_scores = []
                 for i in range(hm_data.shape[0]):
                     bbox = cropped_boxes[i].tolist()
-                    pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox, hm_shape=hm_size, norm_type=norm_type)
+                    if isinstance(self.heatmap_to_coord, list):
+                        pose_coords_body_foot, pose_scores_body_foot = self.heatmap_to_coord[0](
+                            hm_data[i][self.eval_joints[:-face_hand_num]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                        pose_coords_face_hand, pose_scores_face_hand = self.heatmap_to_coord[1](
+                            hm_data[i][self.eval_joints[-face_hand_num:]], bbox, hm_shape=hm_size, norm_type=norm_type)
+                        pose_coord = np.concatenate((pose_coords_body_foot, pose_coords_face_hand), axis=0)
+                        pose_score = np.concatenate((pose_scores_body_foot, pose_scores_face_hand), axis=0)
+                    else:
+                        pose_coord, pose_score = self.heatmap_to_coord(hm_data[i][self.eval_joints], bbox, hm_shape=hm_size, norm_type=norm_type)
                     pose_coords.append(torch.from_numpy(pose_coord).unsqueeze(0))
                     pose_scores.append(torch.from_numpy(pose_score).unsqueeze(0))
                 preds_img = torch.cat(pose_coords)
                 preds_scores = torch.cat(pose_scores)
                 if not self.opt.pose_track:
                     boxes, scores, ids, preds_img, preds_scores, pick_ids = \
-                        pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
+                        pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area, use_heatmap_loss=self.use_heatmap_loss)
 
                 _result = []
                 for k in range(len(scores)):
@@ -145,7 +176,7 @@ class DataWriter():
                         from alphapose.utils.vis import vis_frame_fast as vis_frame
                     else:
                         from alphapose.utils.vis import vis_frame
-                    img = vis_frame(orig_img, result, self.opt)
+                    img = vis_frame(orig_img, result, self.opt, self.vis_thres)
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):

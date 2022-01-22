@@ -163,13 +163,13 @@ def get_install_requires():
         'six', 'terminaltables', 'scipy==1.1.0',
         'opencv-python', 'matplotlib', 'visdom',
         'tqdm', 'tensorboardx', 'easydict',
-        'pyyaml',
+        'pyyaml', 'halpecocotools',
         'torch>=1.1.0', 'torchvision>=0.3.0',
         'munkres', 'timm==0.1.20', 'natsort'
     ]
     # official pycocotools doesn't support Windows, we will install it by third-party git repository later
     if platform.system() != 'Windows':
-        install_requires.append('pycocotools==2.0.0')
+        install_requires.append('pycocotools')
     return install_requires
 
 

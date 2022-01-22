@@ -19,7 +19,13 @@ matchThreds = 5
 alpha = 0.1
 vis_thr = 0.2
 oks_thr = 0.9
-#pool = ThreadPool(4)
+
+face_factor = 1.9
+hand_factor = 0.55
+hand_weight_score = 0.1
+face_weight_score = 1.0
+hand_weight_dist = 1.5
+face_weight_dist = 1.0
 
 
 def oks_pose_nms(data, soft=False):
@@ -152,14 +158,14 @@ def oks_iou(g, d, a_g, a_d, sigmas=None, vis_thr=None):
         list: The oks ious.
     """
     if sigmas is None:
-        if len(g) == 408:   # 136keypoints
+        if len(g) == 408:   # 136 keypoints for Halpe-FullBody dataset
             sigmas = np.array([.26, .25, .25, .35, .35, .79, .79, .72, .72, .62,.62, 1.07, 1.07, .87, .87, .89, .89, .8,.8,.8,.89, .89, .89, .89, .89, .89,
                      .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25,
                      .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25,
                      .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25,
                      .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25,
                      .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25, .25])/10.0
-        elif len(g) == 399:
+        elif len(g) == 399:     # 133 keypoints for COCO WholeBody dataset
             sigmas = np.array([.026, .025, .025, .035, .035, .079, .079, .072, .072, .062, .062, 0.107, 0.107, .087, .087, .089, .089,
                 0.068, 0.066, 0.066, 0.092, 0.094, 0.094,
                 0.042, 0.043, 0.044, 0.043, 0.040, 0.035, 0.031, 0.025, 0.020, 0.023, 0.029, 0.032, 0.037, 0.038, 0.043,
@@ -218,8 +224,22 @@ def _rescore(overlap, scores, thr, type='gaussian'):
 
     return scores
 
+def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0, use_heatmap_loss=True):
+    if pose_preds.size()[1] == 136 or pose_preds.size()[1] == 133:
+        if not use_heatmap_loss:
+            global delta1, mu, delta2, gamma, scoreThreds, matchThreds, alpha
+            delta1 = 1.0
+            mu = 1.65
+            delta2 = 8.0
+            gamma = 3.6
+            scoreThreds = 0.01
+            matchThreds = 3.0
+            alpha = 0.15
+        return pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres)
+    else:
+        return pose_nms_body(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres)
 
-def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0):
+def pose_nms_body(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0):
     '''
     Parametric Pose NMS algorithm
     bboxes:         bbox locations list (n, 4)
@@ -271,7 +291,7 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
 
         # Delete humans who have more than matchThreds keypoints overlap and high similarity
         delete_ids = torch.from_numpy(np.arange(human_scores[tensor_mask].shape[0]))[((simi > gamma) | (num_match_keypoints >= matchThreds))]
-
+        
         if delete_ids.shape[0] == 0:
             delete_ids = pick_id
 
@@ -279,7 +299,6 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
         newmask = mask[mask]
         newmask[delete_ids] = False
         mask[mask] = newmask
-
 
     assert len(merge_ids) == len(pick)
     preds_pick = ori_pose_preds[pick]
@@ -324,7 +343,109 @@ def pose_nms(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0
         res_pose_scores.append(merge_score)
         res_pick_ids.append(pick[j])
 
- 
+    return res_bboxes, res_bbox_scores, res_bbox_ids, res_pose_preds, res_pose_scores, res_pick_ids
+
+def pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, areaThres=0):
+    '''
+    Parametric Pose NMS algorithm
+    bboxes:         bbox locations list (n, 4)
+    bbox_scores:    bbox scores list (n, 1)
+    bbox_ids:       bbox tracking ids list (n, 1)
+    pose_preds:     pose locations list (n, kp_num, 2)
+    pose_scores:    pose scores list    (n, kp_num, 1)
+    '''
+    #global ori_pose_preds, ori_pose_scores, ref_dists
+
+    pose_scores[pose_scores == 0] = 1e-5
+    kp_nums = pose_preds.size()[1]
+    res_bboxes, res_bbox_scores, res_bbox_ids, res_pose_preds, res_pose_scores, res_pick_ids = [],[],[],[],[],[]
+    
+    ori_bboxes = bboxes.clone()
+    ori_bbox_scores = bbox_scores.clone()
+    ori_bbox_ids = bbox_ids.clone()
+    ori_pose_preds = pose_preds.clone()
+    ori_pose_scores = pose_scores.clone()
+
+    xmax = bboxes[:, 2]
+    xmin = bboxes[:, 0]
+    ymax = bboxes[:, 3]
+    ymin = bboxes[:, 1]
+
+    widths = xmax - xmin
+    heights = ymax - ymin
+    ref_dists = alpha * np.maximum(widths, heights)
+
+    nsamples = bboxes.shape[0]
+    human_scores = pose_scores[:, :, :].mean(dim=1)
+
+    human_ids = np.arange(nsamples)
+    mask = np.ones(len(human_ids)).astype(bool)
+    
+    # Do pPose-NMS
+    pick = []
+    merge_ids = []
+    while(mask.any()):
+        tensor_mask = torch.Tensor(mask)==True
+        # Pick the one with highest score
+        pick_id = torch.argmax(human_scores[tensor_mask])
+        pick.append(human_ids[mask][pick_id])
+
+        # Get numbers of match keypoints by calling PCK_match
+        ref_dist = ref_dists[human_ids[mask][pick_id]]
+        simi = get_parametric_distance(pick_id, pose_preds[:, :, :][tensor_mask], pose_scores[:, :, :][tensor_mask], ref_dist, use_dist_mask=True)
+        num_match_keypoints = PCK_match_fullbody(pose_preds[:, :, :][tensor_mask][pick_id], pose_scores[:, :, :][tensor_mask][pick_id], pose_preds[:, :, :][tensor_mask], ref_dist)
+
+        delete_ids = torch.from_numpy(np.arange(human_scores[tensor_mask].shape[0]))[((((simi > gamma) | (num_match_keypoints >= matchThreds))))]
+
+        if delete_ids.shape[0] == 0:
+            delete_ids = pick_id
+
+        merge_ids.append(human_ids[mask][delete_ids])
+        newmask = mask[mask]
+        newmask[delete_ids] = False
+        mask[mask] = newmask
+
+    assert len(merge_ids) == len(pick)
+    preds_pick = ori_pose_preds[pick]
+    scores_pick = ori_pose_scores[pick]
+    bbox_scores_pick = ori_bbox_scores[pick]
+    bboxes_pick = ori_bboxes[pick]
+    bbox_ids_pick = ori_bbox_ids[pick]
+
+    for j in range(len(pick)):
+        ids = np.arange(kp_nums)
+        max_score = torch.max(scores_pick[j, ids, 0])
+
+        if (max_score < scoreThreds):
+            continue
+
+        # Merge poses
+        merge_id = merge_ids[j]
+        merge_pose, merge_score = p_merge_fast(
+            preds_pick[j], ori_pose_preds[merge_id], ori_pose_scores[merge_id], ref_dists[pick[j]])
+
+        max_score = torch.max(merge_score[ids])
+
+        if (max_score < scoreThreds):
+            continue
+
+        xmax = max(merge_pose[ids, 0])
+        xmin = min(merge_pose[ids, 0])
+        ymax = max(merge_pose[ids, 1])
+        ymin = min(merge_pose[ids, 1])
+        bbox = bboxes_pick[j].cpu().tolist()
+        bbox_score = bbox_scores_pick[j].cpu()
+
+        if (1.5 ** 2 * (xmax - xmin) * (ymax - ymin) < areaThres):
+            continue
+
+        res_bboxes.append(bbox)
+        res_bbox_scores.append(bbox_score)
+        res_bbox_ids.append(ori_bbox_ids[merge_id].tolist())
+        res_pose_preds.append(merge_pose)
+        res_pose_scores.append(merge_score)
+        res_pick_ids.append(pick[j])
+
 
     return res_bboxes, res_bbox_scores, res_bbox_ids, res_pose_preds, res_pose_scores, res_pick_ids
 
@@ -430,6 +551,7 @@ def p_merge_fast(ref_pose, cluster_preds, cluster_scores, ref_dist):
     ref_dist = min(ref_dist, 15)
 
     mask = (dist <= ref_dist)
+
     final_pose = torch.zeros(kp_num, 2)
     final_score = torch.zeros(kp_num)
 
@@ -448,7 +570,7 @@ def p_merge_fast(ref_pose, cluster_preds, cluster_scores, ref_dist):
     return final_pose, final_score
 
 
-def get_parametric_distance(i, all_preds, keypoint_scores, ref_dist):
+def get_parametric_distance(i, all_preds, keypoint_scores, ref_dist, use_dist_mask=False):
     pick_preds = all_preds[i]
     pred_scores = keypoint_scores[i]
     dist = torch.sqrt(torch.sum(
@@ -458,6 +580,11 @@ def get_parametric_distance(i, all_preds, keypoint_scores, ref_dist):
     mask = (dist <= 1)
 
     kp_nums = all_preds.size()[1]
+    
+    if use_dist_mask:
+        dist_mask = (keypoint_scores.reshape((-1, kp_nums)) < scoreThreds)
+        mask = mask * dist_mask
+
     # Define a keypoints distance
     score_dists = torch.zeros(all_preds.shape[0], kp_nums)
     keypoint_scores.squeeze_()
@@ -471,7 +598,14 @@ def get_parametric_distance(i, all_preds, keypoint_scores, ref_dist):
     score_dists[mask] = torch.tanh(pred_scores[mask] / delta1) * torch.tanh(keypoint_scores[mask] / delta1)
 
     point_dist = torch.exp((-1) * dist / delta2)
-    final_dist = torch.sum(score_dists, dim=1) + mu * torch.sum(point_dist, dim=1)
+    if use_dist_mask:
+        point_dist[:, -110:-42] = torch.exp((-1) * dist[:, -110:-42] / (delta2 * face_factor))
+        point_dist[:, -42:] = torch.exp((-1) * dist[:, -42:] / (delta2 * hand_factor))
+        point_dist[dist_mask] = 0
+        final_dist = torch.mean(score_dists[:, :-110], dim=1) + torch.mean(score_dists[:, -110:-42], dim=1) * face_weight_score + torch.mean(score_dists[:, -42:], dim=1) * hand_weight_score\
+                    + mu * (torch.mean(point_dist[:, :-110], dim=1) + torch.mean(point_dist[:, -110:-42], dim=1) * face_weight_dist + torch.mean(point_dist[:, -42:], dim=1) * hand_weight_dist)
+    else:
+        final_dist = torch.sum(score_dists, dim=1) + mu * torch.sum(point_dist, dim=1)
 
     return final_dist
 
@@ -490,7 +624,39 @@ def PCK_match(pick_pred, all_preds, ref_dist):
     return num_match_keypoints
 
 
-def write_json(all_results, outputpath, form=None, for_eval=False):
+def PCK_match_fullbody(pick_pred, pred_score, all_preds, ref_dist):
+    kp_nums = pred_score.shape[0]
+
+    mask = (pred_score.reshape(1, kp_nums, 1).repeat(all_preds.shape[0], 1,2) > scoreThreds / 2).float()
+    if mask.sum() < 2:
+        return torch.zeros(all_preds.shape[0])
+
+    dist = torch.sqrt(torch.sum(
+        torch.pow(pick_pred[np.newaxis, :] - all_preds, 2),
+        dim=2
+    ))
+
+    ref_dist = min(ref_dist, 7)
+    num_match_keypoints_body = torch.sum(
+        dist[:,:26] / ref_dist <= 1,
+        dim=1
+    )
+
+    num_match_keypoints_face = torch.sum(
+        dist[:,26:94] / ref_dist <= face_factor,
+        dim=1
+    )
+
+    num_match_keypoints_hand = torch.sum(
+        dist[:,94:] / ref_dist <= hand_factor,
+        dim=1
+    )
+
+    num_match_keypoints = (num_match_keypoints_body + num_match_keypoints_face + num_match_keypoints_hand) / mask.sum() / 2 * kp_nums
+    return num_match_keypoints
+
+
+def write_json(all_results, outputpath, form=None, for_eval=False, outputfile='alphapose-results.json'):
     '''
     all_result: result dict of predictions
     outputpath: output directory
@@ -557,7 +723,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 json_results.append(result)
 
     if form == 'cmu': # the form of CMU-Pose
-        with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
+        with open(os.path.join(outputpath, outputfile), 'w') as json_file:
             json_file.write(json.dumps(json_results_cmu))
             if not os.path.exists(os.path.join(outputpath,'sep-json')):
                 os.mkdir(os.path.join(outputpath,'sep-json'))
@@ -565,7 +731,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 with open(os.path.join(outputpath,'sep-json',name.split('.')[0]+'.json'),'w') as json_file:
                     json_file.write(json.dumps(json_results_cmu[name]))
     elif form == 'open': # the form of OpenPose
-        with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
+        with open(os.path.join(outputpath, outputfile), 'w') as json_file:
             json_file.write(json.dumps(json_results_cmu))
             if not os.path.exists(os.path.join(outputpath,'sep-json')):
                 os.mkdir(os.path.join(outputpath,'sep-json'))
@@ -573,6 +739,48 @@ def write_json(all_results, outputpath, form=None, for_eval=False):
                 with open(os.path.join(outputpath,'sep-json',name.split('.')[0]+'.json'),'w') as json_file:
                     json_file.write(json.dumps(json_results_cmu[name]))
     else:
-        with open(os.path.join(outputpath,'alphapose-results.json'), 'w') as json_file:
+        with open(os.path.join(outputpath, outputfile), 'w') as json_file:
             json_file.write(json.dumps(json_results))
 
+
+def ppose_nms_validate_preprocess(_res):
+    res = {}
+    for data in _res:
+        if data['image_id'] not in res.keys():
+            res[data['image_id']] = []
+        res[data['image_id']].append(data)
+
+    _tmp_data = {}
+    for key in res.keys():
+        pose_coords = []
+        pose_scores = []
+        bboxes = []
+        scores = []
+        ids = []
+        i = 0
+
+        cur = res[key]
+        for pose in cur:
+            bboxes.append([pose['bbox'][0], pose['bbox'][1], pose['bbox'][0]+pose['bbox'][2], pose['bbox'][1]+pose['bbox'][3]])
+
+            kpts = np.array(pose['keypoints'], dtype=np.float32).reshape((-1, 3))
+            coords = kpts[:, 0:2]
+            p_scores = kpts[:, 2]
+            s = pose['score'] - np.mean(p_scores) - 1.25 * np.max(p_scores)
+            scores.append(s)
+
+            pose_coords.append(torch.from_numpy(coords).unsqueeze(0))
+            pose_scores.append(torch.from_numpy(p_scores).unsqueeze(0))
+
+            ids.append(i)
+            i += 1
+        preds_img = torch.cat(pose_coords)
+        preds_scores = torch.cat(pose_scores)[:, :, None]
+        boxes = torch.from_numpy(np.array(bboxes, dtype=np.float32))
+        scores = torch.from_numpy(np.array(scores, dtype=np.float32).reshape(-1, 1))
+        ids = torch.from_numpy(np.array(ids, dtype=np.float32).reshape(-1, 1))
+
+        _tmp_data[key] = (boxes, scores, ids, preds_img, preds_scores)
+
+
+    return _tmp_data

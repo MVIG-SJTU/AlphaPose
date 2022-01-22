@@ -162,7 +162,7 @@ class SimpleTransform(object):
 
         return target, np.expand_dims(target_weight, -1)
 
-    def _integral_target_generator(self, joints_3d, num_joints, patch_height, patch_width, source=None):
+    def _integral_target_generator(self, joints_3d, num_joints, patch_height, patch_width):
         target_weight = np.ones((num_joints, 2), dtype=np.float32)
         target_weight[:, 0] = joints_3d[:, 0, 1]
         target_weight[:, 1] = joints_3d[:, 0, 1]
@@ -170,13 +170,8 @@ class SimpleTransform(object):
             target_weight[:26, :] = target_weight[:26, :] * 2
         elif num_joints == 133:
             target_weight[:23, :] = target_weight[:23, :] * 2
-        
-        if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'hand_labels_synth' \
-        or source == 'hand143_panopticdb' or source == 'RHD_published_v2' or source == 'interhand':
-            if target_weight[-21:,:].sum() > 0 and target_weight[-42:-21].sum() == 0:
-                target_weight[-42:-21] += 1
-            elif target_weight[-21:,:].sum() == 0 and target_weight[-42:-21].sum() > 0:
-                target_weight[-21:,:] += 1
+        elif num_joints == 68:
+            target_weight[:26, :] = target_weight[:26, :] * 2
 
         target = np.zeros((num_joints, 2), dtype=np.float32)
         target[:, 0] = joints_3d[:, 0, 0] / patch_width - 0.5
@@ -186,7 +181,7 @@ class SimpleTransform(object):
         target_weight = target_weight.reshape((-1))
         return target, target_weight
 
-    def __call__(self, src, label, source=None):
+    def __call__(self, src, label):
         bbox = list(label['bbox'])
         gt_joints = label['joints_3d']
 
@@ -224,10 +219,7 @@ class SimpleTransform(object):
 
         # rotation
         if self._train:
-            if source == 'frei' or source == 'partX' or source == 'OneHand' or source == 'interhand':
-                rf = 180
-            else:
-                rf = self._rot
+            rf = self._rot
             r = np.clip(np.random.randn() * rf, -rf * 2, rf * 2) if random.random() <= 0.6 else 0
         else:
             r = 0
@@ -255,7 +247,14 @@ class SimpleTransform(object):
         if self._loss_type == 'MSELoss':
             target, target_weight = self._target_generator(joints, self.num_joints)
         elif 'JointRegression' in self._loss_type:
-            target, target_weight = self._integral_target_generator(joints, self.num_joints, inp_h, inp_w, source)
+            target, target_weight = self._integral_target_generator(joints, self.num_joints, inp_h, inp_w)
+        elif self._loss_type == 'Combined':
+            if self.num_joints == 68:
+                hand_face_num = 42
+            else:
+                hand_face_num = 110
+            target_mse, target_weight_mse = self._target_generator(joints[:-hand_face_num,:,:], self.num_joints-hand_face_num)
+            target_inter, target_weight_inter = self._integral_target_generator(joints[-hand_face_num:,:,:], hand_face_num, inp_h, inp_w)
 
         bbox = _center_scale_to_box(center, scale)
 
@@ -263,8 +262,11 @@ class SimpleTransform(object):
         img[0].add_(-0.406)
         img[1].add_(-0.457)
         img[2].add_(-0.480)
-
-        return img, torch.from_numpy(target), torch.from_numpy(target_weight), torch.Tensor(bbox)
+        
+        if self._loss_type == 'Combined':
+        	return img, [torch.from_numpy(target_mse), torch.from_numpy(target_inter)], [torch.from_numpy(target_weight_mse), torch.from_numpy(target_weight_inter)], torch.Tensor(bbox)
+        else:
+            return img, torch.from_numpy(target), torch.from_numpy(target_weight), torch.Tensor(bbox)
 
     def half_body_transform(self, joints, joints_vis):
         upper_joints = []

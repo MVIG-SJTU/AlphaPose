@@ -1,22 +1,28 @@
 DATASET:
   TRAIN:
-    TYPE: 'Halpe_136'
-    ROOT: './data/halpe/'
-    IMG_PREFIX: 'images/train2015'
-    ANN: 'annotations/halpe_train_v1.json'
+    TYPE: 'SingleHand'
+    ROOT: 
+      - './data/halpe/'
+      - './data/coco/'
+    IMG_PREFIX: 
+      - 'images/train2015'
+      - 'train2017'
+    ANN: 
+      - 'annotations/halpe_train_v1.json'
+      - 'annotations/coco_wholebody_train_v1.0.json'
     AUG:
       FLIP: true
       ROT_FACTOR: 45
       SCALE_FACTOR: 0.35
-      NUM_JOINTS_HALF_BODY: 8
-      PROB_HALF_BODY: 0.3
+      NUM_JOINTS_HALF_BODY: 0
+      PROB_HALF_BODY: 0.0
   VAL:
-    TYPE: 'Halpe_136'
+    TYPE: 'SingleHand'
     ROOT: './data/halpe/'
     IMG_PREFIX: 'images/val2017'
     ANN: 'annotations/halpe_val_v1.json'
   TEST:
-    TYPE: 'Halpe_136_det'
+    TYPE: 'SingleHand_det'
     ROOT: './data/halpe/'
     IMG_PREFIX: 'images/val2017'
     DET_FILE: './exp/json/test_det_yolo.json'
@@ -24,8 +30,9 @@ DATASET:
 DATA_PRESET:
   TYPE: 'simple'
   LOSS_TYPE: 'L1JointRegression'
+  NORM_TYPE: 'sigmoid'
   SIGMA: 2
-  NUM_JOINTS: 136
+  NUM_JOINTS: 21
   IMAGE_SIZE:
   - 256
   - 192
@@ -40,8 +47,17 @@ MODEL:
   - 256
   - 256
   - 256
-  NUM_LAYERS: 50
   CONV_DIM: 256
+  NUM_LAYERS: 50
+  DCN:
+    MODULATED: false
+    DEFORM_GROUP: 1
+    FALLBACK_ON_STRIDE: false
+  STAGE_WITH_DCN:
+  - false
+  - true
+  - true
+  - true
 LOSS:
   TYPE: 'L1JointRegression'
   NORM_TYPE: 'sigmoid'
@@ -53,17 +69,17 @@ DETECTOR:
   NMS_THRES: 0.6
   CONFIDENCE: 0.05
 TRAIN:
-  WORLD_SIZE: 4
+  WORLD_SIZE: 6
   BATCH_SIZE: 48
-  BEGIN_EPOCH: 5
-  END_EPOCH: 270
+  BEGIN_EPOCH: 0
+  END_EPOCH: 100
   OPTIMIZER: 'adam'
   LR: 0.001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 170
-  - 200
-  DPG_MILESTONE: 210
+  - 15
+  - 35
+  DPG_MILESTONE: 50
   DPG_STEP:
-  - 230
-  - 250
+  - 65
+  - 80

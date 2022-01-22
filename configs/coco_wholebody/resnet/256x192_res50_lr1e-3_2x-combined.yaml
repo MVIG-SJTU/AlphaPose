@@ -1,9 +1,9 @@
 DATASET:
   TRAIN:
-    TYPE: 'Halpe_136'
-    ROOT: './data/halpe/'
-    IMG_PREFIX: 'images/train2015'
-    ANN: 'annotations/halpe_train_v1.json'
+    TYPE: 'coco_wholebody'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'train2017'
+    ANN: 'annotations/coco_wholebody_train_v1.0.json'
     AUG:
       FLIP: true
       ROT_FACTOR: 45
@@ -11,21 +11,21 @@ DATASET:
       NUM_JOINTS_HALF_BODY: 8
       PROB_HALF_BODY: 0.3
   VAL:
-    TYPE: 'Halpe_136'
-    ROOT: './data/halpe/'
-    IMG_PREFIX: 'images/val2017'
-    ANN: 'annotations/halpe_val_v1.json'
+    TYPE: 'coco_wholebody'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'val2017'
+    ANN: 'annotations/coco_wholebody_val_v1.0.json'
   TEST:
-    TYPE: 'Halpe_136_det'
-    ROOT: './data/halpe/'
-    IMG_PREFIX: 'images/val2017'
+    TYPE: 'coco_wholebody_det'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'val2017'
     DET_FILE: './exp/json/test_det_yolo.json'
-    ANN: 'annotations/halpe_val_v1.json'
+    ANN: 'annotations/coco_wholebody_val_v1.0.json'
 DATA_PRESET:
   TYPE: 'simple'
-  LOSS_TYPE: 'L1JointRegression'
+  LOSS_TYPE: 'Combined'
   SIGMA: 2
-  NUM_JOINTS: 136
+  NUM_JOINTS: 133
   IMAGE_SIZE:
   - 256
   - 192
@@ -43,9 +43,15 @@ MODEL:
   NUM_LAYERS: 50
   CONV_DIM: 256
 LOSS:
-  TYPE: 'L1JointRegression'
+  TYPE: 'Combined'
   NORM_TYPE: 'sigmoid'
   OUTPUT_3D: False
+  LOSS_1:
+    TYPE: 'MSELoss'
+  LOSS_2:
+    TYPE: 'L1JointRegression'
+    NORM_TYPE: 'sigmoid'
+    OUTPUT_3D: False
 DETECTOR:
   NAME: 'yolo'
   CONFIG: 'detector/yolo/cfg/yolov3-spp.cfg'
@@ -54,8 +60,8 @@ DETECTOR:
   CONFIDENCE: 0.05
 TRAIN:
   WORLD_SIZE: 4
-  BATCH_SIZE: 48
-  BEGIN_EPOCH: 5
+  BATCH_SIZE: 32
+  BEGIN_EPOCH: 0
   END_EPOCH: 270
   OPTIMIZER: 'adam'
   LR: 0.001

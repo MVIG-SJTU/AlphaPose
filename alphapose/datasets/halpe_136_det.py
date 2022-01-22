@@ -19,7 +19,7 @@ from alphapose.models.builder import DATASET
 
 @DATASET.register_module
 class Halpe_136_det(data.Dataset):
-    """ Halpe_136 human detection box dataset.
+    """ Halpe Full-Body (136 keypoints) human detection box dataset.
 
     """
     EVAL_JOINTS = list(range(136))
@@ -68,10 +68,10 @@ class Halpe_136_det(data.Dataset):
             img_id = int(img_id)
         else:
             img_id = det_res['image_id']
-        img_path = '/DATA1/Benchmark/coco/val2017/%012d.jpg' % img_id
+        img_path = os.path.join(self._root, self._img_prefix, '%012d.jpg' % img_id)
 
         # Load image
-        image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) #scipy.misc.imread(img_path, mode='RGB')
+        image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB) # scipy.misc.imread(img_path, mode='RGB') is deprecated
 
         imght, imgwidth = image.shape[1], image.shape[2]
         x1, y1, w, h = det_res['bbox']
@@ -92,7 +92,7 @@ class Halpe_136_det(data.Dataset):
         dets = []
         for entry in tqdm(_coco.loadImgs(image_ids)):
             abs_path = os.path.join(
-                '/DATA1/Benchmark/coco', self._img_prefix, entry['file_name'])
+                self._root, self._img_prefix, entry['file_name'])
             det = det_model.detect_one_img(abs_path)
             if det:
                 dets += det
