@@ -415,10 +415,8 @@ def pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, ar
     for j in range(len(pick)):
         ids = np.arange(kp_nums)
         max_score = torch.max(scores_pick[j, ids, 0])
-        # max_score_face = torch.max(scores_pick[j, -110:-42, 0])
-        # max_score_hand = torch.max(scores_pick[j, -42:, 0])
 
-        if (max_score < scoreThreds) :#and (max_score_face < scoreThreds_face) and (max_score_hand < scoreThreds_hand):
+        if (max_score < scoreThreds):
             continue
 
         # Merge poses
@@ -426,11 +424,9 @@ def pose_nms_fullbody(bboxes, bbox_scores, bbox_ids, pose_preds, pose_scores, ar
         merge_pose, merge_score = p_merge_fast(
             preds_pick[j], ori_pose_preds[merge_id], ori_pose_scores[merge_id], ref_dists[pick[j]])
 
-        # max_score = torch.max(merge_score[ids])
         max_score = torch.max(merge_score[ids])
-        # max_score_face = torch.max(merge_score[-110:-42])
-        # max_score_hand = torch.max(merge_score[-42:])
-        if (max_score < scoreThreds) :#and (max_score_face < scoreThreds_face) and (max_score_hand < scoreThreds_hand):
+
+        if (max_score < scoreThreds):
             continue
 
         xmax = max(merge_pose[ids, 0])
