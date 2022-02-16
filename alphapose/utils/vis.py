@@ -196,6 +196,7 @@ def vis_frame_fast(frame, im_res, opt, vis_thres, format='coco'):
         if kp_num == 17:
             kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
             kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
+            vis_thres.append(vis_thres[-1])
         if opt.pose_track or opt.tracking:
             color = get_color_fast(int(abs(human['idx'])))
         else:
@@ -414,6 +415,7 @@ def vis_frame(frame, im_res, opt, vis_thres, format='coco'):
         if kp_num == 17:
             kp_preds = torch.cat((kp_preds, torch.unsqueeze((kp_preds[5, :] + kp_preds[6, :]) / 2, 0)))
             kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
+            vis_thres.append(vis_thres[-1])
         if opt.tracking:
             color = get_color_fast(int(abs(human['idx'])))
         else:
