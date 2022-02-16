@@ -6,7 +6,7 @@ AlphaPose provide three different tracking methods for now, you can try differen
 Currently the best performance tracking model. Paper coming soon.
 
 #### Getting started
-Download  human reid model[Mega drive](https://mega.nz/#!YTZFnSJY!wlbo_5oa2TpDAGyWCTKTX1hh4d6DvJhh_RUA2z6i_so) (or [Baidu Pan, code:6a8b](https://pan.baidu.com/s/1IoAHehdjJ0ucQl8p_4hfRw))and place it into `AlphaPose/trackers/weights/`.
+Download  human reid model ( [Mega drive](https://mega.nz/#!YTZFnSJY!wlbo_5oa2TpDAGyWCTKTX1hh4d6DvJhh_RUA2z6i_so) or [Baidu Pan, code:6a8b](https://pan.baidu.com/s/1IoAHehdjJ0ucQl8p_4hfRw))and place it into `AlphaPose/trackers/weights/`.
 
 Then simply run alphapose with additional flag `--pose_track`
 
