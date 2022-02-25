@@ -94,14 +94,18 @@ class DataWriter():
             assert stream.isOpened(), 'Cannot open video for writing'
         # keep looping infinitelyd
         while True:
-            # ensure the queue is not empty and get item
-            (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name) = self.wait_and_get(self.result_queue)
+            if not self.result_queue.empty():
+                # ensure the queue is not empty and get item
+                (boxes, scores, ids, hm_data, cropped_boxes, orig_img, im_name) = self.wait_and_get(self.result_queue)
+            else:
+                continue
             if orig_img is None:
                 # if the thread indicator variable is set (img is None), stop the thread
                 if self.save_video:
                     stream.release()
                 write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval)
                 print("Results have been written to json.")
+                self.save(None, None, None, None, None, None, None)
                 return
             # image channel RGB->BGR
             orig_img = np.array(orig_img, dtype=np.uint8)[:, :, ::-1]
