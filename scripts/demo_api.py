@@ -176,6 +176,21 @@ class DataWriter():
         self.eval_joints = list(range(cfg.DATA_PRESET.NUM_JOINTS))
         self.heatmap_to_coord = get_func_heatmap_to_coord(cfg)
         self.item = (None, None, None, None, None, None, None)
+        
+        loss_type = self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss')
+        num_joints = self.cfg.DATA_PRESET.NUM_JOINTS
+        if loss_type == 'MSELoss':
+            self.vis_thres = [0.4] * num_joints
+        elif 'JointRegression' in loss_type:
+            self.vis_thres = [0.05] * num_joints
+        elif loss_type == 'Combined':
+            if num_joints == 68:
+                hand_face_num = 42
+            else:
+                hand_face_num = 110
+            self.vis_thres = [0.4] * (num_joints - hand_face_num) + [0.05] * hand_face_num
+
+        self.use_heatmap_loss = (self.cfg.DATA_PRESET.get('LOSS_TYPE', 'MSELoss') == 'MSELoss')
 
     def start(self):
         # start to read pose estimation results
@@ -223,7 +238,7 @@ class DataWriter():
             preds_scores = torch.cat(pose_scores)
 
             boxes, scores, ids, preds_img, preds_scores, pick_ids = \
-                pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area)
+                pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area, use_heatmap_loss=self.use_heatmap_loss)
 
             _result = []
             for k in range(len(scores)):
@@ -342,7 +357,7 @@ class SingleImageAlphaPose():
 
     def vis(self, image, pose):
         if pose is not None:
-            image = self.writer.vis_frame(image, pose, self.writer.opt)
+            image = self.writer.vis_frame(image, pose, self.writer.opt, self.writer.vis_thres)
         return image
 
     def writeJson(self, final_result, outputpath, form='coco', for_eval=False):
