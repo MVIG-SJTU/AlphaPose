@@ -1,5 +1,7 @@
 #include <ATen/ATen.h>
 #include <THC/THCAtomics.cuh>
+#include <ATen/cuda/CUDAContext.h>
+
 
 #define CUDA_1D_KERNEL_LOOP(i, n)                            \
   for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; \
@@ -132,9 +134,9 @@ int ROIAlignForwardLaucher(const at::Tensor features, const at::Tensor rois,
   const int output_size = num_rois * pooled_height * pooled_width * channels;
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       features.scalar_type(), "ROIAlignLaucherForward", ([&] {
-        const scalar_t *bottom_data = features.data<scalar_t>();
-        const scalar_t *rois_data = rois.data<scalar_t>();
-        scalar_t *top_data = output.data<scalar_t>();
+        const scalar_t *bottom_data = features.data_ptr<scalar_t>();
+        const scalar_t *rois_data = rois.data_ptr<scalar_t>();
+        scalar_t *top_data = output.data_ptr<scalar_t>();
 
         ROIAlignForward<scalar_t>
             <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK>>>(
@@ -142,7 +144,7 @@ int ROIAlignForwardLaucher(const at::Tensor features, const at::Tensor rois,
                 sample_num, channels, height, width, pooled_height,
                 pooled_width, top_data);
       }));
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return 1;
 }
 
@@ -275,9 +277,9 @@ int ROIAlignBackwardLaucher(const at::Tensor top_grad, const at::Tensor rois,
 
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
       top_grad.scalar_type(), "ROIAlignLaucherBackward", ([&] {
-        const scalar_t *top_diff = top_grad.data<scalar_t>();
-        const scalar_t *rois_data = rois.data<scalar_t>();
-        scalar_t *bottom_diff = bottom_grad.data<scalar_t>();
+        const scalar_t *top_diff = top_grad.data_ptr<scalar_t>();
+        const scalar_t *rois_data = rois.data_ptr<scalar_t>();
+        scalar_t *bottom_diff = bottom_grad.data_ptr<scalar_t>();
         if (sizeof(scalar_t) == sizeof(double)) {
           fprintf(stderr, "double is not supported\n");
           exit(-1);
@@ -289,6 +291,6 @@ int ROIAlignBackwardLaucher(const at::Tensor top_grad, const at::Tensor rois,
                 channels, height, width, pooled_height, pooled_width,
                 bottom_diff);
       }));
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return 1;
 }
