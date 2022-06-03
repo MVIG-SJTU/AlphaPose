@@ -102,6 +102,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 .vscode
+.idea
 .tensorboard
 exp/coco*
 *.pth
@@ -114,5 +115,5 @@ data/
 tmp/
 exp/json
 tmp_*/
-example/res/
+examples/res/
 data/

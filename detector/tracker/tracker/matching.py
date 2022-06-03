@@ -1,12 +1,43 @@
 import cv2
 import numpy as np
+import torch
+import math
+
 import scipy
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 
-from cython_bbox import bbox_overlaps as bbox_ious
-from tracker.utils import kalman_filter
-import time
+from trackers.utils import kalman_filter
+
+def bbox_iou(box1, box2, eps=1e-7): # CIoU
+    # Returns the IoU of box1 to box2. box1 is 4, box2 is nx4
+    box2 = box2.T
+
+    # Get the coordinates of bounding boxes
+    b1_x1, b1_y1, b1_x2, b1_y2 = box1[0], box1[1], box1[2], box1[3]
+    b2_x1, b2_y1, b2_x2, b2_y2 = box2[0], box2[1], box2[2], box2[3]
+
+    # Intersection area
+    inter = (torch.min(b1_x2, b2_x2) - torch.max(b1_x1, b2_x1)).clamp(0) * \
+            (torch.min(b1_y2, b2_y2) - torch.max(b1_y1, b2_y1)).clamp(0)
+
+    # Union Area
+    w1, h1 = b1_x2 - b1_x1, b1_y2 - b1_y1 + eps
+    w2, h2 = b2_x2 - b2_x1, b2_y2 - b2_y1 + eps
+    union = w1 * h1 + w2 * h2 - inter + eps
+
+    iou = inter / union
+    cw = torch.max(b1_x2, b2_x2) - torch.min(b1_x1, b2_x1)  # convex (smallest enclosing box) width
+    ch = torch.max(b1_y2, b2_y2) - torch.min(b1_y1, b2_y1)  # convex height
+
+    c2 = cw ** 2 + ch ** 2 + eps  # convex diagonal squared
+    rho2 = ((b2_x1 + b2_x2 - b1_x1 - b1_x2) ** 2 +
+            (b2_y1 + b2_y2 - b1_y1 - b1_y2) ** 2) / 4  # center distance squared
+
+    v = (4 / math.pi ** 2) * torch.pow(torch.atan(w2 / h2) - torch.atan(w1 / h1), 2)
+    with torch.no_grad():
+        alpha = v / (v - iou + (1 + eps))
+    return iou - (rho2 / c2 + v * alpha)  # CIoU
 
 def merge_matches(m1, m2, shape):
     O,P,Q = shape
@@ -65,7 +96,7 @@ def ious(atlbrs, btlbrs):
     if ious.size == 0:
         return ious
 
-    ious = bbox_ious(
+    ious = bbox_iou(
         np.ascontiguousarray(atlbrs, dtype=np.float),
         np.ascontiguousarray(btlbrs, dtype=np.float)
     )
