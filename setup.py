@@ -160,7 +160,7 @@ def get_ext_modules():
 
 def get_install_requires():
     install_requires = [
-        'six', 'terminaltables', 'scipy==1.1.0',
+        'six', 'terminaltables', 'scipy',
         'opencv-python', 'matplotlib', 'visdom',
         'tqdm', 'tensorboardx', 'easydict',
         'pyyaml', 'halpecocotools',
