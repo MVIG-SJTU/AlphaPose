@@ -12,6 +12,11 @@ def get_detector(opt=None):
         from detector.yolo_api import YOLODetector
         from detector.yolo_cfg import cfg
         return YOLODetector(cfg, opt)
+    elif 'yolov5' in opt.detector:
+        from detector.yolov5_api import YOLOV5Detector
+        from detector.yolov5_cfg import cfg
+        cfg.WEIGHT = f'detector/yolov5/data/{opt.detector}.pt'
+        return YOLOV5Detector(cfg, opt)
     elif opt.detector == 'tracker':
         from detector.tracker_api import Tracker
         from detector.tracker_cfg import cfg
