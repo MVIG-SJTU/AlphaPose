@@ -27,7 +27,6 @@ conda install pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
-# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 
@@ -54,7 +53,6 @@ pip install torch==1.10.0+cu111 torchvision==0.11.0+cu111 torchaudio==0.10.0 -f 
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
-# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 # 3. install
