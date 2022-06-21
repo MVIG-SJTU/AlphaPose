@@ -3,10 +3,10 @@
 ### Requirements
 * Nvidia device with CUDA, [example for Ubuntu 20.04](https://linuxconfig.org/how-to-install-cuda-on-ubuntu-20-04-focal-fossa-linux)
 (if you have no nvidia device, delete [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L211) from setup.py
-* Python 3.5+
+* Python 3.6+
 * Cython
-* PyTorch 1.11+, for users with PyTorch < 1.11, please switch to the `pytorch<1.11` branch by:
-  `git checkout "pytorch<1.11"`; for users with PyTorch < 1.5, please switch to the `pytorch<1.5` branch by: `git checkout "pytorch<1.5"`
+* PyTorch 1.11+, for users who want to use 1.5 < PyTorch < 1.11, please switch to the `pytorch<1.11` branch by:
+  `git checkout "pytorch<1.11"`; for users who want to use PyTorch < 1.5, please switch to the `pytorch<1.5` branch by: `git checkout "pytorch<1.5"`
 * torchvision 0.12.0+
 * numpy 
 * python-package setuptools >= 40.0, reported by [this issue](https://github.com/MVIG-SJTU/AlphaPose/issues/838)
@@ -23,11 +23,10 @@ conda create -n alphapose python=3.6 -y
 conda activate alphapose
 
 # 2. Install PyTorch
-conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
-# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 
@@ -48,13 +47,12 @@ python setup.py build develop
 #### Install with pip
 ```shell
 # 1. Install PyTorch
-pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
+pip3 install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu113
 
 # Check torch environment by:  python3 -m torch.utils.collect_env
 
 # 2. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
-# git pull origin pull/592/head if you use PyTorch>=1.5
 cd AlphaPose
 
 # 3. install
