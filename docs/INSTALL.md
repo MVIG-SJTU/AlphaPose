@@ -5,8 +5,8 @@
 (if you have no nvidia device, delete [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L211) from setup.py
 * Python 3.5+
 * Cython
-* PyTorch 1.11+, for users with PyTorch < 1.5, please merge the pull request #592 by:
-  `git pull origin pull/592/head`
+* PyTorch 1.11+, for users with PyTorch < 1.11, please switch to the `pytorch<1.11` branch by:
+  `git checkout "pytorch<1.11"`; for users with PyTorch < 1.5, please switch to the `pytorch<1.5` branch by: `git checkout "pytorch<1.5"`
 * torchvision 0.12.0+
 * numpy 
 * python-package setuptools >= 40.0, reported by [this issue](https://github.com/MVIG-SJTU/AlphaPose/issues/838)
@@ -23,7 +23,7 @@ conda create -n alphapose python=3.6 -y
 conda activate alphapose
 
 # 2. Install PyTorch
-conda install pytorch==1.1.0 torchvision==0.3.0
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
@@ -48,7 +48,7 @@ python setup.py build develop
 #### Install with pip
 ```shell
 # 1. Install PyTorch
-pip3 install torch==1.1.0 torchvision==0.3.0
+pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
 
 # Check torch environment by:  python3 -m torch.utils.collect_env
 
