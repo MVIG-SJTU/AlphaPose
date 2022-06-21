@@ -31,6 +31,10 @@ parser.add_argument('--batch',
                     help='validation batch size',
                     default=32,
                     type=int)
+parser.add_argument('--num_workers',
+                    help='validation dataloader number of workers',
+                    default=20,
+                    type=int)
 parser.add_argument('--flip-test',
                     default=False,
                     dest='flip_test',
@@ -57,12 +61,12 @@ opt.gpus = [gpus[0]]
 opt.device = torch.device("cuda:" + str(opt.gpus[0]) if opt.gpus[0] >= 0 else "cpu")
 
 
-def validate(m, heatmap_to_coord, batch_size=20):
+def validate(m, heatmap_to_coord, batch_size=20, num_workers=20):
     det_dataset = builder.build_dataset(cfg.DATASET.TEST, preset_cfg=cfg.DATA_PRESET, train=False, opt=opt)
     eval_joints = det_dataset.EVAL_JOINTS
 
     det_loader = torch.utils.data.DataLoader(
-        det_dataset, batch_size=batch_size, shuffle=False, num_workers=20, drop_last=False)
+        det_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, drop_last=False)
     kpt_json = []
     m.eval()
 
@@ -170,12 +174,12 @@ def validate(m, heatmap_to_coord, batch_size=20):
     return res
 
 
-def validate_gt(m, cfg, heatmap_to_coord, batch_size=20):
+def validate_gt(m, cfg, heatmap_to_coord, batch_size=20, num_workers=20):
     gt_val_dataset = builder.build_dataset(cfg.DATASET.VAL, preset_cfg=cfg.DATA_PRESET, train=False)
     eval_joints = gt_val_dataset.EVAL_JOINTS
 
     gt_val_loader = torch.utils.data.DataLoader(
-        gt_val_dataset, batch_size=batch_size, shuffle=False, num_workers=20, drop_last=False)
+        gt_val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, drop_last=False)
     kpt_json = []
     m.eval()
 
@@ -257,6 +261,6 @@ if __name__ == "__main__":
     heatmap_to_coord = get_func_heatmap_to_coord(cfg)
 
     with torch.no_grad():
-        gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch)
-        detbox_AP = validate(m, heatmap_to_coord, opt.batch)
+        gt_AP = validate_gt(m, cfg, heatmap_to_coord, opt.batch, opt.num_workers)
+        detbox_AP = validate(m, heatmap_to_coord, opt.batch, opt.num_workers)
     print('##### gt box: {} mAP | det box: {} mAP #####'.format(gt_AP, detbox_AP))
