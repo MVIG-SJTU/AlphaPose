@@ -3,10 +3,6 @@
     <img src="docs/logo.jpg", width="400">
 </div>
 
-a google colab link to test
-https://colab.research.google.com/drive/1o9RhThxyxHr4P3n6a19UGmc5LTRn5zfp?usp=sharing
-
-
 ## News!
 - Jan 2022: [**v0.5.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Stronger whole body(face,hand,foot) keypoints! More models are availabel. Checkout [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md)
 - Aug 2020: [**v0.4.0** version](https://github.com/MVIG-SJTU/AlphaPose) of AlphaPose is released! Stronger tracking! Include whole body(face,hand,foot) keypoints! [Colab](https://colab.research.google.com/drive/14Zgotr2_F0LfvcpRi03uQdMvUbLQSgok?usp=sharing) now available.
@@ -154,14 +150,14 @@ Please cite these papers in your publications if it helps your research:
       booktitle={ICCV},
       year={2017}
     }
-
+    
     @article{li2018crowdpose,
       title={CrowdPose: Efficient Crowded Scenes Pose Estimation and A New Benchmark},
       author={Li, Jiefeng and Wang, Can and Zhu, Hao and Mao, Yihuan and Fang, Hao-Shu and Lu, Cewu},
       journal={arXiv preprint arXiv:1812.00324},
       year={2018}
     }
-
+    
     @inproceedings{xiu2018poseflow,
       author = {Xiu, Yuliang and Li, Jiefeng and Wang, Haoyu and Fang, Yinghong and Lu, Cewu},
       title = {{Pose Flow}: Efficient Online Pose Tracking},
