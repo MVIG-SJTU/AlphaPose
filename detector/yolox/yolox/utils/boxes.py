@@ -44,7 +44,7 @@ def postprocess(
     box_corner[:, :, 3] = prediction[:, :, 1] + prediction[:, :, 3] / 2
     prediction[:, :, :4] = box_corner[:, :, :4]
 
-    output = [None for _ in range(len(prediction))]
+    output = 0
     for i, image_pred in enumerate(prediction):
 
         # If none are remaining => process next image
@@ -88,12 +88,12 @@ def postprocess(
         detections = detections[nms_out_index]
         batch_idx = detections.new(detections.size(0), 1).fill_(i)
         detections = torch.cat((batch_idx, detections), 1)
-        if output[i] is None:
-            output[i] = detections
+        if not output:
+            output = detections
         else:
-            output[i] = torch.cat((output[i], detections))
+            output = torch.cat((output, detections))
 
-    return torch.cat(output)
+    return output
 
 
 def bboxes_iou(bboxes_a, bboxes_b, xyxy=True):
