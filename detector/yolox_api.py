@@ -3,7 +3,7 @@
 # Written by Haoyi Zhu (zhuhaoyi@sjtu.edu.cn)
 # -----------------------------------------------------
 
-"""API of YOLOv5 detector"""
+"""API of YOLOX detector"""
 import os
 import sys
 
@@ -12,36 +12,39 @@ sys.path.insert(0, os.path.dirname(__file__))
 import torch
 import numpy as np
 
-from yolov5.models.common import DetectMultiBackend
-from yolov5.utils.general import check_img_size, non_max_suppression
-from yolov5.utils.preprocess import prep_image, prep_frame
+from yolox.yolox.exp import get_exp
+from yolox.utils import prep_image, prep_frame
+from yolox.yolox.utils import postprocess
 
 from detector.apis import BaseDetector
 
 
-class YOLOV5Detector(BaseDetector):
+class YOLOXDetector(BaseDetector):
     def __init__(self, cfg, opt=None):
-        super(YOLOV5Detector, self).__init__()
+        super(YOLOXDetector, self).__init__()
 
         self.detector_cfg = cfg
         self.detector_opt = opt
-        self.weights = cfg.get("WEIGHT", "detector/yolov5/data/yolov5l6.pt")
-        self.inp_dim = cfg.get("INP_DIM", 1280)
+        self.model_name = cfg.get("MODEL_NAME", "yolox-x")
+        self.model_weights = cfg.get("MODEL_WEIGHTS", "detector/yolo/data/yolox_x.pth")
+        self.exp = get_exp(exp_name=self.model_name)
+        self.num_classes = self.exp.num_classes
+        self.conf_thres = cfg.get("CONF_THRES", 0.1)
+        self.nms_thres = cfg.get("NMS_THRES", 0.6)
+        self.inp_dim = cfg.get("INP_DIM", 640)
         self.img_size = [self.inp_dim, self.inp_dim]
-        self.augment = cfg.get("AUGMENT", False)
-        self.confi_thres = cfg.get("CONF_THRES", 0.05)
-        self.iou_thres = cfg.get("IOU_THRES", 0.6)
-        self.max_det = cfg.get("MAX_DET", 300)
-        self.load_model()
+
+        self.model = None
 
     def load_model(self):
         args = self.detector_opt
 
         # Load model
         print("Loading YOLO model..")
-        self.model = DetectMultiBackend(self.weights)
-        self.stride = self.model.stride
-        self.img_size = check_img_size(self.img_size, s=self.stride)  # check image size
+        self.model = self.exp.get_model()
+        self.model.load_state_dict(
+            torch.load(self.model_weights, map_location="cpu")["model"]
+        )
 
         if args:
             if len(args.gpus) > 1:
@@ -61,13 +64,9 @@ class YOLOV5Detector(BaseDetector):
         Output: pre-processed image data(torch.FloatTensor,(1,3,h,w))
         """
         if isinstance(img_source, str):
-            img, orig_img, im_dim_list = prep_image(
-                img_source, self.img_size, self.stride
-            )
+            img, orig_img, im_dim_list = prep_image(img_source, self.img_size)
         elif isinstance(img_source, torch.Tensor) or isinstance(img_source, np.ndarray):
-            img, orig_img, im_dim_list = prep_frame(
-                img_source, self.img_size, self.stride
-            )
+            img, orig_img, im_dim_list = prep_frame(img_source, self.img_size)
         else:
             raise IOError("Unknown image source type: {}".format(type(img_source)))
 
@@ -90,14 +89,14 @@ class YOLOV5Detector(BaseDetector):
             self.load_model()
         with torch.no_grad():
             imgs = imgs.to(args.device) if args else imgs.cuda()
-            prediction = self.model(imgs, augment=self.augment, visualize=False)
+            prediction = self.model(imgs)
             # do nms to the detection results, only human category is left
             dets = self.dynamic_write_results(
                 prediction,
-                conf_thres=self.confi_thres,
-                iou_thres=self.iou_thres,
+                num_classes=self.num_classes,
+                conf_thres=self.conf_thres,
+                nms_thres=self.nms_thres,
                 classes=0,
-                max_det=self.max_det,
             )
             if isinstance(dets, int) or dets.shape[0] == 0:
                 return 0
@@ -105,12 +104,6 @@ class YOLOV5Detector(BaseDetector):
 
             orig_dim_list = torch.index_select(orig_dim_list, 0, dets[:, 0].long())
             scaling_factor = torch.min(self.inp_dim / orig_dim_list, 1)[0].view(-1, 1)
-            dets[:, [1, 3]] -= (
-                self.inp_dim - scaling_factor * orig_dim_list[:, 0].view(-1, 1)
-            ) / 2
-            dets[:, [2, 4]] -= (
-                self.inp_dim - scaling_factor * orig_dim_list[:, 1].view(-1, 1)
-            ) / 2
             dets[:, 1:5] /= scaling_factor
             for i in range(dets.shape[0]):
                 dets[i, [1, 3]] = torch.clamp(dets[i, [1, 3]], 0.0, orig_dim_list[i, 0])
@@ -119,27 +112,27 @@ class YOLOV5Detector(BaseDetector):
             return dets
 
     def dynamic_write_results(
-        self, prediction, conf_thres, iou_thres, classes=0, max_det=300
+        self, prediction, num_classes, conf_thres, nms_thres, classes=0
     ):
         prediction_bak = prediction.clone()
-        dets = non_max_suppression(
+        dets = postprocess(
             prediction.clone(),
-            conf_thres=conf_thres,
-            iou_thres=iou_thres,
+            num_classes=num_classes,
+            conf_thre=conf_thres,
+            nms_thre=nms_thres,
             classes=classes,
-            max_det=max_det,
         )
         if isinstance(dets, int):
             return dets
 
         if dets.shape[0] > 100:
-            iou_thres -= 0.05
-            dets = non_max_suppression(
-                prediction_bak.clone(),
-                conf_thres=conf_thres,
-                iou_thres=iou_thres,
+            nms_thres -= 0.05
+            dets = postprocess(
+                prediction.clone(),
+                num_classes=num_classes,
+                conf_thre=conf_thres,
+                nms_thre=nms_thres,
                 classes=classes,
-                max_det=max_det,
             )
 
         return dets
@@ -163,18 +156,18 @@ class YOLOV5Detector(BaseDetector):
             self.model = self.model.module
         dets_results = []
         # pre-process(scale, normalize, ...) the image
-        img, orig_img, img_dim_list = prep_image(img_name, self.inp_dim, self.stride)
+        img, orig_img, img_dim_list = prep_image(img_name, self.img_size)
         with torch.no_grad():
             img_dim_list = torch.FloatTensor([img_dim_list]).repeat(1, 2)
             img = img.to(args.device) if args else img.cuda()
-            prediction = self.model(img, augment=self.augment, visualize=False)
+            prediction = self.model(img)
             # do nms to the detection results, only human category is left
             dets = self.dynamic_write_results(
                 prediction,
-                conf_thres=self.confi_thres,
-                iou_thres=self.iou_thres,
+                num_classes=self.num_classes,
+                conf_thres=self.conf_thres,
+                nms_thres=self.nms_thres,
                 classes=0,
-                max_det=self.max_det,
             )
             if isinstance(dets, int) or dets.shape[0] == 0:
                 return None
@@ -182,12 +175,6 @@ class YOLOV5Detector(BaseDetector):
 
             img_dim_list = torch.index_select(img_dim_list, 0, dets[:, 0].long())
             scaling_factor = torch.min(self.inp_dim / img_dim_list, 1)[0].view(-1, 1)
-            dets[:, [1, 3]] -= (
-                self.inp_dim - scaling_factor * img_dim_list[:, 0].view(-1, 1)
-            ) / 2
-            dets[:, [2, 4]] -= (
-                self.inp_dim - scaling_factor * img_dim_list[:, 1].view(-1, 1)
-            ) / 2
             dets[:, 1:5] /= scaling_factor
             for i in range(dets.shape[0]):
                 dets[i, [1, 3]] = torch.clamp(dets[i, [1, 3]], 0.0, img_dim_list[i, 0])
