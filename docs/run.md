@@ -7,7 +7,7 @@ Here, we first list the flags and other parameters you can tune. Default paramet
 - `--cfg`: Experiment configure file name
 - `--checkpoint`: Experiment checkpoint file name
 - `--sp`: Run the program using a single process. Windows users need to turn this flag on.
-- `--detector`: Detector you can use, yolo/tracker.
+- `--detector`: Detector you can use, yolo/tracker. For [YOLOv5](https://github.com/ultralytics/yolov5), you should specify the model, i.e. yolov5x or yolov5m6, etc.
 - `--indir`: Directory of the input images. All the images in the directory will be processed.
 - `--list`: A text file list for the input images
 - `--image`: Read single image and process.

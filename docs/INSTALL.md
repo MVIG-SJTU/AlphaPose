@@ -5,9 +5,9 @@
 (if you have no nvidia device, delete [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L211) from setup.py
 * Python 3.5+
 * Cython
-* PyTorch 1.1+, for users with PyTorch 1.5 and 1.5+, please merge the pull request #592 by:
+* PyTorch 1.11+, for users with PyTorch < 1.5, please merge the pull request #592 by:
   `git pull origin pull/592/head`
-* torchvision 0.3.0+
+* torchvision 0.12.0+
 * numpy 
 * python-package setuptools >= 40.0, reported by [this issue](https://github.com/MVIG-SJTU/AlphaPose/issues/838)
 * Linux, [Windows user check here](#Windows)
@@ -74,9 +74,8 @@ If your OS platform is `Windows`, make sure that Windows C++ build tool like vis
 
 ### Models
 1. Download the object detection model manually: **yolov3-spp.weights**([Google Drive](https://drive.google.com/open?id=1D47msNOOiJKvPOXlnpyzdKA3k6E97NTC) | [Baidu pan](https://pan.baidu.com/s/1Zb2REEIk8tcahDa8KacPNA)). Place it into `detector/yolo/data`.
-
-2. Download our pose models. Place them into `pretrained_models`. All models and details are available in our [Model Zoo](./MODEL_ZOO.md).
-
+2. (Optional) If you want to use [YOLOv5](https://github.com/ultralytics/yolov5) as the detector, you can download the weights [here](https://github.com/ultralytics/yolov5/releases/tag/v6.1), and place them into `detector/yolov5/data`. We recommend yolov5x and yolov5m6.
+3. Download our pose models. Place them into `pretrained_models`. All models and details are available in our [Model Zoo](./MODEL_ZOO.md).
 2. For pose tracking, please refer to our [tracking docments](../trackers) for model download
 
 
