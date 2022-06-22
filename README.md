@@ -131,13 +131,13 @@ The main contributors are listed in [doc/contributors.md](docs/contributors.md).
 - [ ] 3D pose
 - [x] add tracking flag
 - [ ] PyTorch C++ version
-- [ ] Add MPII and AIC data
+- [x] Add model trained on mixture dataset (Check the model zoo)
 - [ ] dense support
 - [x] small box easy filter
 - [x] Crowdpose support
 - [ ] Speed up PoseFlow
-- [ ] Add stronger/light detectors and the [mobile pose](https://github.com/YuliangXiu/MobilePose-pytorch)
-- [x] High level API
+- [x] Add stronger/light detectors (yolox is now supported)
+- [x] High level API (check the scripts/demo_api.py)
 
 We would really appreciate if you can offer any help and be the [contributor](docs/contributors.md) of AlphaPose.
 
