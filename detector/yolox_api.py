@@ -26,7 +26,7 @@ class YOLOXDetector(BaseDetector):
         self.detector_cfg = cfg
         self.detector_opt = opt
         self.model_name = cfg.get("MODEL_NAME", "yolox-x")
-        self.model_weights = cfg.get("MODEL_WEIGHTS", "detector/yolo/data/yolox_x.pth")
+        self.model_weights = cfg.get("MODEL_WEIGHTS", "detector/yolox/data/yolox_x.pth")
         self.exp = get_exp(exp_name=self.model_name)
         self.num_classes = self.exp.num_classes
         self.conf_thres = cfg.get("CONF_THRES", 0.1)
@@ -40,7 +40,7 @@ class YOLOXDetector(BaseDetector):
         args = self.detector_opt
 
         # Load model
-        print("Loading YOLO model..")
+        print(f"Loading {self.model_name.upper().replace('_', '-')} model..")
         self.model = self.exp.get_model()
         self.model.load_state_dict(
             torch.load(self.model_weights, map_location="cpu")["model"]

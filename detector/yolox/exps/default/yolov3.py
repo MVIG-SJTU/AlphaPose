@@ -24,7 +24,7 @@ class Exp(MyExp):
                     m.momentum = 0.03
 
         if "model" not in self.__dict__:
-            from yolox.models import YOLOX, YOLOFPN, YOLOXHead
+            from detector.yolox.yolox.models import YOLOX, YOLOFPN, YOLOXHead
 
             backbone = YOLOFPN()
             head = YOLOXHead(
