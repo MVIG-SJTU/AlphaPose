@@ -15,6 +15,9 @@ def get_detector(opt=None):
     elif 'yolox' in opt.detector:
         from detector.yolox_api import YOLOXDetector
         from detector.yolox_cfg import cfg
+        if opt.detector.lower() == 'yolox':
+            opt.detector = 'yolox-x'
+        cfg.MODEL_NAME = opt.detector.lower()
         cfg.WEIGHT = f'detector/yolox/data/{opt.detector.lower().replace("-", "_")}.pth'
         return YOLOXDetector(cfg, opt)
     elif opt.detector == 'tracker':
