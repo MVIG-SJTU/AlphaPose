@@ -8,6 +8,10 @@ Checkout the [run.md](./run.md) for all flags.
 ``` bash
 python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --indir ${img_directory} --outdir ${output_directory}
 ```
+- **Choose a different detector**: Default detector is yolov3-spp, it works pretty well, if you want to use yolox series, remember to download their weight according to our installation readme. Options include [yolox-x|yolox-l|yolox-m|yolox-s|yolox-darknet]:
+``` bash
+python scripts/demo_inference.py --detector yolox-x --cfg ${cfg_file} --checkpoint ${trained_model} --indir ${img_directory} --outdir ${output_directory}
+```
 - **Video**:  Run AlphaPose for a video and save the rendered video with:
 ``` bash
 python scripts/demo_inference.py --cfg ${cfg_file} --checkpoint ${trained_model} --video ${path to video} --outdir examples/res --save_video
