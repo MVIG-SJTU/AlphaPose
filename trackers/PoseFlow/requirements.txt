@@ -1,4 +1,4 @@
-numpy==1.14.5
+numpy==1.22.0
 scipy==1.1.0
 opencv_python==3.4.2.16
 opencv_contrib_python==3.4.2.16
