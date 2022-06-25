@@ -88,7 +88,7 @@ def postprocess(
         detections = detections[nms_out_index]
         batch_idx = detections.new(detections.size(0), 1).fill_(i)
         detections = torch.cat((batch_idx, detections), 1)
-        if not output:
+        if isinstance(output, int) and output == 0:
             output = detections
         else:
             output = torch.cat((output, detections))
