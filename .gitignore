@@ -114,7 +114,7 @@ data/
 tmp/
 exp/json
 tmp_*/
-example/res/
+examples/res*/
 data/
 exp/
 data
