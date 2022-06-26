@@ -198,6 +198,9 @@ def vis_frame_fast(frame, im_res, opt, vis_thres, format='coco'):
             kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
             vis_thres.append(vis_thres[-1])
         if opt.pose_track or opt.tracking:
+            while isinstance(human['idx'], list):
+                human['idx'].sort()
+                human['idx'] = human['idx'][0]
             color = get_color_fast(int(abs(human['idx'])))
         else:
             color = BLUE
@@ -417,6 +420,9 @@ def vis_frame(frame, im_res, opt, vis_thres, format='coco'):
             kp_scores = torch.cat((kp_scores, torch.unsqueeze((kp_scores[5, :] + kp_scores[6, :]) / 2, 0)))
             vis_thres.append(vis_thres[-1])
         if opt.tracking:
+            while isinstance(human['idx'], list):
+                human['idx'].sort()
+                human['idx'] = human['idx'][0]
             color = get_color_fast(int(abs(human['idx'])))
         else:
             color = BLUE
