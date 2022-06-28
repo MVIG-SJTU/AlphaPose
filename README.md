@@ -89,7 +89,7 @@ Please check out [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md)
 ``` bash
 ./scripts/inference.sh ${CONFIG} ${CHECKPOINT} ${VIDEO_NAME} # ${OUTPUT_DIR}, optional
 ```
-For high level API, please refer to `./scripts/demo_api.py`
+For high level API, please refer to `./scripts/demo_api.py`. To enable tracking, please refer to [this page](./trackers).
 
 - **Training**: Train from scratch
 ``` bash
