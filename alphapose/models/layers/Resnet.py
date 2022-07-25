@@ -137,7 +137,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self._norm_layer = norm_layer
         self.architecture = architecture
-        assert architecture in ["resnet18", "resnet50", "resnet101", 'resnet152']
+        assert architecture in ["resnet18", "resnet34", "resnet50", "resnet101", 'resnet152']
         layers = {
             'resnet18': [2, 2, 2, 2],
             'resnet34': [3, 4, 6, 3],

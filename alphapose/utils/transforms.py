@@ -801,6 +801,157 @@ def affine_transform(pt, t):
     return new_pt[:2]
 
 
+def flip_thetas(thetas, theta_pairs):
+    """Flip thetas.
+
+    Parameters
+    ----------
+    thetas : numpy.ndarray
+        Joints in shape (num_thetas, 3)
+    theta_pairs : list
+        List of theta pairs.
+
+    Returns
+    -------
+    numpy.ndarray
+        Flipped thetas with shape (num_thetas, 3)
+
+    """
+    thetas_flip = thetas.copy()
+    # reflect horizontally
+    thetas_flip[:, 1] = -1 * thetas_flip[:, 1]
+    thetas_flip[:, 2] = -1 * thetas_flip[:, 2]
+    # change left-right parts
+    for pair in theta_pairs:
+        thetas_flip[pair[0], :], thetas_flip[pair[1], :] = \
+            thetas_flip[pair[1], :], thetas_flip[pair[0], :].copy()
+
+    return thetas_flip
+
+
+def flip_xyz_joints_3d(joints_3d, joint_pairs):
+    """Flip 3d xyz joints.
+
+    Parameters
+    ----------
+    joints_3d : numpy.ndarray
+        Joints in shape (num_joints, 3)
+    joint_pairs : list
+        List of joint pairs.
+
+    Returns
+    -------
+    numpy.ndarray
+        Flipped 3d joints with shape (num_joints, 3)
+
+    """
+    assert joints_3d.ndim in (2, 3)
+
+    joints = joints_3d.copy()
+    # flip horizontally
+    joints[:, 0] = -1 * joints[:, 0]
+    # change left-right parts
+    for pair in joint_pairs:
+        joints[pair[0], :], joints[pair[1], :] = joints[pair[1], :], joints[pair[0], :].copy()
+
+    return joints
+
+
+def batch_rodrigues_numpy(rot_vecs, epsilon=1e-8):
+    ''' Calculates the rotation matrices for a batch of rotation vectors
+        Parameters
+        ----------
+        rot_vecs: numpy.ndarray Nx3
+            array of N axis-angle vectors
+        Returns
+        -------
+        R: numpy.ndarray Nx3x3
+            The rotation matrices for the given axis-angle parameters
+    '''
+
+    batch_size = rot_vecs.shape[0]
+
+    angle = np.linalg.norm(rot_vecs + 1e-8, axis=1, keepdims=True)
+    rot_dir = rot_vecs / angle
+
+    cos = np.cos(angle)[:, None, :]
+    sin = np.sin(angle)[:, None, :]
+
+    # Bx1 arrays
+    rx, ry, rz = np.split(rot_dir, 3, axis=1)
+    K = np.zeros((batch_size, 3, 3))
+    zeros = np.zeros((batch_size, 1))
+
+    K = np.concatenate([zeros, -rz, ry, rz, zeros, -rx, -ry, rx, zeros], axis=1) \
+        .reshape((batch_size, 3, 3))
+
+    ident = np.eye(3)[None, :, :]
+    rot_mat = ident + sin * K + (1 - cos) * np.einsum('bij,bjk->bik', K, K)
+    return rot_mat
+
+
+def rotmat_to_quat_numpy(rotmat):
+    """Convert quaternion coefficients to rotation matrix.
+    Args:
+        Rotation matrix corresponding to the quaternion -- size = [B, 3, 3]
+    Returns:
+        quat: size = [B, 4] 4 <===>(w, x, y, z)
+    """
+    trace = np.einsum('bii->b', rotmat)
+    m32 = rotmat[:, 2, 1]
+    m23 = rotmat[:, 1, 2]
+    m13 = rotmat[:, 0, 2]
+    m31 = rotmat[:, 2, 0]
+    m21 = rotmat[:, 1, 0]
+    m12 = rotmat[:, 0, 1]
+
+    trace = trace + 1
+    w = np.sqrt(trace.clip(min=1e-8)) / 2
+    x = (m32 - m23) / (4 * w)
+    y = (m13 - m31) / (4 * w)
+    z = (m21 - m12) / (4 * w)
+
+    return np.stack([w, x, y, z], axis=1)
+
+
+def flip_twist(twist_phi, twist_weight, twist_pairs):
+    # twist_flip = -1 * twist_phi.copy() # 23 x 2
+    twist_flip = np.zeros_like(twist_phi)
+    weight_flip = twist_weight.copy()
+
+    twist_flip[:, 0] = twist_phi[:, 0].copy() # cos
+    twist_flip[:, 1] = -1 * twist_phi[:, 1].copy() # sin
+    for pair in twist_pairs:
+        idx0 = pair[0] - 1
+        idx1 = pair[1] - 1
+        twist_flip[idx0, :], twist_flip[idx1, :] = \
+            twist_flip[idx1, :], twist_flip[idx0, :].copy()
+        
+        weight_flip[idx0, :], weight_flip[idx1, :] = \
+            weight_flip[idx1, :], weight_flip[idx0, :].copy()
+
+    return twist_flip, weight_flip
+
+
+def get_intrinsic_metrix(f, c, inv=False):
+    intrinsic_metrix = np.zeros((3, 3)).astype(np.float32)
+
+    if inv:
+        intrinsic_metrix[0, 0] = 1.0 / f[0]
+        intrinsic_metrix[0, 2] = -c[0] / f[0]
+        intrinsic_metrix[1, 1] = 1.0 / f[1]
+        intrinsic_metrix[1, 2] = -c[1] / f[1]
+        intrinsic_metrix[2, 2] = 1
+    else:
+        intrinsic_metrix[0, 0] = f[0]
+        intrinsic_metrix[0, 2] = c[0]
+        intrinsic_metrix[1, 1] = f[1]
+        intrinsic_metrix[1, 2] = c[1]
+        intrinsic_metrix[2, 2] = 1
+
+    return intrinsic_metrix
+
+
 def get_func_heatmap_to_coord(cfg):
     if cfg.DATA_PRESET.TYPE == 'simple':
         if cfg.LOSS.TYPE == 'MSELoss':
