@@ -101,5 +101,5 @@ python scripts/demo_inference.py --cfg configs/halpe_coco_wholebody_136/resnet/2
 
 | Model                    | Backbone | Input Size |     PA-MPJPE (3DPW)     |     PA-MPJPE (Human3.6M)     |  Download | Config |  
 |--------------------------|----------|------------|------------|------------|-----------|--------|
-|[HybrIK](../configs/smpl/256x192_adam_lr1e-3-res34_smpl_24_3d_base_2x_mix.yaml)    | ResNet34           | 256x256            |  45.3        |  36.3      | [model](https://drive.google.com/file/d/1SoVJ3dniVpBi2NkYfa2S8XEv0TGIK26l/view?usp=sharing) | [cfg](../configs/smpl/256x192_adam_lr1e-3-res34_smpl_24_3d_base_2x_mix.yaml)    |
+|[HybrIK](../configs/smpl/256x192_adam_lr1e-3-res34_smpl_24_3d_base_2x_mix.yaml)    | ResNet34           | 256x256            |  45.3        |  36.3      | [model](https://drive.google.com/file/d/16Y_MGUynFeEzV8GVtKTE5AtkHSi3xsF9/view?usp=sharing) | [cfg](../configs/smpl/256x192_adam_lr1e-3-res34_smpl_24_3d_base_2x_mix.yaml)    |
 
