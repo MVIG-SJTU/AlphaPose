@@ -4,6 +4,8 @@ import time
 import cv2
 import numpy as np
 import torch
+import PIL.Image as pil_img
+from .render import SMPLRenderer
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -27,6 +29,20 @@ def get_color(idx):
 
 def get_color_fast(idx):
     color_pool = [RED, GREEN, BLUE, CYAN, YELLOW, ORANGE, PURPLE, WHITE]
+    color = color_pool[idx % 8]
+
+    return color
+
+
+def get_smpl_color(idx):
+    color_pool = [
+        [int(0.65098039 * 255), int(0.74117647 * 255), int(0.85882353 * 255)],
+        [0.9 * 255, 0.7 * 255, 0.7 * 255],
+        [120, 198, 121],
+        [0.74117647 * 255, 0.65098039 * 255, 0.85882353 * 255],
+        [0.7 * 255, 0.9 * 255, 0.7 * 255],
+        [198, 120, 121],
+        CYAN, WHITE]
     color = color_pool[idx % 8]
 
     return color
@@ -497,8 +513,118 @@ def vis_frame(frame, im_res, opt, vis_thres, format='coco'):
     return img
 
 
+def vis_frame_smpl(frame, im_res, smpl_output, opt, vis_thres):
+    '''
+    frame: frame image
+    im_res: result dict
+    smpl_output: predictions
+
+    return rendered image
+    '''
+    img = frame.copy()
+    height, width = img.shape[:2]
+    img_size = (height, width)
+    focal = np.array([1000, 1000])
+
+    all_transl = smpl_output['transl'].detach().cpu().numpy()
+    vertices = smpl_output['pred_vertices'].detach().cpu().numpy()
+    # all_theta = pose_output.pred_theta_mats.detach().cpu().numpy()
+
+    for n_human, human in enumerate(im_res['result']):
+        kp_preds = human['keypoints']
+        kp_scores = human['kp_score']
+        score = human['bbox_score']
+        if score < 0.3:
+            continue
+        # bbox = human['box']
+        # x1y1wh
+        bbox = human['crop_box']
+        # x1x2y1y2
+        bbox = [bbox[0], bbox[0]+bbox[2], bbox[1], bbox[1]+bbox[3]]#xmin,xmax,ymin,ymax
+
+        if opt.pose_track or opt.tracking:
+            while isinstance(human['idx'], list):
+                human['idx'].sort()
+                human['idx'] = human['idx'][0]
+            color = get_smpl_color(int(abs(human['idx'])))
+        else:
+            color = [int(0.65098039 * 255), int(0.74117647 * 255), int(0.85882353 * 255)]
+
+        # Draw bboxes
+        if opt.showbox:
+            if 'crop_box' not in human.keys():
+                from trackers.PoseFlow.poseflow_infer import get_box
+                keypoints = []
+                for n in range(kp_scores.shape[0]):
+                    keypoints.append(float(kp_preds[n, 0]))
+                    keypoints.append(float(kp_preds[n, 1]))
+                    keypoints.append(float(kp_scores[n]))
+                bbox = get_box(keypoints, height, width)
+
+            cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), color, 2)
+            if opt.tracking:
+                cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
+        # # Draw keypoints
+        # for n in range(kp_scores.shape[0]):
+        #     if kp_scores[n] <= vis_thres[n]:
+        #         continue
+        #     cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
+        #     # part_line[n] = (cor_x, cor_y)
+        #     cv2.circle(img, (cor_x, cor_y), 3, color, -1)
+
+        # Draw SMPL
+        princpt = [(bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2]
+
+        renderer = SMPLRenderer(img_size=img_size, focal=focal,
+                                princpt=princpt)
+        transl = all_transl[n_human].squeeze()
+        transl[2] = transl[2] * 256 / (bbox[1] - bbox[0])
+
+        vert = vertices[n_human]
+        # print(all_theta[n_human])
+
+        img = vis_smpl_3d(
+            vert, img, cam_root=transl,
+            f=focal, c=princpt, renderer=renderer, color=[c / 255 for c in color])
+
+    return img
+
+
+def vis_smpl_3d(vert, img, cam_root, f, c, renderer, color=None, cam_rt=np.zeros(3),
+                cam_t=np.zeros(3), J_regressor_h36m=None):
+    '''
+    input theta_mats: np.ndarray (96, )
+    input betas: np.ndarray (10, )
+    input img: RGB Image array with value in [0, 1]
+    input cam_root: np.ndarray (3, )
+    input f: np.ndarray (2, )
+    input c: np.ndarray (2, )
+    '''
+
+    vertices = vert
+    # J_from_verts_h36m = vertices2joints(J_regressor_h36m, pose_output['vertices'].detach().cpu())
+
+    # cam_for_render = np.hstack([f[0], c])
+
+    # center = pose_output.joints[0][0].cpu().data.numpy()
+    # vert_shifted = vertices - center + cam_root
+    vert_shifted = vertices + cam_root
+    vert_shifted = vert_shifted
+
+    # Render results
+    rend_img_overlay = renderer(
+        vert_shifted, princpt=c, img=img, do_alpha=True, color=color, cam_rt=cam_rt, cam_t=cam_t)
+
+    img = pil_img.fromarray(rend_img_overlay[:, :, :3].astype(np.uint8))
+    # if len(filename) > 0:
+    #     img.save(filename)
+
+    return np.asarray(img)
+
+
 def getTime(time1=0):
     if not time1:
+
         return time.time()
     else:
         interval = time.time() - time1

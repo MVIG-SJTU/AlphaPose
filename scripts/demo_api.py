@@ -17,7 +17,7 @@ import numpy as np
 
 from alphapose.utils.transforms import get_func_heatmap_to_coord
 from alphapose.utils.pPose_nms import pose_nms
-from alphapose.utils.presets import SimpleTransform
+from alphapose.utils.presets import SimpleTransform, SimpleTransform3DSMPL
 from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.models import builder
 from alphapose.utils.config import update_config
@@ -81,14 +81,34 @@ class DetectionLoader():
 
         self._sigma = cfg.DATA_PRESET.SIGMA
 
-        pose_dataset = builder.retrieve_dataset(self.cfg.DATASET.TRAIN)
         if cfg.DATA_PRESET.TYPE == 'simple':
+            pose_dataset = builder.retrieve_dataset(self.cfg.DATASET.TRAIN)
             self.transformation = SimpleTransform(
                 pose_dataset, scale_factor=0,
                 input_size=self._input_size,
                 output_size=self._output_size,
                 rot=0, sigma=self._sigma,
                 train=False, add_dpg=False, gpu_device=self.device)
+        elif cfg.DATA_PRESET.TYPE == 'simple_smpl':
+            # TODO: new features
+            from easydict import EasyDict as edict
+            dummpy_set = edict({
+                'joint_pairs_17': None,
+                'joint_pairs_24': None,
+                'joint_pairs_29': None,
+                'bbox_3d_shape': (2.2, 2.2, 2.2)
+            })
+            self.transformation = SimpleTransform3DSMPL(
+                dummpy_set, scale_factor=cfg.DATASET.SCALE_FACTOR,
+                color_factor=cfg.DATASET.COLOR_FACTOR,
+                occlusion=cfg.DATASET.OCCLUSION,
+                input_size=cfg.MODEL.IMAGE_SIZE,
+                output_size=cfg.MODEL.HEATMAP_SIZE,
+                depth_dim=cfg.MODEL.EXTRA.DEPTH_DIM,
+                bbox_3d_shape=(2.2, 2,2, 2.2),
+                rot=cfg.DATASET.ROT_FACTOR, sigma=cfg.MODEL.EXTRA.SIGMA,
+                train=False, add_dpg=False, gpu_device=self.device,
+                loss_type=cfg.LOSS['TYPE'])
 
         self.image = (None, None, None, None)
         self.det = (None, None, None, None, None, None, None)

@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.multiprocessing as mp
 
-from alphapose.utils.presets import SimpleTransform
+from alphapose.utils.presets import SimpleTransform, SimpleTransform3DSMPL
 
 
 class WebCamDetectionLoader():
@@ -39,6 +39,26 @@ class WebCamDetectionLoader():
                 output_size=self._output_size,
                 rot=0, sigma=self._sigma,
                 train=False, add_dpg=False)
+        elif cfg.DATA_PRESET.TYPE == 'simple_smpl':
+            # TODO: new features
+            from easydict import EasyDict as edict
+            dummpy_set = edict({
+                'joint_pairs_17': None,
+                'joint_pairs_24': None,
+                'joint_pairs_29': None,
+                'bbox_3d_shape': (2.2, 2.2, 2.2)
+            })
+            self.transformation = SimpleTransform3DSMPL(
+                dummpy_set, scale_factor=cfg.DATASET.SCALE_FACTOR,
+                color_factor=cfg.DATASET.COLOR_FACTOR,
+                occlusion=cfg.DATASET.OCCLUSION,
+                input_size=cfg.MODEL.IMAGE_SIZE,
+                output_size=cfg.MODEL.HEATMAP_SIZE,
+                depth_dim=cfg.MODEL.EXTRA.DEPTH_DIM,
+                bbox_3d_shape=(2.2, 2,2, 2.2),
+                rot=cfg.DATASET.ROT_FACTOR, sigma=cfg.MODEL.EXTRA.SIGMA,
+                train=False, add_dpg=False, gpu_device=self.device,
+                loss_type=cfg.LOSS['TYPE'])
 
         # initialize the queue used to store data
         """
