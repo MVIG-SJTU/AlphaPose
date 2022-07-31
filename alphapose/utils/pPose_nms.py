@@ -688,6 +688,12 @@ def write_json(all_results, outputpath, form=None, for_eval=False, outputfile='a
             #pose track results by PoseFlow
             if 'idx' in human.keys():
                 result['idx'] = human['idx']
+            
+            # 3d pose
+            if 'pred_xyz_jts' in human.keys():
+                pred_xyz_jts = human['pred_xyz_jts']
+                pred_xyz_jts = pred_xyz_jts.cpu().numpy().tolist()
+                result['pred_xyz_jts'] = pred_xyz_jts
 
             if form == 'cmu': # the form of CMU-Pose
                 if result['image_id'] not in json_results_cmu.keys():

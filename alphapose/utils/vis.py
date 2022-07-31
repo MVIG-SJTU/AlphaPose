@@ -2,10 +2,14 @@ import math
 import time
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import PIL.Image as pil_img
 from .render import SMPLRenderer
+
+import logging
+logging.getLogger('matplotlib.font_manager').disabled = True
 
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
@@ -262,7 +266,7 @@ def vis_frame_fast(frame, im_res, opt, vis_thres, format='coco'):
                     else:
                         cv2.line(img, start_xy, end_xy, line_color[i], 2 * int(kp_scores[start_p] + kp_scores[end_p]) + 1)
                 else:
-                    cv2.line(img, start_xy, end_xy, (255,255,255), 1)  
+                    cv2.line(img, start_xy, end_xy, (255,255,255), 1)
 
     return img
 
@@ -564,13 +568,6 @@ def vis_frame_smpl(frame, im_res, smpl_output, opt, vis_thres):
             cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), color, 2)
             if opt.tracking:
                 cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
-        # # Draw keypoints
-        # for n in range(kp_scores.shape[0]):
-        #     if kp_scores[n] <= vis_thres[n]:
-        #         continue
-        #     cor_x, cor_y = int(kp_preds[n, 0]), int(kp_preds[n, 1])
-        #     # part_line[n] = (cor_x, cor_y)
-        #     cv2.circle(img, (cor_x, cor_y), 3, color, -1)
 
         # Draw SMPL
         princpt = [(bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2]
@@ -620,6 +617,220 @@ def vis_smpl_3d(vert, img, cam_root, f, c, renderer, color=None, cam_rt=np.zeros
     #     img.save(filename)
 
     return np.asarray(img)
+
+
+def vis_frame_skeleton(frame, im_res, smpl_output, opt, vis_thres):
+    '''
+    frame: frame image
+    im_res: result dict
+    smpl_output: predictions
+
+    return rendered image
+    '''
+    img = frame.copy()
+    height, width = img.shape[:2]
+    focal = np.array([1000, 1000])
+
+    all_transl = smpl_output['transl'].detach().cpu().numpy()
+
+    l_pair = [(15, 12), (12, 9), 
+        (9, 13), (13, 16), (16, 18), (18, 20), (20, 22),
+        (9, 14), (14, 17), (17, 19), (19, 21), (21, 23), 
+        (9, 6), (6, 3), (3, 0),
+        (0, 1), (1, 4), (4, 7), (7, 10),
+        (0, 2), (2, 5), (5, 8), (8, 11)
+    ]
+
+    cmap = plt.get_cmap("rainbow")
+    colors = [cmap(i) for i in np.linspace(0, 1, len(l_pair) + 2)]
+    colors = [np.array((c[0], c[1], c[2])) for c in colors]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection="3d", autoscale_on=False)
+
+    x_min, y_min, z_min = 9999, 9999, 9999
+    x_max, y_max, z_max = -9999, -9999, -9999
+
+    for n_human, human in enumerate(im_res['result']):
+        kp_preds = human['keypoints']
+        kp_scores = human['kp_score']
+        xyz_preds = human['pred_xyz_jts']
+        score = human['bbox_score']
+        if score < 0.3:
+            continue
+        # x1y1wh
+        bbox = human['crop_box']
+        # x1x2y1y2
+        bbox = [bbox[0], bbox[0] + bbox[2], bbox[1], bbox[1] + bbox[3]] # xmin,xmax,ymin,ymax
+
+        if opt.pose_track or opt.tracking:
+            while isinstance(human['idx'], list):
+                human['idx'].sort()
+                human['idx'] = human['idx'][0]
+            color = get_smpl_color(int(abs(human['idx'])))
+        else:
+            color = BLUE
+        
+        # Draw bboxes
+        if opt.showbox:
+            if 'crop_box' not in human.keys():
+                from trackers.PoseFlow.poseflow_infer import get_box
+                keypoints = []
+                for n in range(kp_scores.shape[0]):
+                    keypoints.append(float(kp_preds[n, 0]))
+                    keypoints.append(float(kp_preds[n, 1]))
+                    keypoints.append(float(kp_scores[n]))
+                bbox = get_box(keypoints, height, width)
+
+            cv2.rectangle(img, (int(bbox[0]), int(bbox[2])), (int(bbox[1]), int(bbox[3])), color, 2)
+            if opt.tracking:
+                cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
+
+        # Draw keypoints
+        for n in range(len(l_pair)):
+            cor_x_1, cor_y_1 = int(kp_preds[l_pair[n][0], 0]), int(
+                kp_preds[l_pair[n][0], 1]
+            )
+            cor_x_2, cor_y_2 = int(kp_preds[l_pair[n][1], 0]), int(
+                kp_preds[l_pair[n][1], 1]
+            )
+            if opt.tracking:
+                cv2.circle(img, (cor_x_1, cor_y_1), 3, color, -1)
+                cv2.circle(img, (cor_x_2, cor_y_2), 3, color, -1)
+                cv2.line(
+                    img,
+                    (cor_x_1, cor_y_1),
+                    (cor_x_2, cor_y_2),
+                    color,
+                    2 * int(kp_scores[l_pair[n][0]] + kp_scores[l_pair[n][1]]) + 1,
+                )
+            else:
+                cv2.circle(
+                    img,
+                    (cor_x_1, cor_y_1),
+                    3,
+                    (
+                        int(colors[n][0] * 255),
+                        int(colors[n][1] * 255),
+                        int(colors[n][2] * 255),
+                    ),
+                    -1,
+                )
+                cv2.circle(
+                    img,
+                    (cor_x_2, cor_y_2),
+                    3,
+                    (
+                        int(colors[n][0] * 255),
+                        int(colors[n][1] * 255),
+                        int(colors[n][2] * 255),
+                    ),
+                    -1,
+                )
+                cv2.line(
+                    img,
+                    (cor_x_1, cor_y_1),
+                    (cor_x_2, cor_y_2),
+                    (
+                        int(colors[n][0] * 255),
+                        int(colors[n][1] * 255),
+                        int(colors[n][2] * 255),
+                    ),
+                    2 * int(kp_scores[l_pair[n][0]] + kp_scores[l_pair[n][1]]) + 1,
+                )
+
+        # Draw 3d skeleton
+        transl = all_transl[n_human].squeeze()
+        transl[0] = transl[0] + ((bbox[0] + bbox[1]) / 2) * transl[2] / focal[0]
+        transl[1] = transl[1] + ((bbox[2] + bbox[3]) / 2) * transl[2] / focal[1]
+        transl[2] = transl[2] * 256 / (bbox[1] - bbox[0])
+
+        xyz_preds = xyz_preds + transl
+        xyz_preds = xyz_preds.numpy()
+
+        for l in range(len(l_pair)):
+            i1 = l_pair[l][0]
+            i2 = l_pair[l][1]
+            x = np.array([xyz_preds[i1, 0], xyz_preds[i2, 0]])
+            y = np.array([xyz_preds[i1, 1], xyz_preds[i2, 1]])
+            z = np.array([xyz_preds[i1, 2], xyz_preds[i2, 2]])
+
+            if kp_scores[i1, 0] > 0 and kp_scores[i2, 0] > 0:
+                ax.plot(
+                    x,
+                    z,
+                    -y,
+                    color=colors[l] if not opt.tracking else np.array(color) / 255,
+                    linewidth=2,
+                )
+            if kp_scores[i1, 0] > 0:
+                ax.scatter(
+                    xyz_preds[i1, 0],
+                    xyz_preds[i1, 2],
+                    -xyz_preds[i1, 1],
+                    color=colors[l] if not opt.tracking else np.array(color) / 255,
+                    marker="o",
+                )
+            if kp_scores[i2, 0] > 0:
+                ax.scatter(
+                    xyz_preds[i2, 0],
+                    xyz_preds[i2, 2],
+                    -xyz_preds[i2, 1],
+                    color=colors[l] if not opt.tracking else np.array(color) / 255,
+                    marker="o",
+                )
+
+            x_min, y_min, z_min = (
+                min(xyz_preds[:, 0].min(), x_min),
+                min(xyz_preds[:, 1].min(), y_min),
+                min(xyz_preds[:, 2].min(), z_min),
+            )
+            x_max, y_max, z_max = (
+                max(xyz_preds[:, 0].max(), x_max),
+                max(xyz_preds[:, 1].max(), y_max),
+                max(xyz_preds[:, 2].max(), z_max),
+            )
+
+    ax.set_xlim([x_min * 0.8, x_max * 1.2])
+    ax.set_ylim([z_min * 0.8, z_max * 1.2])
+    ax.set_zlim([-y_max, -y_min])
+    ax.axes.xaxis.set_ticklabels([])
+    ax.axes.yaxis.set_ticklabels([])
+    ax.axes.zaxis.set_ticklabels([])
+
+    ax.view_init(azim=-70, elev=15)
+
+    # Convert plt to cv2
+    fig.canvas.draw()
+    b = fig.axes[0].get_window_extent()
+    skeleton_img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep="")
+    skeleton_img = skeleton_img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    skeleton_img = skeleton_img[int(b.y0) : int(b.y1), int(b.x0) : int(b.x1), :]
+    skeleton_img = cv2.cvtColor(skeleton_img, cv2.COLOR_RGB2BGR)
+
+    cat_img = np.zeros(
+        (
+            max(skeleton_img.shape[0], img.shape[0]),
+            skeleton_img.shape[1] + img.shape[1],
+            3,
+        )
+    )
+    cat_img[
+        (cat_img.shape[0] - img.shape[0]) // 2 : (cat_img.shape[0] - img.shape[0]) // 2
+        + img.shape[0],
+        : img.shape[1],
+        :,
+    ] = img
+    cat_img[
+        (cat_img.shape[0] - skeleton_img.shape[0])
+        // 2 : (cat_img.shape[0] - skeleton_img.shape[0])
+        // 2
+        + skeleton_img.shape[0],
+        img.shape[1] :,
+        :,
+    ] = skeleton_img
+
+    return cat_img
 
 
 def getTime(time1=0):

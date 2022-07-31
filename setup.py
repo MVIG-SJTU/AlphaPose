@@ -165,7 +165,8 @@ def get_install_requires():
         'tqdm', 'tensorboardx', 'easydict',
         'pyyaml', 'halpecocotools',
         'torch>=1.1.0', 'torchvision>=0.3.0',
-        'munkres', 'timm==0.1.20', 'natsort'
+        'munkres', 'timm==0.1.20', 'natsort',
+        'opendr'
     ]
     # official pycocotools doesn't support Windows, we will install it by third-party git repository later
     if platform.system() != 'Windows':

@@ -101,9 +101,8 @@ class DataWriterSMPL():
             else:
                 # location prediction (n, kp, 2) | score prediction (n, kp, 1)
                 uv_29 = smpl_output['pred_uvd_jts'].reshape(-1, 29, 3)[:, :, :2].cpu()
+                pred_xyz_jts_24 = smpl_output['pred_xyz_jts_24'].reshape(-1, 24, 3).cpu()
 
-                # pose_scores = []
-                # print(uv_29)
                 pose_coords = uv_29 * (cropped_boxes[:, [2], None] - cropped_boxes[:, [0], None])
                 pose_coords[:, :, 0] = pose_coords[:, :, 0] + (cropped_boxes[:, [0]] + cropped_boxes[:, [2]]) / 2
                 pose_coords[:, :, 1] = pose_coords[:, :, 1] + (cropped_boxes[:, [1]] + cropped_boxes[:, [3]]) / 2
@@ -113,16 +112,19 @@ class DataWriterSMPL():
                 # if not self.opt.pose_track:
                 #     boxes, scores, ids, preds_img, preds_scores, pick_ids = \
                 #         pose_nms(boxes, scores, ids, preds_img, preds_scores, self.opt.min_box_area, use_heatmap_loss=self.use_heatmap_loss)
+                boxes = boxes.cpu().tolist()
+                cropped_boxes = cropped_boxes.cpu().tolist()
 
                 _result = []
                 for k in range(len(scores)):
                     _result.append(
                         {
                             'keypoints': preds_img[k],
+                            'pred_xyz_jts': pred_xyz_jts_24[k],
                             'kp_score': preds_scores[k],
                             'proposal_score': torch.mean(preds_scores[k]) + scores[k] + 1.25 * max(preds_scores[k]),
-                            'bbox_score': scores[k],
-                            'idx': ids[k],
+                            'bbox_score': scores[k].cpu(),
+                            'idx': ids[k].item(),
                             # xywh
                             'box': [boxes[k][0], boxes[k][1], boxes[k][2]-boxes[k][0],boxes[k][3]-boxes[k][1]],
                             # xywh
@@ -144,6 +146,9 @@ class DataWriterSMPL():
                 if self.opt.save_img or self.save_video or self.opt.vis:
                     from alphapose.utils.vis import vis_frame_smpl
                     img = vis_frame_smpl(orig_img, result, smpl_output, self.opt, self.vis_thres)
+                    if self.opt.show_skeleton:
+                        from alphapose.utils.vis import vis_frame_skeleton
+                        img = vis_frame_skeleton(img, result, smpl_output, self.opt, self.vis_thres)
                     self.write_image(img, im_name, stream=stream if self.save_video else None)
 
     def write_image(self, img, im_name, stream=None):

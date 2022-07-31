@@ -49,6 +49,8 @@ parser.add_argument('--vis', default=False, action='store_true',
                     help='visualize image')
 parser.add_argument('--showbox', default=False, action='store_true',
                     help='visualize human bbox')
+parser.add_argument('--show_skeleton', default=False, action='store_true',
+                    help='visualize 3d human skeleton')
 parser.add_argument('--profile', default=False, action='store_true',
                     help='add speed profiling at screen output')
 parser.add_argument('--format', type=str,
@@ -149,7 +151,7 @@ def print_finish_info():
     print('===========================> Finish Model Running.')
     if (args.save_img or args.save_video) and not args.vis_fast:
         print('===========================> Rendering remaining images in the queue...')
-        print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
+        # print('===========================> If this step takes too long, you can enable the --vis_fast flag to use fast rendering (real-time).')
 
 
 def loop():
@@ -256,11 +258,13 @@ if __name__ == "__main__":
                 boxes = boxes[new_ids]
                 cropped_boxes = cropped_boxes[new_ids]
                 scores = scores[new_ids]
+
                 smpl_output = {
                     'pred_uvd_jts': pose_output.pred_uvd_jts.cpu()[new_ids],
                     'maxvals': pose_output.maxvals.cpu()[new_ids],
                     'transl': pose_output.transl.cpu()[new_ids],
                     'pred_vertices': pose_output.pred_vertices.cpu()[new_ids],
+                    'pred_xyz_jts_24': pose_output.pred_xyz_jts_24_struct.cpu()[new_ids] * 2,   # convert to meters
                 }
 
                 writer.save(boxes, scores, ids, smpl_output,
