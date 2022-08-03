@@ -14,6 +14,9 @@ from opendr.camera import ProjectPoints
 from opendr.renderer import ColoredRenderer
 from opendr.lighting import LambertianPointLight
 
+import logging
+logging.getLogger('opendr.lighting').disabled = True
+
 
 colors = {
     # colorbline/print/copy safe:

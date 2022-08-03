@@ -282,7 +282,7 @@ if __name__ == "__main__":
         print_finish_info()
         while(writer.running()):
             time.sleep(1)
-            print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...')
+            print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...', end='\r')
         writer.stop()
         det_loader.stop()
     except Exception as e:
@@ -296,7 +296,7 @@ if __name__ == "__main__":
             det_loader.terminate()
             while(writer.running()):
                 time.sleep(1)
-                print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...')
+                print('===========================> Rendering remaining ' + str(writer.count()) + ' images in the queue...', end='\r')
             writer.stop()
         else:
             # subprocesses are killed, manually clear queues
