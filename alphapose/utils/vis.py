@@ -3,14 +3,15 @@ import time
 
 import cv2
 import matplotlib
+
 matplotlib.use('agg')
-import matplotlib.pyplot as plt
-
-import numpy as np
-import torch
-import PIL.Image as pil_img
-
 import logging
+
+import matplotlib.pyplot as plt
+import numpy as np
+import PIL.Image as pil_img
+import torch
+
 logging.getLogger('matplotlib.font_manager').disabled = True
 
 RED = (0, 0, 255)

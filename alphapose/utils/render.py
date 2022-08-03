@@ -2,19 +2,16 @@
 Renders mesh using OpenDr for visualization.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-# from matplotlib.cbook import flatten
-
-import numpy as np
-import cv2
-
-from opendr.camera import ProjectPoints
-from opendr.renderer import ColoredRenderer
-from opendr.lighting import LambertianPointLight
+from __future__ import absolute_import, division, print_function
 
 import logging
+
+import cv2
+import numpy as np
+from opendr.camera import ProjectPoints
+from opendr.lighting import LambertianPointLight
+from opendr.renderer import ColoredRenderer
+
 logging.getLogger('opendr.lighting').disabled = True
 
 
@@ -302,8 +299,8 @@ def draw_skeleton(input_image, joints, draw_edges=True, vis=None, radius=None):
     17: left_ear
     18: right_ear
     """
-    import numpy as np
     import cv2
+    import numpy as np
 
     if radius is None:
         radius = max(4, (np.mean(input_image.shape[:2]) * 0.01).astype(int))
@@ -448,8 +445,8 @@ def draw_text(input_image, content):
     content is a dict. draws key: val on image
     Assumes key is str, val is float
     """
-    import numpy as np
     import cv2
+    import numpy as np
     image = input_image.copy()
     input_is_float = False
     if np.issubdtype(image.dtype, np.float):
