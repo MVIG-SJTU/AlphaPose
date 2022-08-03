@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import PIL.Image as pil_img
-from .render import SMPLRenderer
 
 import logging
 logging.getLogger('matplotlib.font_manager').disabled = True
@@ -528,6 +527,8 @@ def vis_frame_smpl(frame, im_res, smpl_output, opt, vis_thres):
 
     return rendered image
     '''
+    from .render import SMPLRenderer
+    
     img = frame.copy()
     height, width = img.shape[:2]
     img_size = (height, width)

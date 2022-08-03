@@ -3,7 +3,7 @@
 ### Requirements
 * Nvidia device with CUDA, [example for Ubuntu 20.04](https://linuxconfig.org/how-to-install-cuda-on-ubuntu-20-04-focal-fossa-linux)
 (if you have no nvidia device, delete [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L211) from setup.py
-* Python 3.6+
+* Python 3.7+
 * Cython
 * PyTorch 1.11+, for users who want to use 1.5 < PyTorch < 1.11, please switch to the `pytorch<1.11` branch by:
   `git checkout "pytorch<1.11"`; for users who want to use PyTorch < 1.5, please switch to the `pytorch<1.5` branch by: `git checkout "pytorch<1.5"`
@@ -19,7 +19,7 @@
 Install conda from [here](https://repo.anaconda.com/miniconda/), Miniconda3-latest-(OS)-(platform).
 ```shell
 # 1. Create a conda virtual environment.
-conda create -n alphapose python=3.6 -y
+conda create -n alphapose python=3.7 -y
 conda activate alphapose
 
 # 2. Install PyTorch
