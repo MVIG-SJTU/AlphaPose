@@ -2,7 +2,10 @@ import math
 import time
 
 import cv2
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
+
 import numpy as np
 import torch
 import PIL.Image as pil_img
@@ -645,8 +648,8 @@ def vis_frame_skeleton(frame, im_res, smpl_output, opt, vis_thres):
     colors = [cmap(i) for i in np.linspace(0, 1, len(l_pair) + 2)]
     colors = [np.array((c[0], c[1], c[2])) for c in colors]
 
-    fig = plt.figure()
-    ax = fig.add_subplot(projection="3d", autoscale_on=False)
+    fig = plt.figure(figsize=(12, 9), dpi=100)
+    ax = fig.add_subplot(111, projection="3d", autoscale_on=False)
 
     x_min, y_min, z_min = 9999, 9999, 9999
     x_max, y_max, z_max = -9999, -9999, -9999
@@ -801,20 +804,17 @@ def vis_frame_skeleton(frame, im_res, smpl_output, opt, vis_thres):
     ax.view_init(azim=-70, elev=15)
 
     # Convert plt to cv2
-    fig.canvas.draw()
-    b = fig.axes[0].get_window_extent()
-    skeleton_img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep="")
-    skeleton_img = skeleton_img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    skeleton_img = skeleton_img[int(b.y0) : int(b.y1), int(b.x0) : int(b.x1), :]
+    skeleton_img = mplfig_to_npimage(fig)
     skeleton_img = cv2.cvtColor(skeleton_img, cv2.COLOR_RGB2BGR)
-
-    cat_img = np.zeros(
+    
+    plt.close(fig)
+    cat_img = np.ones(
         (
             max(skeleton_img.shape[0], img.shape[0]),
             skeleton_img.shape[1] + img.shape[1],
             3,
-        )
-    )
+        ), dtype=np.uint8
+    ) * 255
     cat_img[
         (cat_img.shape[0] - img.shape[0]) // 2 : (cat_img.shape[0] - img.shape[0]) // 2
         + img.shape[0],
@@ -840,3 +840,28 @@ def getTime(time1=0):
     else:
         interval = time.time() - time1
         return time.time(), interval
+
+
+def mplfig_to_npimage(fig):
+    """
+    Converts a matplotlib figure to a RGB frame after updating the canvas.
+    Modified from https://github.com/Zulko/moviepy/blob/master/moviepy/video/io/bindings.py
+    """
+    #  only the Agg backend now supports the tostring_rgb function
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+    canvas = FigureCanvasAgg(fig)
+    canvas.draw()  # update/draw the elements
+
+    # get the width and the height to resize the matrix
+    l, b, w, h = canvas.figure.bbox.bounds
+    w, h = int(w), int(h)
+
+    # exports the canvas to a string buffer and then to a numpy nd.array
+    buf = canvas.tostring_rgb()
+    image = np.frombuffer(buf, dtype=np.uint8).reshape(h, w, 3)
+
+    b = fig.axes[0].get_window_extent()
+    image = image[int(b.y0) : int(b.y1), int(b.x0) : int(b.x1), :]
+
+    return image

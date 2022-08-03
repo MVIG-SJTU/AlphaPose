@@ -79,6 +79,11 @@ class DataWriterSMPL():
                 fourcc, _ext = self.recognize_video_ext(ext)
                 self.video_save_opt['fourcc'] = fourcc
                 self.video_save_opt['savepath'] = self.video_save_opt['savepath'][:-4] + _ext
+                if self.opt.show_skeleton:
+                    ori_w, ori_h = self.video_save_opt['frameSize']
+                    skeleton_img_h, skeleton_img_w = 694, 693
+                    new_h, new_w = max(skeleton_img_h, ori_h), skeleton_img_w + ori_w
+                    self.video_save_opt['frameSize'] = new_w, new_h
                 stream = cv2.VideoWriter(*[self.video_save_opt[k] for k in ['savepath', 'fourcc', 'fps', 'frameSize']])
             assert stream.isOpened(), 'Cannot open video for writing'
         # keep looping infinitelyd
@@ -124,7 +129,7 @@ class DataWriterSMPL():
                             'kp_score': preds_scores[k],
                             'proposal_score': torch.mean(preds_scores[k]) + scores[k] + 1.25 * max(preds_scores[k]),
                             'bbox_score': scores[k].cpu(),
-                            'idx': ids[k].item(),
+                            'idx': int(ids[k]),
                             # xywh
                             'box': [boxes[k][0], boxes[k][1], boxes[k][2]-boxes[k][0],boxes[k][3]-boxes[k][1]],
                             # xywh
