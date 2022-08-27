@@ -74,6 +74,9 @@ python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr
 - The speed is tested on COCO val2017 on a single NVIDIA GeForce RTX 3090 gpu, with `batch_size=64` in each iteration and offline yolov3 human detection results.
 
 ## Multi Domain Models **(Strongly Recommended)**
+网盘中的保存模型对于 configs/halpe_136中的配置文件不再适用
+应改为 configs/halpe_coco_wholebody_136
+例如: python scripts/demo_inference.py --cfg configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml --checkpoint pretrained_models/multi_domain_fast50_regression_256x192.pth --indir examples/demo/ --save_img
 | Model                    | Backbone | Detector | Input Size | Loss Type |     AP     | Speed |  Download | Config | #keypoints |
 |--------------------------|----------|----------|------------|------------|------------|-------|-----------|--------|--------------|
 |[Fast Pose](../configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | ResNet50           | YOLOv3 | 256x192            | Symmetric Integral | 50.1       | 16.28 iter/s | [Google](https://drive.google.com/file/d/1Bb3kPoFFt-M0Y3ceqNO8DTXi1iNDd4gI/view?usp=sharing) [Baidu(code: d0wi)](https://pan.baidu.com/s/1GaHzMHTqYze2rVn7u1sjVg) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | 136 |
