@@ -24,11 +24,13 @@ Tested on Win10 with GTX 1060
 	</div>
 7. Have fun! Now you can run AlphaPose by entering command. Try webcam demo by input 
 ```
+# pytorch branch
 python3 webcam_demo.py --vis
 ```
 **Note:** For `demo.py` and `video_demo.py`, you need to turn on the `--sp` flag, like
 
 ```
+# pytorch branch
 python3 demo.py --indir ${img_directory} --outdir examples/res --sp
 ```
 

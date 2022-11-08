@@ -15,6 +15,7 @@ Run with `matching` option to use the matching algorithm in CrowdPose.
 
 - **Input dir**:  Run AlphaPose for all images in a folder with:
 ```
+# pytorch branch
 python3 demo.py --indir ${img_directory} --outdir examples/res --matching
 ```
 
