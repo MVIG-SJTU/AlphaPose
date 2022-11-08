@@ -28,7 +28,10 @@ ls /dev/video*
 ```
 Usually you can find `video0`, but if you have a device with other index like `video3`, you can run the program by
 ```
-# pytorch version
+# main branch
+python scripts/demo_inference.py --cfg ${CONFIG} --checkpoint ${CKPT} --webcam 3 --outdir ${OUTDIR} --detector yolo  --save_img --save_video
+    
+# pytorch branch
 python3 webcam_demo.py --webcam 3 --outdir examples/res --vis
 ```
 
