@@ -76,18 +76,18 @@ python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr
 ## Multi Domain Models **(Strongly Recommended)**
 | Model                    | Backbone | Detector | Input Size | Loss Type |     AP     | Speed |  Download | Config | #keypoints |
 |--------------------------|----------|----------|------------|------------|------------|-------|-----------|--------|--------------|
-|[Fast Pose](../configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | ResNet50           | YOLOv3 | 256x192            | Symmetric Integral | 50.1       | 16.28 iter/s | [Google](https://drive.google.com/file/d/1Bb3kPoFFt-M0Y3ceqNO8DTXi1iNDd4gI/view?usp=sharing) [Baidu(code: d0wi)](https://pan.baidu.com/s/1GaHzMHTqYze2rVn7u1sjVg) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | 136 |
-|[Fast Pose (DCN)](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Combined (10 hand weight) | 49.8        | 10.35 iter/s | [Google](https://drive.google.com/file/d/1wX1Z2ZOoysgSNovlgiEtJKpbR8tUBWYR/view?usp=sharing) [Baidu(code: app1)](https://pan.baidu.com/s/1bIro0XfYj0FIVf84QzdDoQ) | [cfg](../configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | 136 |
+|[Fast Pose](../configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | ResNet50           | YOLOv3 | 256x192            | Symmetric Integral | 50.1       | 16.28 iter/s | [Google](https://drive.google.com/file/d/1Bb3kPoFFt-M0Y3ceqNO8DTXi1iNDd4gI/view?usp=sharing) [Baidu(code: d0wi)](https://pan.baidu.com/s/1GaHzMHTqYze2rVn7u1sjVg) | [cfg](../configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml)    | 136 |
+|[Fast Pose (DCN)](../configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Combined (10 hand weight) | 49.8        | 10.35 iter/s | [Google](https://drive.google.com/file/d/1wX1Z2ZOoysgSNovlgiEtJKpbR8tUBWYR/view?usp=sharing) [Baidu(code: app1)](https://pan.baidu.com/s/1bIro0XfYj0FIVf84QzdDoQ) | [cfg](../configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | 136 |
 |[Fast Pose (DCN)](../configs/halpe_68_noface/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | ResNet50 - dcn           | YOLOv3 | 256x192            | Combined | -        | 13.88 iter/s | [Google](https://drive.google.com/file/d/14Qn9gxm-EVzqFi7v25Y5TqKIvrFLy_BR/view?usp=sharing) [Baidu(code: 6kwr)](https://pan.baidu.com/s/1GLNxN3gfekUVY0HZu41fJQ) | [cfg](../configs/halpe_68_noface/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml)    | 68 (no face) |
 |[Fast Pose (DCN)](../configs/single_hand/resnet/256x192_res50_lr1e-3_2x-dcn-regression.yaml)    | ResNet50 - dcn           | - | 256x192            | Symmetric Integral | -        | 30.20 iter/s | [Google](https://drive.google.com/file/d/1MntndimlUP5Hxef1UN9ZDMBVglfA606J/view?usp=sharing) [Baidu(code: nwxx)](https://pan.baidu.com/s/1OR-uH25MFQ7kY8Gt_aJfbw ) | [cfg](../configs/single_hand/resnet/256x192_res50_lr1e-3_2x-dcn-regression.yaml)    | 21 (single hand) |
 
 For the most accurate wholebody pose estimation, you can run with:
 ```
-python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml --checkpoint pretrained_models/multi_domain_fast50_dcn_combined_256x192.pth --indir examples/demo/ --save_img
+python scripts/demo_inference.py --cfg configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-dcn-combined.yaml --checkpoint pretrained_models/multi_domain_fast50_dcn_combined_256x192.pth --indir examples/demo/ --save_img
 ```
 or, you can run with (this version is a little faster and more accurate on body keypoints, but its performance on hand keypoints is worser):
 ```
-python scripts/demo_inference.py --cfg configs/halpe_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml --checkpoint pretrained_models/multi_domain_fast50_regression_256x192.pth --indir examples/demo/ --save_img
+python scripts/demo_inference.py --cfg configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml --checkpoint pretrained_models/multi_domain_fast50_regression_256x192.pth --indir examples/demo/ --save_img
 ```
 
 #### Notes
