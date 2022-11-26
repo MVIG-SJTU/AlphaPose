@@ -528,15 +528,16 @@ def vis_frame_smpl(frame, im_res, smpl_output, opt, vis_thres):
 
     return rendered image
     '''
-    from .render import SMPLRenderer
+    from .render_pytorch3d import render_mesh
     
     img = frame.copy()
     height, width = img.shape[:2]
     img_size = (height, width)
     focal = np.array([1000, 1000])
 
-    all_transl = smpl_output['transl'].detach().cpu().numpy()
-    vertices = smpl_output['pred_vertices'].detach().cpu().numpy()
+    all_transl = smpl_output['transl'].detach()
+    vertices = smpl_output['pred_vertices'].detach()
+    smpl_faces = smpl_output['smpl_faces']
     # all_theta = pose_output.pred_theta_mats.detach().cpu().numpy()
 
     for n_human, human in enumerate(im_res['result']):
@@ -548,9 +549,9 @@ def vis_frame_smpl(frame, im_res, smpl_output, opt, vis_thres):
         # bbox = human['box']
         # x1y1wh
         bbox = human['crop_box']
+        bbox_w = bbox[2]
         # x1x2y1y2
         bbox = [bbox[0], bbox[0]+bbox[2], bbox[1], bbox[1]+bbox[3]]#xmin,xmax,ymin,ymax
-
         if opt.pose_track or opt.tracking:
             while isinstance(human['idx'], list):
                 human['idx'].sort()
@@ -575,53 +576,53 @@ def vis_frame_smpl(frame, im_res, smpl_output, opt, vis_thres):
                 cv2.putText(img, str(human['idx']), (int(bbox[0]), int((bbox[2] + 26))), DEFAULT_FONT, 1, BLACK, 2)
 
         # Draw SMPL
-        princpt = [(bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2]
+        # princpt = [(bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2]
 
-        renderer = SMPLRenderer(img_size=img_size, focal=focal,
-                                princpt=princpt)
-        transl = all_transl[n_human].squeeze()
-        transl[2] = transl[2] * 256 / (bbox[1] - bbox[0])
+        # renderer = SMPLRenderer(img_size=img_size, focal=focal,
+        #                         princpt=princpt)
+        transl = all_transl[[n_human]]
+        # transl[2] = transl[2] * 256 / (bbox[1] - bbox[0])
 
-        vert = vertices[n_human]
+        vert = vertices[[n_human]]
         # print(all_theta[n_human])
 
+        # img = vis_smpl_3d(
+        #     vert, img, cam_root=transl,
+        #     f=focal, c=princpt, renderer=renderer, color=[c / 255 for c in color])
         img = vis_smpl_3d(
-            vert, img, cam_root=transl,
-            f=focal, c=princpt, renderer=renderer, color=[c / 255 for c in color])
+            vert, transl, img, bbox_w, smpl_faces, render_mesh, color=color
+        )
 
     return img
 
 
-def vis_smpl_3d(vert, img, cam_root, f, c, renderer, color=None, cam_rt=np.zeros(3),
-                cam_t=np.zeros(3), J_regressor_h36m=None):
-    '''
-    input theta_mats: np.ndarray (96, )
-    input betas: np.ndarray (10, )
-    input img: RGB Image array with value in [0, 1]
-    input cam_root: np.ndarray (3, )
-    input f: np.ndarray (2, )
-    input c: np.ndarray (2, )
-    '''
 
-    vertices = vert
-    # J_from_verts_h36m = vertices2joints(J_regressor_h36m, pose_output['vertices'].detach().cpu())
+def vis_smpl_3d(verts_batch, transl_batch, image, bbox_w, smpl_faces, render_mesh, color=None):
+    focal = 1000.0
 
-    # cam_for_render = np.hstack([f[0], c])
+    focal = focal / 256 * bbox_w
 
-    # center = pose_output.joints[0][0].cpu().data.numpy()
-    # vert_shifted = vertices - center + cam_root
-    vert_shifted = vertices + cam_root
-    vert_shifted = vert_shifted
+    color_batch = render_mesh(
+        vertices=verts_batch, faces=smpl_faces,
+        translation=transl_batch,
+        focal_length=focal, height=image.shape[0], width=image.shape[1],
+        color=color)
 
-    # Render results
-    rend_img_overlay = renderer(
-        vert_shifted, princpt=c, img=img, do_alpha=True, color=color, cam_rt=cam_rt, cam_t=cam_t)
+    valid_mask_batch = (color_batch[:, :, :, [-1]] > 0)
+    image_vis_batch = color_batch[:, :, :, :3] * valid_mask_batch
+    image_vis_batch = (image_vis_batch * 255).cpu().numpy()
 
-    img = pil_img.fromarray(rend_img_overlay[:, :, :3].astype(np.uint8))
-    # if len(filename) > 0:
-    #     img.save(filename)
+    color = image_vis_batch[0]
+    valid_mask = valid_mask_batch[0].cpu().numpy()
+    input_img = image
+    alpha = 0.9
+    image_vis = alpha * color[:, :, :3] * valid_mask + (
+        1 - alpha) * input_img * valid_mask + (1 - valid_mask) * input_img
 
-    return np.asarray(img)
+    image_vis = image_vis.astype(np.uint8)
+    # image_vis = cv2.cvtColor(image_vis, cv2.COLOR_RGB2BGR)
+
+    return image_vis
 
 
 def vis_frame_skeleton(frame, im_res, smpl_output, opt, vis_thres):

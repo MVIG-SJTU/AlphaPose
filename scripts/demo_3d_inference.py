@@ -237,7 +237,15 @@ if __name__ == "__main__":
                     runtime_profile['dt'].append(det_time)
                 # Pose Estimation
                 inps = inps.to(args.device)
-                pose_output = pose_model(inps)
+
+                img_center = torch.Tensor((orig_img.shape[1], orig_img.shape[0])).float().to(args.device) / 2
+                img_center = img_center.unsqueeze(0).repeat(inps.shape[0], 1)
+
+                pose_output = pose_model(
+                    inps, flip_test=args.flip,
+                    bboxes=cropped_boxes.to(args.device),
+                    img_center=img_center
+                )
                 if args.profile:
                     ckpt_time, pose_time = getTime(ckpt_time)
                     runtime_profile['pt'].append(pose_time)
@@ -265,6 +273,7 @@ if __name__ == "__main__":
                     'transl': pose_output.transl.cpu()[new_ids],
                     'pred_vertices': pose_output.pred_vertices.cpu()[new_ids],
                     'pred_xyz_jts_24': pose_output.pred_xyz_jts_24_struct.cpu()[new_ids] * 2,   # convert to meters
+                    'smpl_faces': torch.from_numpy(pose_model.smpl.faces.astype(np.int32))
                 }
 
                 writer.save(boxes, scores, ids, smpl_output,

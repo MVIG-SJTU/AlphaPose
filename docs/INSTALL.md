@@ -42,6 +42,11 @@ sudo apt-get install locales
 export LANG=C.UTF-8
 ######################################################
 python setup.py build develop
+
+# 5. Install PyTorch3D (Optional, only for visualization)
+conda install -c fvcore -c iopath -c conda-forge fvcore iopath
+conda install -c bottler nvidiacub
+pip install git+ssh://git@github.com/facebookresearch/pytorch3d.git@stable
 ```
 
 #### Install with pip
@@ -61,6 +66,11 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
 pip install cython
 sudo apt-get install libyaml-dev
 python3 setup.py build develop --user
+
+# 4. Install PyTorch3D (Optional, only for visualization)
+conda install -c fvcore -c iopath -c conda-forge fvcore iopath
+conda install -c bottler nvidiacub
+pip install git+ssh://git@github.com/facebookresearch/pytorch3d.git@stable
 ```
 
 #### Windows

@@ -1,23 +1,19 @@
-from collections import namedtuple
-import time
-
 import numpy as np
 import torch
 import torch.nn as nn
+from easydict import EasyDict as edict
 from torch.nn import functional as F
 
 from .builder import SPPE
 from .layers.Resnet import ResNet
 from .layers.smpl.SMPL import SMPL_layer
 
-ModelOutput = namedtuple(
-    typename='ModelOutput',
-    field_names=['pred_shape', 'pred_theta_mats', 'pred_phi', 'pred_delta_shape', 'pred_leaf',
-                 'pred_uvd_jts', 'pred_xyz_jts_29', 'pred_xyz_jts_24', 'pred_xyz_jts_24_struct',
-                 'pred_xyz_jts_17', 'pred_vertices', 'maxvals', 'cam_scale', 'cam_trans', 'cam_root',
-                 'uvd_heatmap', 'transl', 'img_feat']
-)
-ModelOutput.__new__.__defaults__ = (None,) * len(ModelOutput._fields)
+
+def flip(x):
+    assert (x.dim() == 3 or x.dim() == 4)
+    dim = x.dim() - 1
+
+    return x.flip(dims=(dim,))
 
 
 def norm_heatmap(norm_type, heatmap):
@@ -102,8 +98,8 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
         init_cam = torch.tensor([0.9, 0, 0])
         self.register_buffer(
             'init_cam',
-            torch.Tensor(init_cam).float()) 
-    
+            torch.Tensor(init_cam).float())
+
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc1 = nn.Linear(self.feature_channel, 1024)
         self.drop1 = nn.Dropout(p=0.5)
@@ -112,8 +108,11 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
         self.decshape = nn.Linear(1024, 10)
         self.decphi = nn.Linear(1024, 23 * 2)  # [cos(phi), sin(phi)]
         self.deccam = nn.Linear(1024, 3)
+        # self.decsigma = nn.Linear(1024, 29)
 
         self.focal_length = kwargs['FOCAL_LENGTH']
+        self.bbox_3d_shape = kwargs['BBOX_3D_SHAPE'] if 'BBOX_3D_SHAPE' in kwargs else (2000, 2000, 2000)
+        self.depth_factor = float(self.bbox_3d_shape[2]) * 1e-3
         self.input_size = 256.0
 
     def _make_deconv_layer(self):
@@ -152,93 +151,24 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
                 nn.init.normal_(m.weight, std=0.001)
                 nn.init.constant_(m.bias, 0)
 
-    def uvd_to_cam(self, uvd_jts, trans_inv, intrinsic_param, joint_root, depth_factor, return_relative=True):
-        assert uvd_jts.dim() == 3 and uvd_jts.shape[2] == 3, uvd_jts.shape
-        uvd_jts_new = uvd_jts.clone()
-        assert torch.sum(torch.isnan(uvd_jts)) == 0, ('uvd_jts', uvd_jts)
+    def flip_heatmap(self, heatmaps, shift=True):
+        heatmaps = heatmaps.flip(dims=(4,))
 
-        # remap uv coordinate to input space
-        uvd_jts_new[:, :, 0] = (uvd_jts[:, :, 0] + 0.5) * self.width_dim * 4
-        uvd_jts_new[:, :, 1] = (uvd_jts[:, :, 1] + 0.5) * self.height_dim * 4
-        # remap d to mm
-        uvd_jts_new[:, :, 2] = uvd_jts[:, :, 2] * depth_factor
-        assert torch.sum(torch.isnan(uvd_jts_new)) == 0, ('uvd_jts_new', uvd_jts_new)
+        for pair in self.joint_pairs_29:
+            dim0, dim1 = pair
+            idx = torch.Tensor((dim0, dim1)).long()
+            inv_idx = torch.Tensor((dim1, dim0)).long()
+            heatmaps[:, idx] = heatmaps[:, inv_idx]
 
-        dz = uvd_jts_new[:, :, 2]
-
-        # transform in-bbox coordinate to image coordinate
-        uv_homo_jts = torch.cat(
-            (uvd_jts_new[:, :, :2], torch.ones_like(uvd_jts_new)[:, :, 2:]),
-            dim=2)
-        # batch-wise matrix multipy : (B,1,2,3) * (B,K,3,1) -> (B,K,2,1)
-        uv_jts = torch.matmul(trans_inv.unsqueeze(1), uv_homo_jts.unsqueeze(-1))
-        # transform (u,v,1) to (x,y,z)
-        cam_2d_homo = torch.cat(
-            (uv_jts, torch.ones_like(uv_jts)[:, :, :1, :]),
-            dim=2)
-        # batch-wise matrix multipy : (B,1,3,3) * (B,K,3,1) -> (B,K,3,1)
-        xyz_jts = torch.matmul(intrinsic_param.unsqueeze(1), cam_2d_homo)
-        xyz_jts = xyz_jts.squeeze(dim=3)
-        # recover absolute z : (B,K) + (B,1)
-        abs_z = dz + joint_root[:, 2].unsqueeze(-1)
-        # multipy absolute z : (B,K,3) * (B,K,1)
-        xyz_jts = xyz_jts * abs_z.unsqueeze(-1)
-
-        if return_relative:
-            # (B,K,3) - (B,1,3)
-            xyz_jts = xyz_jts - joint_root.unsqueeze(1)
-
-        xyz_jts = xyz_jts / depth_factor.unsqueeze(-1)
-
-        return xyz_jts
-
-    def flip_uvd_coord(self, pred_jts, shift=False, flatten=True):
-        if flatten:
-            assert pred_jts.dim() == 2
-            num_batches = pred_jts.shape[0]
-            pred_jts = pred_jts.reshape(num_batches, self.num_joints, 3)
-        else:
-            assert pred_jts.dim() == 3
-            num_batches = pred_jts.shape[0]
-
-        # flip
         if shift:
-            pred_jts[:, :, 0] = - pred_jts[:, :, 0]
-        else:
-            pred_jts[:, :, 0] = -1 / self.width_dim - pred_jts[:, :, 0]
+            if heatmaps.dim() == 3:
+                heatmaps[:, :, 1:] = heatmaps[:, :, 0:-1]
+            elif heatmaps.dim() == 4:
+                heatmaps[:, :, :, 1:] = heatmaps[:, :, :, 0:-1]
+            else:
+                heatmaps[:, :, :, :, 1:] = heatmaps[:, :, :, :, 0:-1]
 
-        for pair in self.joint_pairs_29:
-            dim0, dim1 = pair
-            idx = torch.Tensor((dim0, dim1)).long()
-            inv_idx = torch.Tensor((dim1, dim0)).long()
-            pred_jts[:, idx] = pred_jts[:, inv_idx]
-
-        if flatten:
-            pred_jts = pred_jts.reshape(num_batches, self.num_joints * 3)
-
-        return pred_jts
-    
-    def flip_xyz_coord(self, pred_jts, flatten=True):
-        if flatten:
-            assert pred_jts.dim() == 2
-            num_batches = pred_jts.shape[0]
-            pred_jts = pred_jts.reshape(num_batches, self.num_joints, 3)
-        else:
-            assert pred_jts.dim() == 3
-            num_batches = pred_jts.shape[0]
-
-        pred_jts[:, :, 0] = - pred_jts[:, :, 0]
-
-        for pair in self.joint_pairs_29:
-            dim0, dim1 = pair
-            idx = torch.Tensor((dim0, dim1)).long()
-            inv_idx = torch.Tensor((dim1, dim0)).long()
-            pred_jts[:, idx] = pred_jts[:, inv_idx]
-
-        if flatten:
-            pred_jts = pred_jts.reshape(num_batches, self.num_joints * 3)
-
-        return pred_jts
+        return heatmaps
 
     def flip_phi(self, pred_phi):
         pred_phi[:, :, 1] = -1 * pred_phi[:, :, 1]
@@ -251,26 +181,37 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
 
         return pred_phi
 
-    def forward(self, x, flip_item=None, flip_output=False, gt_uvd=None, gt_uvd_weight=None, **kwargs):
-        
+    def forward(self, x, flip_test=False, **kwargs):
         batch_size = x.shape[0]
-
-        # torch.cuda.synchronize()
-        # model_start_t = time.time()
 
         x0 = self.preact(x)
         out = self.deconv_layers(x0)
         out = self.final_layer(out)
 
-        # torch.cuda.synchronize()
-        # preat_end_t = time.time()
+        if flip_test:
+            flip_x = flip(x)
+            flip_x0 = self.preact(flip_x)
+            flip_out = self.deconv_layers(flip_x0)
+            flip_out = self.final_layer(flip_out)
 
-        out = out.reshape((out.shape[0], self.num_joints, -1))
+            # flip heatmap
+            flip_out = flip_out.reshape(batch_size, self.num_joints, self.depth_dim, self.height_dim, self.width_dim)
+            flip_out = self.flip_heatmap(flip_out)
 
-        out = norm_heatmap(self.norm_type, out)
-        assert out.dim() == 3, out.shape
+            out = out.reshape((out.shape[0], self.num_joints, -1))
+            flip_out = flip_out.reshape((flip_out.shape[0], self.num_joints, -1))
 
-        heatmaps = out / out.sum(dim=2, keepdim=True)
+            heatmaps = norm_heatmap(self.norm_type, out)
+            flip_heatmaps = norm_heatmap(self.norm_type, flip_out)
+            heatmaps = (heatmaps + flip_heatmaps) / 2
+        else:
+            out = out.reshape((out.shape[0], self.num_joints, -1))
+
+            out = norm_heatmap(self.norm_type, out)
+            assert out.dim() == 3, out.shape
+
+            heatmaps = out / out.sum(dim=2, keepdim=True)
+
         maxvals, _ = torch.max(heatmaps, dim=2, keepdim=True)
 
         heatmaps = heatmaps.reshape((heatmaps.shape[0], self.num_joints, self.depth_dim, self.height_dim, self.width_dim))
@@ -298,7 +239,7 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
         x0 = self.avg_pool(x0)
         x0 = x0.view(x0.size(0), -1)
         init_shape = self.init_shape.expand(batch_size, -1)     # (B, 10,)
-        init_cam = self.init_cam.expand(batch_size, -1) # (B, 3,)
+        init_cam = self.init_cam.expand(batch_size, -1)  # (B, 3,)
 
         xc = x0
 
@@ -311,6 +252,36 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
         pred_shape = delta_shape + init_shape
         pred_phi = self.decphi(xc)
         pred_camera = self.deccam(xc).reshape(batch_size, -1) + init_cam
+        # sigma = self.decsigma(xc).reshape(batch_size, 29, 1).sigmoid()
+
+        pred_phi = pred_phi.reshape(batch_size, 23, 2)
+
+        if flip_test:
+            flip_x0 = self.avg_pool(flip_x0)
+            flip_x0 = flip_x0.view(flip_x0.size(0), -1)
+
+            flip_xc = self.fc1(flip_x0)
+            flip_xc = self.drop1(flip_xc)
+            flip_xc = self.fc2(flip_xc)
+            flip_xc = self.drop2(flip_xc)
+
+            flip_delta_shape = self.decshape(flip_xc)
+            flip_pred_shape = flip_delta_shape + init_shape
+            flip_pred_phi = self.decphi(flip_xc)
+            flip_pred_camera = self.deccam(flip_xc).reshape(batch_size, -1) + init_cam
+            # flip_sigma = self.decsigma(flip_x0).reshape(batch_size, 29, 1).sigmoid()
+
+            pred_shape = (pred_shape + flip_pred_shape) / 2
+
+            flip_pred_phi = flip_pred_phi.reshape(batch_size, 23, 2)
+            flip_pred_phi = self.flip_phi(flip_pred_phi)
+            pred_phi = (pred_phi + flip_pred_phi) / 2
+
+            flip_pred_camera[:, 1] = -flip_pred_camera[:, 1]
+            pred_camera = (pred_camera + flip_pred_camera) / 2
+
+            # flip_sigma = self.flip_sigma(flip_sigma)
+            # sigma = (sigma + flip_sigma) / 2
 
         camScale = pred_camera[:, :1].unsqueeze(1)
         camTrans = pred_camera[:, 1:].unsqueeze(1)
@@ -318,41 +289,45 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
         camDepth = self.focal_length / (self.input_size * camScale + 1e-9)
 
         pred_xyz_jts_29 = torch.zeros_like(pred_uvd_jts_29)
-        pred_xyz_jts_29[:, :, 2:] = pred_uvd_jts_29[:, :, 2:].clone() # unit: 2.2m
-        pred_xyz_jts_29_meter = (pred_uvd_jts_29[:, :, :2] * self.input_size / self.focal_length) \
-                                        * (pred_xyz_jts_29[:, :, 2:]*2.2 + camDepth) - camTrans # unit: m
+        if 'bboxes' in kwargs.keys():
+            bboxes = kwargs['bboxes']
+            img_center = kwargs['img_center']
 
-        pred_xyz_jts_29[:, :, :2] = pred_xyz_jts_29_meter / 2.2 # unit: 2.2m
+            cx = (bboxes[:, 0] + bboxes[:, 2]) * 0.5
+            cy = (bboxes[:, 1] + bboxes[:, 3]) * 0.5
+            w = (bboxes[:, 2] - bboxes[:, 0])
+            h = (bboxes[:, 3] - bboxes[:, 1])
 
-        camera_root = pred_xyz_jts_29[:, [0], ]*2.2
-        camera_root[:, :, :2] += camTrans
-        camera_root[:, :, [2]] += camDepth
+            cx = cx - img_center[:, 0]
+            cy = cy - img_center[:, 1]
+            cx = cx / w
+            cy = cy / h
 
-        if not self.training:
-            pred_xyz_jts_29 = pred_xyz_jts_29 - pred_xyz_jts_29[:, [0]]
+            bbox_center = torch.stack((cx, cy), dim=1).unsqueeze(dim=1)
 
-        if flip_item is not None:
-            assert flip_output is not None
-            pred_xyz_jts_29_orig, pred_phi_orig, pred_leaf_orig, pred_shape_orig = flip_item
+            pred_xyz_jts_29[:, :, 2:] = pred_uvd_jts_29[:, :, 2:].clone()  # unit: (self.depth_factor m)
+            pred_xy_jts_29_meter = ((pred_uvd_jts_29[:, :, :2] + bbox_center) * self.input_size / self.focal_length) \
+                * (pred_xyz_jts_29[:, :, 2:] * self.depth_factor + camDepth)  # unit: m
 
-        if flip_output:
-            pred_xyz_jts_29 = self.flip_xyz_coord(pred_xyz_jts_29, flatten=False)
-        if flip_output and flip_item is not None:
-            pred_xyz_jts_29 = (pred_xyz_jts_29 + pred_xyz_jts_29_orig.reshape(batch_size, 29, 3)) / 2
-        
+            pred_xyz_jts_29[:, :, :2] = pred_xy_jts_29_meter / self.depth_factor  # unit: (self.depth_factor m)
+
+            camera_root = pred_xyz_jts_29[:, 0, :] * self.depth_factor
+            camera_root[:, 2] += camDepth[:, 0, 0]
+        else:
+            pred_xyz_jts_29[:, :, 2:] = pred_uvd_jts_29[:, :, 2:].clone()  # unit: (self.depth_factor m)
+            pred_xyz_jts_29_meter = (pred_uvd_jts_29[:, :, :2] * self.input_size / self.focal_length) * (pred_xyz_jts_29[:, :, 2:] * self.depth_factor + camDepth) - camTrans  # unit: m
+
+            pred_xyz_jts_29[:, :, :2] = pred_xyz_jts_29_meter / self.depth_factor  # unit: (self.depth_factor m)
+
+            camera_root = pred_xyz_jts_29[:, 0, :] * self.depth_factor
+            camera_root[:, 2] += camDepth[:, 0, 0]
+
+        pred_xyz_jts_29 = pred_xyz_jts_29 - pred_xyz_jts_29[:, [0]]
+
         pred_xyz_jts_29_flat = pred_xyz_jts_29.reshape(batch_size, -1)
 
-        pred_phi = pred_phi.reshape(batch_size, 23, 2)
-
-        if flip_output:
-            pred_phi = self.flip_phi(pred_phi)
-
-        if flip_output and flip_item is not None:
-            pred_phi = (pred_phi + pred_phi_orig) / 2
-            pred_shape = (pred_shape + pred_shape_orig) / 2
-
         output = self.smpl.hybrik(
-            pose_skeleton=pred_xyz_jts_29.type(self.smpl_dtype) * 2.2, # unit: meter
+            pose_skeleton=pred_xyz_jts_29.type(self.smpl_dtype) * self.depth_factor,  # unit: meter
             betas=pred_shape.type(self.smpl_dtype),
             phis=pred_phi.type(self.smpl_dtype),
             global_orient=None,
@@ -360,21 +335,17 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
         )
         pred_vertices = output.vertices.float()
         #  -0.5 ~ 0.5
-        # pred_xyz_jts_24_struct = output.joints.float() / 2.2
-        pred_xyz_jts_24_struct = output.joints.float() / 2
+        pred_xyz_jts_24_struct = output.joints.float() / self.depth_factor
         #  -0.5 ~ 0.5
-        # pred_xyz_jts_17 = output.joints_from_verts.float() / 2.2
-        pred_xyz_jts_17 = output.joints_from_verts.float() / 2
-        pred_theta_mats = output.rot_mats.float().reshape(batch_size, 24 * 4)
-        pred_xyz_jts_24 = pred_xyz_jts_29[:, :24, :].reshape(batch_size, 72) / 2
+        pred_xyz_jts_17 = output.joints_from_verts.float() / self.depth_factor
+        pred_theta_mats = output.rot_mats.float().reshape(batch_size, 24 * 9)
+        pred_xyz_jts_24 = pred_xyz_jts_29[:, :24, :].reshape(batch_size, 72)
         pred_xyz_jts_24_struct = pred_xyz_jts_24_struct.reshape(batch_size, 72)
         pred_xyz_jts_17_flat = pred_xyz_jts_17.reshape(batch_size, 17 * 3)
 
-        transl = pred_xyz_jts_29[:, 0, :] * 2.2 - pred_xyz_jts_17[:, 0, :] * 2.2
-        transl[:, :2] += camTrans[:, 0]
-        transl[:, 2] += camDepth[:, 0, 0]
+        transl = camera_root - output.joints.float().reshape(-1, 24, 3)[:, 0, :]
 
-        output = ModelOutput(
+        output = edict(
             pred_phi=pred_phi,
             pred_delta_shape=delta_shape,
             pred_shape=pred_shape,
@@ -390,6 +361,9 @@ class Simple3DPoseBaseSMPLCam(nn.Module):
             cam_trans=camTrans[:, 0],
             cam_root=camera_root,
             transl=transl,
+            scores=maxvals,
+            # pred_sigma=sigma,
+            # scores=1 - sigma,
             # uvd_heatmap=torch.stack([hm_x0, hm_y0, hm_z0], dim=2),
             # uvd_heatmap=heatmaps,
             # img_feat=x0
