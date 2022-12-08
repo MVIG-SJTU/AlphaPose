@@ -90,7 +90,7 @@ Please check out [docs/INSTALL.md](docs/INSTALL.md)
 Please check out [docs/MODEL_ZOO.md](docs/MODEL_ZOO.md)
 
 ## Quick Start
-- **Colab**: We provide a [colab example](https://colab.research.google.com/drive/1c7xb_7U61HmeJp55xjXs24hf1GUtHmPs?usp=sharing) for your quick start.
+- **Colab**: We provide a [colab example](https://colab.research.google.com/drive/1_3Wxi4H3QGVC28snL3rHIoeMAwI2otMR?usp=sharing) for your quick start.
 
 - **Inference**: Inference demo
 ``` bash
