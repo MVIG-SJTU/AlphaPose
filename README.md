@@ -33,6 +33,7 @@ AlphaPose supports both Linux and **Windows!**
 <div align="center">
     <img src="docs/alphapose_136.gif", width="400"alt><br>
     <b><a href="https://github.com/Fang-Haoshu/Halpe-FullBody">Halpe 136 keypoints</a></b> + tracking
+    <b><a href="https://youtu.be/uze6chg-YeU">YouTube link</a></b><br>
 </div>
 <div align="center">
     <img src="docs/alphapose_hybrik_smpl.gif", width="400"alt><br>
