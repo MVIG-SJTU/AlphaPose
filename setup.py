@@ -174,8 +174,9 @@ def get_install_requires():
 
 
 def is_installed(package_name):
-    from pip._internal.utils.misc import get_installed_distributions
-    for p in get_installed_distributions():
+    #from pip._internal.utils.misc import get_installed_distributions
+    import pkg_resources
+    for p in pkg_resources.working_set:
         if package_name in p.egg_name():
             return True
     return False
