@@ -23,7 +23,7 @@ conda create -n alphapose python=3.7 -y
 conda activate alphapose
 
 # 2. Install PyTorch
-conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
+conda install pytorch torchvision torchaudio pytorch-cuda=11.3 -c pytorch -c nvidia 
 
 # 3. Get AlphaPose
 git clone https://github.com/MVIG-SJTU/AlphaPose.git
