@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 
+# np.float removed in Numpy 1.24
+DTYPE_FLOAT = np.float if hasattr(np, "float") else float
 
 def clip_boxes(boxes, im_shape):
     """
@@ -33,7 +35,7 @@ def clip_box(bbox, im_shape):
 
 
 def int_box(box):
-    box = np.asarray(box, dtype=np.float)
+    box = np.asarray(box, dtype=DTYPE_FLOAT)
     box = np.round(box)
     return np.asarray(box, dtype=np.int)
 

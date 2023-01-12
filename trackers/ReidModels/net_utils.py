@@ -9,6 +9,8 @@ import pickle
 
 from utils.log import logger
 
+# np.float removed in Numpy 1.24
+DTYPE_FLOAT = np.float if hasattr(np, "float") else float
 
 class ConcatAddTable(nn.Module):
     def __init__(self, *args):
@@ -127,7 +129,7 @@ def load_net(fname, net, prefix='', load_state_dict=False):
                 lr = h5f.attrs['learning_rates']
             else:
                 lr = h5f.attrs.get('lr', -1)
-                lr = np.asarray([lr] if lr > 0 else [], dtype=np.float)
+                lr = np.asarray([lr] if lr > 0 else [], dtype=DTYPE_FLOAT)
 
             return epoch, lr
 

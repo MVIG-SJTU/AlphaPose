@@ -13,13 +13,15 @@ from tracker.models import *
 from tracker.tracker import matching
 from tracker.tracker.basetrack import BaseTrack, TrackState
 
+# np.float removed in Numpy 1.24
+DTYPE_FLOAT = np.float if hasattr(np, "float") else float
 
 class STrack(BaseTrack):
 
     def __init__(self, tlwh, score, temp_feat, buffer_size=30):
 
         # wait activate
-        self._tlwh = np.asarray(tlwh, dtype=np.float)
+        self._tlwh = np.asarray(tlwh, dtype=DTYPE_FLOAT)
         self.kalman_filter = None
         self.mean, self.covariance = None, None
         self.is_activated = False
