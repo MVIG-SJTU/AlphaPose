@@ -29,13 +29,16 @@ from ReidModels.osnet import *
 from ReidModels.osnet_ain import osnet_ain_x1_0
 from ReidModels.resnet_fc import resnet50_fc512
 
+# np.float removed in Numpy 1.24
+DTYPE_FLOAT = np.float if hasattr(np, "float") else float
+
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
 
     def __init__(self, tlwh, score, temp_feat, pose,crop_box,file_name,ps,buffer_size=30):
 
         # wait activate
-        self._tlwh = np.asarray(tlwh, dtype=np.float)
+        self._tlwh = np.asarray(tlwh, dtype=DTYPE_FLOAT)
         self.kalman_filter = None
         self.mean, self.covariance = None, None
         self.is_activated = False

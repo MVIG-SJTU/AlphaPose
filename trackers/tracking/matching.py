@@ -8,6 +8,9 @@ from cython_bbox import bbox_overlaps as bbox_ious
 from trackers.utils import kalman_filter
 import time
 
+# np.float removed in Numpy 1.24
+DTYPE_FLOAT = np.float if hasattr(np, "float") else float
+
 def merge_matches(m1, m2, shape):
     O,P,Q = shape
     m1 = np.asarray(m1)
@@ -61,13 +64,13 @@ def ious(atlbrs, btlbrs):
 
     :rtype ious np.ndarray
     """
-    ious = np.zeros((len(atlbrs), len(btlbrs)), dtype=np.float)
+    ious = np.zeros((len(atlbrs), len(btlbrs)), dtype=DTYPE_FLOAT)
     if ious.size == 0:
         return ious
 
     ious = bbox_ious(
-        np.ascontiguousarray(atlbrs, dtype=np.float),
-        np.ascontiguousarray(btlbrs, dtype=np.float)
+        np.ascontiguousarray(atlbrs, dtype=DTYPE_FLOAT),
+        np.ascontiguousarray(btlbrs, dtype=DTYPE_FLOAT)
     )
 
     return ious
@@ -101,10 +104,10 @@ def embedding_distance(tracks, detections, metric='cosine'):
     :return: cost_matrix np.ndarray
     """
 
-    cost_matrix = np.zeros((len(tracks), len(detections)), dtype=np.float)
+    cost_matrix = np.zeros((len(tracks), len(detections)), dtype=DTYPE_FLOAT)
     if cost_matrix.size == 0:
         return cost_matrix
-    det_features = np.asarray([track.curr_feat for track in detections], dtype=np.float)
+    det_features = np.asarray([track.curr_feat for track in detections], dtype=DTYPE_FLOAT)
     for i, track in enumerate(tracks):
         cost_matrix[i, :] = np.maximum(0.0, cdist(track.smooth_feat.reshape(1,-1), det_features, metric))
     return cost_matrix
