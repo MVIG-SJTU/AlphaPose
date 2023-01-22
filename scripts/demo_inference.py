@@ -176,6 +176,9 @@ if __name__ == "__main__":
         det_loader = DetectionLoader(input_source, get_detector(args), cfg, args, batchSize=args.detbatch, mode=mode, queueSize=args.qsize)
         det_worker = det_loader.start()
 
+    (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = det_loader.read()
+    boxes = boxes.float()
+    
     # Load pose model
     pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
 
@@ -224,7 +227,6 @@ if __name__ == "__main__":
         for i in im_names_desc:
             start_time = getTime()
             with torch.no_grad():
-                (inps, orig_img, im_name, boxes, scores, ids, cropped_boxes) = det_loader.read()
                 if orig_img is None:
                     break
                 if boxes is None or boxes.nelement() == 0:
