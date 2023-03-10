@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "demo",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/demo_inference.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--cfg",
+                "configs/halpe_coco_wholebody_136/resnet/256x192_res50_lr1e-3_2x-regression.yaml",
+                "--checkpoint",
+                "pretrained_models/multi_domain_fast50_regression_256x192.pth",
+                "--video",
+                "resources/demo.mp4",
+                // "test_data/video/video4.mp4",
+                // "test_data/video/garagem.mp4",
+                "--outdir",
+                "examples/res",
+                "--save_video",
+                "--debug",
+                // these are for super low resource at the cost of performacnce
+                "--gpus",
+                "-1",
+                "--sp",
+                "--detbatch",
+                "1",
+                "--posebatch",
+                "1",
+                "--qsize",
+                "1",
+            ],
+            "justMyCode": true
+        }
+    ]
+}
