@@ -118,3 +118,10 @@ examples/res*/
 data/
 exp/
 data
+
+# mac
+.DS_Store
+
+# data
+test_data
+resources
