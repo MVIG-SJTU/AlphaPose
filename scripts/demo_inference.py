@@ -101,7 +101,7 @@ cfg = update_config(args.cfg)
 # folder dataset
 args.inputpath = "C:/Users/Lenovo/Downloads/New/ForwardedHead/"
 # folder lưu kết quả
-args.outputpath = os.path.join(current_directory, "Result2/256x192/FTT/")
+args.outputpath = os.path.join(current_directory, "Result/256x192/FTT/")
 
 if platform.system() == 'Windows':
     args.sp = True
