@@ -7,6 +7,8 @@ cmd = 'python -m pip install numpy==1.21.2'
 os.system(cmd)
 cmd = 'python -m pip install Cython==0.29.33'
 os.system(cmd)
+cmd = 'python -m pip install torch==1.12.1'
+os.system(cmd)
 
 import numpy as np
 from Cython.Build import cythonize
