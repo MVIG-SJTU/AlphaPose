@@ -3,12 +3,21 @@ import platform
 import subprocess
 import time
 
+print(' ====== Begin Setup =======')
+
 cmd = 'python -m pip install numpy==1.21.2'
 os.system(cmd)
 cmd = 'python -m pip install Cython==0.29.33'
 os.system(cmd)
 cmd = 'python -m pip install torch==1.12.1'
 os.system(cmd)
+
+cmd = 'pip install cython pycocotools'
+os.system(cmd)
+cmd = 'pip install git+https://github.com/yanfengliu/cython_bbox.git'
+os.system(cmd)
+
+print(' ====== End Setup =======')
 
 import numpy as np
 from Cython.Build import cythonize
