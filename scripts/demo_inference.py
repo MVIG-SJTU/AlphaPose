@@ -47,7 +47,7 @@ parser.add_argument('--detector', dest='detector',
 parser.add_argument('--detfile', dest='detfile',
                     help='detection result file', default="")
 parser.add_argument('--indir', dest='inputpath',
-                    help='image-directory')
+                    help='image-directory',default="")
 parser.add_argument('--list', dest='inputlist',
                     help='image-list', default="")
 parser.add_argument('--image', dest='inputimg',
@@ -98,10 +98,10 @@ parser.add_argument('--pose_track', dest='pose_track',
 args = parser.parse_args()
 cfg = update_config(args.cfg)
 
-# folder dataset
-args.inputpath = "C:/Users/Lenovo/Downloads/New/ForwardedHead/"
-# folder lưu kết quả
-args.outputpath = os.path.join(current_directory, "Result/256x192/FTT/")
+# # folder dataset
+# args.inputpath = "C:/Users/Lenovo/Downloads/New/ForwardedHead/"
+# # folder lưu kết quả
+# args.outputpath = os.path.join(current_directory, "Result/256x192/FTT/")
 
 if platform.system() == 'Windows':
     args.sp = True
@@ -144,7 +144,9 @@ def check_input():
                 'Error: --detfile must refer to a detection json file, not directory.')
 
     # for images
+    print(args.inputimg+"ne")
     if len(args.inputpath) or len(args.inputlist) or len(args.inputimg):
+
         inputpath = args.inputpath
         inputlist = args.inputlist
         inputimg = args.inputimg
@@ -179,7 +181,11 @@ def loop():
         n += 1
 
 
+
 if __name__ == "__main__":
+
+
+
     mode, input_source = check_input()
 
     if not os.path.exists(args.outputpath):
