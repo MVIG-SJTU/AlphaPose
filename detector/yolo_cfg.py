@@ -1,12 +1,12 @@
 from easydict import EasyDict as edict
 import os
 
-current_directory = os.getcwd()
+current_directory = os.path.dirname(__file__)
 
 config_relative_path = os.path.join(
-    current_directory, "AlphaPose/detector/yolo/cfg/yolov3-spp.cfg")
+    current_directory, "yolo/cfg/yolov3-spp.cfg")
 weight_relative_path = os.path.join(
-    current_directory, "AlphaPose/detector/yolo/data/yolov3-spp.weights")
+    current_directory, "yolo/data/yolov3-spp.weights")
 
 
 cfg = edict()

@@ -17,12 +17,9 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
-current_directory = os.getcwd()
-
-config_relative_path = os.path.join(
-    current_directory, "AlphaPose/detector/yolo/cfg/yolov3-spp.cfg")
-weight_relative_path = os.path.join(
-    current_directory, "AlphaPose/detector/yolo/data/yolov3-spp.weights")
+current_directory = os.path.dirname(__file__)
+config_relative_path = current_directory +  "/cfg/yolov3-spp.cfg"
+weight_relative_path = current_directory+ "/data/yolov3-spp.weights"
 
 
 # only windows visual studio 2013 ~2017 support compile c/cuda extensions
