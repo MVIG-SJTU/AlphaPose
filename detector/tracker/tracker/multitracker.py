@@ -1,17 +1,14 @@
-import numpy as np
-from collections import deque
-import itertools
-import os
-import os.path as osp
 import time
-import torch
+from collections import deque
 
-from tracker.utils.utils import *
-from tracker.utils.log import logger
-from tracker.utils.kalman_filter import KalmanFilter
+import numpy as np
+import torch
 from tracker.models import *
 from tracker.tracker import matching
 from tracker.tracker.basetrack import BaseTrack, TrackState
+from tracker.utils.kalman_filter import KalmanFilter
+from tracker.utils.log import logger
+from tracker.utils.utils import *
 
 
 class STrack(BaseTrack):
@@ -19,7 +16,7 @@ class STrack(BaseTrack):
     def __init__(self, tlwh, score, temp_feat, buffer_size=30):
 
         # wait activate
-        self._tlwh = np.asarray(tlwh, dtype=np.float)
+        self._tlwh = np.asarray(tlwh, dtype=np.float32)
         self.kalman_filter = None
         self.mean, self.covariance = None, None
         self.is_activated = False

@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 
 
 def clip_boxes(boxes, im_shape):
@@ -33,7 +33,7 @@ def clip_box(bbox, im_shape):
 
 
 def int_box(box):
-    box = np.asarray(box, dtype=np.float)
+    box = np.asarray(box, dtype=np.float32)
     box = np.round(box)
     return np.asarray(box, dtype=np.int)
 

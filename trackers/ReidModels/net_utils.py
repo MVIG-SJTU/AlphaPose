@@ -1,12 +1,11 @@
-import os
 import collections
+import os
+import pickle
+from copy import deepcopy
+
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
-import numpy as np
-from copy import deepcopy
-import pickle
-
 from utils.log import logger
 
 
@@ -127,7 +126,7 @@ def load_net(fname, net, prefix='', load_state_dict=False):
                 lr = h5f.attrs['learning_rates']
             else:
                 lr = h5f.attrs.get('lr', -1)
-                lr = np.asarray([lr] if lr > 0 else [], dtype=np.float)
+                lr = np.asarray([lr] if lr > 0 else [], dtype=np.float32)
 
             return epoch, lr
 

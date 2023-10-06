@@ -1,15 +1,14 @@
 import os
-import time
-from threading import Thread
 from queue import Queue
+from threading import Thread
 
 import cv2
 import numpy as np
 import torch
 import torch.multiprocessing as mp
 
-from alphapose.utils.transforms import get_func_heatmap_to_coord
 from alphapose.utils.pPose_nms import pose_nms, write_json
+from alphapose.utils.transforms import get_func_heatmap_to_coord
 
 DEFAULT_VIDEO_SAVE_OPT = {
     'savepath': 'examples/res/1.mp4',
@@ -78,7 +77,7 @@ class DataWriter():
         return self
 
     def update(self):
-        final_result = []
+        self.final_result = []
         norm_type = self.cfg.LOSS.get('NORM_TYPE', None)
         hm_size = self.cfg.DATA_PRESET.HEATMAP_SIZE
         if self.save_video:
@@ -100,7 +99,7 @@ class DataWriter():
                 # if the thread indicator variable is set (img is None), stop the thread
                 if self.save_video:
                     stream.release()
-                write_json(final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval)
+                write_json(self.final_result, self.opt.outputpath, form=self.opt.format, for_eval=self.opt.eval)
                 print("Results have been written to json.")
                 return
             # image channel RGB->BGR
@@ -168,7 +167,7 @@ class DataWriter():
                     for i in range(len(poseflow_result)):
                         result['result'][i]['idx'] = poseflow_result[i]['idx']
 
-                final_result.append(result)
+                self.final_result.append(result)
                 if self.opt.save_img or self.save_video or self.opt.vis:
                     if hm_data.size()[1] == 49:
                         from alphapose.utils.vis import vis_frame_dense as vis_frame
@@ -224,7 +223,7 @@ class DataWriter():
 
     def results(self):
         # return final result
-        print(self.final_result)
+        # print(self.final_result)
         return self.final_result
 
     def recognize_video_ext(self, ext=''):

@@ -1,9 +1,11 @@
 import numpy as np
 import torch
-def track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores):
+
+
+def track(tracker, args, orig_img, inps, boxes, hm, cropped_boxes, im_name, scores):
     hm = hm.cpu().data.numpy()
-    online_targets = tracker.update(orig_img,inps,boxes,hm,cropped_boxes,im_name,scores,_debug=False)
-    new_boxes,new_scores,new_ids,new_hm,new_crop = [],[],[],[],[]
+    online_targets = tracker.update(orig_img, inps, boxes, hm, cropped_boxes, im_name, scores, _debug=args.debug)
+    new_boxes, new_scores, new_ids, new_hm, new_crop = [], [], [], [], []
     for t in online_targets:
         tlbr = t.tlbr
         tid = t.track_id
@@ -16,5 +18,5 @@ def track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores):
         new_ids.append(tid)
         new_scores.append(tscore)
 
-    new_hm = torch.Tensor(new_hm).to(args.device)
-    return new_boxes,new_scores,new_ids,new_hm,new_crop
+    new_hm = torch.from_numpy(np.array(new_hm)).to(args.device)
+    return new_boxes, new_scores, new_ids, new_hm, new_crop
