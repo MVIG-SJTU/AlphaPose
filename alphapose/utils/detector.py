@@ -1,16 +1,16 @@
 import os
 import sys
-from threading import Thread
 from queue import Queue
+from threading import Thread
 
 import cv2
 import numpy as np
-
 import torch
 import torch.multiprocessing as mp
 
-from alphapose.utils.presets import SimpleTransform, SimpleTransform3DSMPL
 from alphapose.models import builder
+from alphapose.utils.presets import SimpleTransform, SimpleTransform3DSMPL
+
 
 class DetectionLoader():
     def __init__(self, input_source, detector, cfg, opt, mode='image', batchSize=1, queueSize=128):
@@ -197,7 +197,7 @@ class DetectionLoader():
                             im_dim_list = torch.FloatTensor(im_dim_list).repeat(1, 2)
                         self.wait_and_put(self.image_queue, (imgs, orig_imgs, im_names, im_dim_list))
                     self.wait_and_put(self.image_queue, (None, None, None, None))
-                    print('===========================> This video get ' + str(k) + ' frames in total.')
+                    # print('===========================> This video get ' + str(k) + ' frames in total.')
                     sys.stdout.flush()
                     stream.release()
                     return

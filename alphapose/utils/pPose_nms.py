@@ -705,7 +705,7 @@ def write_json(all_results, outputpath, form=None, for_eval=False, outputfile='a
             result['keypoints'] = keypoints
             result['score'] = float(pro_scores)
             if 'box' in human.keys():
-                result['box'] = human['box']
+                result['box'] = [float(b) for b in human['box']]
             # pose track results by PoseFlow
             if 'idx' in human.keys():
                 result['idx'] = human['idx']
@@ -791,7 +791,7 @@ def ppose_nms_validate_preprocess(_res):
             bboxes.append([pose['bbox'][0], pose['bbox'][1], pose['bbox'][0] + pose['bbox'][2],
                            pose['bbox'][1] + pose['bbox'][3]])
 
-            kpts = np.array(pose['keypoints'], dtype=np.float32).reshape((-1, 3))
+            kpts = np.array(pose['keypoints'], dtype=float).reshape((-1, 3))
             coords = kpts[:, 0:2]
             p_scores = kpts[:, 2]
             s = pose['score'] - np.mean(p_scores) - 1.25 * np.max(p_scores)
@@ -804,9 +804,9 @@ def ppose_nms_validate_preprocess(_res):
             i += 1
         preds_img = torch.cat(pose_coords)
         preds_scores = torch.cat(pose_scores)[:, :, None]
-        boxes = torch.from_numpy(np.array(bboxes, dtype=np.float32))
-        scores = torch.from_numpy(np.array(scores, dtype=np.float32).reshape(-1, 1))
-        ids = torch.from_numpy(np.array(ids, dtype=np.float32).reshape(-1, 1))
+        boxes = torch.from_numpy(np.array(bboxes, dtype=float))
+        scores = torch.from_numpy(np.array(scores, dtype=float).reshape(-1, 1))
+        ids = torch.from_numpy(np.array(ids, dtype=float).reshape(-1, 1))
 
         _tmp_data[key] = (boxes, scores, ids, preds_img, preds_scores)
 
