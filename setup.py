@@ -6,7 +6,8 @@ import time
 import numpy as np
 from Cython.Build import cythonize
 from setuptools import Extension, find_packages, setup
-from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+from torch.utils.cpp_extension import BuildExtension, CUDAExtension, CppExtension
+import torch
 
 MAJOR = 0
 MINOR = 5
@@ -116,6 +117,14 @@ def make_cuda_ext(name, module, sources):
         })
 
 
+def make_cpp_ext(name, module, sources):
+
+    return CppExtension(
+        name='{}.{}'.format(module, name),
+        sources=[os.path.join(*module.split('.'), p) for p in sources]
+    )
+
+
 def get_ext_modules():
     ext_modules = []
     # only windows visual studio 2013+ support compile c/cuda extensions
@@ -128,33 +137,36 @@ def get_ext_modules():
                 name='soft_nms_cpu',
                 module='detector.nms',
                 sources=['src/soft_nms_cpu.pyx']),
-            make_cuda_ext(
+            make_cpp_ext(
                 name='nms_cpu',
                 module='detector.nms',
                 sources=['src/nms_cpu.cpp']),
-            make_cuda_ext(
-                name='nms_cuda',
-                module='detector.nms',
-                sources=['src/nms_cuda.cpp', 'src/nms_kernel.cu']),
-            make_cuda_ext(
-                name='roi_align_cuda',
-                module='alphapose.utils.roi_align',
-                sources=['src/roi_align_cuda.cpp', 'src/roi_align_kernel.cu']),
-            make_cuda_ext(
-                name='deform_conv_cuda',
-                module='alphapose.models.layers.dcn',
-                sources=[
-                    'src/deform_conv_cuda.cpp',
-                    'src/deform_conv_cuda_kernel.cu'
-                ]),
-            make_cuda_ext(
-                name='deform_pool_cuda',
-                module='alphapose.models.layers.dcn',
-                sources=[
-                    'src/deform_pool_cuda.cpp',
-                    'src/deform_pool_cuda_kernel.cu'
-                ]),
         ]
+        if torch.cuda.is_available():  # Skip cuda extensions if no GPU available
+            ext_modules.extend([
+                make_cuda_ext(
+                    name='nms_cuda',
+                    module='detector.nms',
+                    sources=['src/nms_cuda.cpp', 'src/nms_kernel.cu']),
+                make_cuda_ext(
+                    name='roi_align_cuda',
+                    module='alphapose.utils.roi_align',
+                    sources=['src/roi_align_cuda.cpp', 'src/roi_align_kernel.cu']),
+                make_cuda_ext(
+                    name='deform_conv_cuda',
+                    module='alphapose.models.layers.dcn',
+                    sources=[
+                        'src/deform_conv_cuda.cpp',
+                        'src/deform_conv_cuda_kernel.cu'
+                    ]),
+                make_cuda_ext(
+                    name='deform_pool_cuda',
+                    module='alphapose.models.layers.dcn',
+                    sources=[
+                        'src/deform_pool_cuda.cpp',
+                        'src/deform_pool_cuda_kernel.cu'
+                    ]),
+            ])
     return ext_modules
 
 

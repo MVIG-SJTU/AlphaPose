@@ -1,7 +1,11 @@
 import numpy as np
 import torch
 
-from . import nms_cpu, nms_cuda
+try:
+    from . import nms_cpu, nms_cuda
+except ImportError:
+    print("Import nms_cpu and nms_cuda failed, importing only nms_cpu...")
+    from . import nms_cpu
 from .soft_nms_cpu import soft_nms_cpu
 
 
