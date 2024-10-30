@@ -25,10 +25,10 @@ from alphapose.utils.writer import DataWriter
 
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
-parser.add_argument('--cfg', type=str, required=True,
-                    help='experiment configure file name')
-parser.add_argument('--checkpoint', type=str, required=True,
-                    help='checkpoint file name')
+parser.add_argument('--cfg', type=str,
+                    help='experiment configure file name', default='configs/coco/resnet/256x192_res152_lr1e-3_1x-duc.yaml')
+parser.add_argument('--checkpoint', type=str, 
+                    help='checkpoint file name', default='pretrained_models/fast_421_res152_256x192.pth')
 parser.add_argument('--sp', default=False, action='store_true',
                     help='Use single process for pytorch')
 parser.add_argument('--detector', dest='detector',
