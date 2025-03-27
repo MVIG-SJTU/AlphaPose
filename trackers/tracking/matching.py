@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+np.float = float
 import scipy
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
