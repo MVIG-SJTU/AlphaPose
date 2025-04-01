@@ -25,10 +25,10 @@ from alphapose.utils.writer import DataWriter
 
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
-parser.add_argument('--cfg', type=str, required=True,
-                    help='experiment configure file name')
-parser.add_argument('--checkpoint', type=str, required=True,
-                    help='checkpoint file name')
+parser.add_argument('--cfg', type=str,
+                    help='experiment configure file name', default='configs/coco/resnet/256x192_res152_lr1e-3_1x-duc.yaml')
+parser.add_argument('--checkpoint', type=str, 
+                    help='checkpoint file name', default='pretrained_models/fast_421_res152_256x192.pth')
 parser.add_argument('--sp', default=False, action='store_true',
                     help='Use single process for pytorch')
 parser.add_argument('--detector', dest='detector',
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     pose_model = builder.build_sppe(cfg.MODEL, preset_cfg=cfg.DATA_PRESET)
 
     print('Loading pose model from %s...' % (args.checkpoint,))
-    pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device))
+    pose_model.load_state_dict(torch.load(args.checkpoint, map_location=args.device, weights_only=False))
     pose_dataset = builder.retrieve_dataset(cfg.DATASET.TRAIN)
     if args.pose_track:
         tracker = Tracker(tcfg, args)

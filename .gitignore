@@ -118,3 +118,8 @@ examples/res*/
 data/
 exp/
 data
+
+
+input_frames/
+outputs/
+examples/demo

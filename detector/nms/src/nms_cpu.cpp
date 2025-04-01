@@ -67,5 +67,5 @@ at::Tensor nms(const at::Tensor& dets, const float threshold) {
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("nms", &nms, "non-maximum suppression");
+  m.def("nms_cpu", &nms, "non-maximum suppression");
 }

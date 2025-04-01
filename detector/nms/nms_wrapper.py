@@ -1,7 +1,14 @@
 import numpy as np
 import torch
 
-from . import nms_cpu, nms_cuda
+
+try:
+    from .nms_cpu import nms as nms_cpu
+    from .nms_cuda import nms_cuda
+except ImportError:
+    print('Import nms_cpu and nms_cuda failed, importing only nms_cpu...')
+    from .nms_cpu import nms_cpu
+    nms_cuda = None
 from .soft_nms_cpu import soft_nms_cpu
 
 
@@ -42,7 +49,7 @@ def nms(dets, iou_thr, device_id=None):
         if dets_th.is_cuda:
             inds = nms_cuda.nms(dets_th, iou_thr)
         else:
-            inds = nms_cpu.nms(dets_th, iou_thr)
+            inds = nms_cpu(dets_th, iou_thr)
 
     if is_numpy:
         inds = inds.cpu().numpy()

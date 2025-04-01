@@ -6,7 +6,8 @@ import time
 import numpy as np
 from Cython.Build import cythonize
 from setuptools import Extension, find_packages, setup
-from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+from torch.utils.cpp_extension import BuildExtension, CUDAExtension, CppExtension
+import torch
 
 MAJOR = 0
 MINOR = 5
@@ -115,6 +116,12 @@ def make_cuda_ext(name, module, sources):
             ]
         })
 
+def make_cpp_ext(name, module, sources):
+
+    return CppExtension(
+        name='{}.{}'.format(module, name),
+        sources=[os.path.join(*module.split('.'), p) for p in sources]
+    )
 
 def get_ext_modules():
     ext_modules = []
@@ -128,10 +135,14 @@ def get_ext_modules():
                 name='soft_nms_cpu',
                 module='detector.nms',
                 sources=['src/soft_nms_cpu.pyx']),
-            make_cuda_ext(
+            make_cpp_ext(
                 name='nms_cpu',
                 module='detector.nms',
                 sources=['src/nms_cpu.cpp']),
+        ]
+
+        if torch.cuda.is_available():
+
             make_cuda_ext(
                 name='nms_cuda',
                 module='detector.nms',
@@ -154,7 +165,6 @@ def get_ext_modules():
                     'src/deform_pool_cuda.cpp',
                     'src/deform_pool_cuda_kernel.cu'
                 ]),
-        ]
     return ext_modules
 
 
@@ -208,7 +218,7 @@ if __name__ == '__main__':
         python_requires=">=3",
         setup_requires=['pytest-runner', 'numpy', 'cython'],
         tests_require=['pytest'],
-        install_requires=get_install_requires(),
+        # install_requires=get_install_requires(),
         ext_modules=get_ext_modules(),
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)
