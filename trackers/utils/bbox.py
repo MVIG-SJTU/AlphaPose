@@ -33,9 +33,9 @@ def clip_box(bbox, im_shape):
 
 
 def int_box(box):
-    box = np.asarray(box, dtype=np.float)
+    box = np.asarray(box, dtype=np.float64)
     box = np.round(box)
-    return np.asarray(box, dtype=np.int)
+    return np.asarray(box, dtype=np.int64)
 
 
 # for display
