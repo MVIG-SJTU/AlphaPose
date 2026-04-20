@@ -74,7 +74,7 @@ pip install git+ssh://git@github.com/facebookresearch/pytorch3d.git@stable
 ```
 
 #### Windows
-The installation process is same as above. But note that Windows users may face problem when installing cuda extension. Thus we disable the cuda extension in the setup.py by default. The affect is that models ended with "-dcn" is not supported. If you force to make cuda extension by modify [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L124) to True, you should install Visual Studio due to the problem mentioned [here](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L121).
+The installation process is same as above. But note that Windows users may face problem when installing cuda extension. Thus we disable the cuda extension in the setup.py by default. The effect is that models ending with "-dcn" are not supported. If you force to make cuda extension by modify [this line](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L124) to True, you should install Visual Studio due to the problem mentioned [here](https://github.com/MVIG-SJTU/AlphaPose/blob/master/setup.py#L121).
 We recommend Windows users to run models like FastPose, FastPose-duc, etc., as they also provide good accuracy and speed.
 
 For Windows user, if you meet error with PyYaml, you can download and install it manually from here: https://pyyaml.org/wiki/PyYAML.
@@ -84,7 +84,7 @@ If your OS platform is `Windows`, make sure that Windows C++ build tool like vis
 1. Download the object detection model manually: **yolov3-spp.weights**([Google Drive](https://drive.google.com/open?id=1D47msNOOiJKvPOXlnpyzdKA3k6E97NTC) | [Baidu pan](https://pan.baidu.com/s/1Zb2REEIk8tcahDa8KacPNA)). Place it into `detector/yolo/data`.
 2. (Optional) If you want to use [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) as the detector, you can download the weights [here](https://github.com/Megvii-BaseDetection/YOLOX), and place them into `detector/yolox/data`. We recommend [yolox-l](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_l.pth) and [yolox-x](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_x.pth).
 3. Download our pose models. Place them into `pretrained_models`. All models and details are available in our [Model Zoo](./MODEL_ZOO.md).
-2. For pose tracking, please refer to our [tracking docments](../trackers) for model download
+2. For pose tracking, please refer to our [tracking documents](../trackers) for model download
 
 
 
